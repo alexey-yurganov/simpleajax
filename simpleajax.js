@@ -176,7 +176,7 @@ S = {
             case 4:  //method, url, node, loading
                 if(p[1] != "#") url = S.mergeURLs(url, p[1]);
                 toNode = p[2];
-                busyNode = [3];
+                busyNode = p[3];
                 break;
         }
 
@@ -314,7 +314,7 @@ S = {
     */
     byId: function(/*String|Node*/s) {
         var d = document;
-        return s.nodeType ? s : d.getElementById ? d.getElementById(s) : d.all(s);
+        return !s ? s : s.nodeType ? s : d.getElementById ? d.getElementById(s) : d.all(s);
     },
 
     /*

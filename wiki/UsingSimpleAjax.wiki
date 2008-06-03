@@ -45,4 +45,4 @@ Since the Internet is slow because of the tubes, it would be nice to have a prog
 <a href="#" rel="get-nocache checkmail.pl mail_count loading">Check Mail</a>
 <span id="loading">Checking for new mail...</span>
 }}}
-When the above link is clicked, SimpleAjax will show the `"loading"` element, then call `checkmail.pl`, then when the server responds, it will hide the `"loading"` element and then place the response into the `"mail_count"` element.
+When the above link is clicked, !SimpleAjax will show the `"loading"` element, then call `checkmail.pl`, then when the server responds, it will hide the `"loading"` element and then place the response into the `"mail_count"` element.

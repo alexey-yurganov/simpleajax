@@ -1,0 +1,43 @@
+#summary How to use SimpleAjax in your HTML page.
+#labels Featured
+
+=Using !SimpleAjax=
+
+==Add !SimpleAjax to your Website==
+First add the following script tag somewhere in your HTML.
+{{{
+<script src="http://simpleajax.googlecode.com/svn/trunk/simpleajax.js"></script>
+}}}
+
+==Customize the HTML of the Button or Link==
+Then find the button or link which you want to respond to. The element can be any form element (e.g., textfield, button, selectbox, checkbox, etc.) or it can be a hyperlink. Then add a `"rel"` attribute to it.
+{{{
+<button rel="get getquote.cgi msg"></button>
+or
+<input type="password" rel="post checksecure.cgi pwd_msg"><span id="pwd_msg"></span>
+or
+<a href="moreinfo.html" rel="get more">More info...</a><div id="more"></div>
+}}}
+
+===Parameters===
+The `rel` attribute value is a space delimited set of parameters, and it can contain anywhere from 2 parameters to 4 parameters:
+|| *Parameter 1* || *Parameter 2* || *Parameter 3* || *Parameter 4* ||
+|| Method || Element ID for response || || ||
+|| Method || URL || Element ID for response || ||
+|| Method || URL || Element ID for response || Element ID of a progress indicator ||
+
+The parameters have the following meaning:
+|| *Parameter* || *Meaning* || *Example * ||
+|| Method || The HTTP method that will be used to send the data. || get, get-nocache, post ||
+|| URL || Where the data should be sent to. || checkid?usr=3&auto=yes ||
+|| Element ID for response || The ID of an element on the page that the server response should be put into. || header1 ||
+|| Element ID of progress bar || The ID of an element that is also a progress indicator. When a server request is sent, this progress indicator is shown. When the server provides a response, the progress indicator is hidden. || waiting1 ||
+
+==Prepare a Place for Results==
+When the server responds it should return a snippet of HTML. The website should prepare a place to put this HTML. It can be a div element, a table cell, or even another form element.
+{{{
+Your security level is: <span id="sec_level"></span>
+}}}
+
+==Prepare a Progress Indicator==
+Because the server typically takes more than 1 second to respond, it would be nice to have an progress indicator to 

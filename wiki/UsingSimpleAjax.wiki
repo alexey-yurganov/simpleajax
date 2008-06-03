@@ -1,4 +1,4 @@
-#summary How to use SimpleAjax in your HTML page.
+#summary This tutorial teaches you how to use SimpleAjax on your website in a quick and simple way.
 #labels Featured
 
 =Using !SimpleAjax=
@@ -33,11 +33,16 @@ The parameters have the following meaning:
 || Element ID for response || The ID of an element on the page that the server response should be put into. || header1 ||
 || Element ID of progress bar || The ID of an element that is also a progress indicator. When a server request is sent, this progress indicator is shown. When the server provides a response, the progress indicator is hidden. || waiting1 ||
 
-==Prepare a Place for Results==
-When the server responds it should return a snippet of HTML. The website should prepare a place to put this HTML. It can be a div element, a table cell, or even another form element.
+==Add a Place for Results==
+When the server responds it will return a snippet of HTML. Find a place on the website where the HTML should be placed. It can be a div element, a table cell, or even another form element. Give that element an ID and make sure that that ID is also in the previously mentioned `rel` attribute.
 {{{
 Your security level is: <span id="sec_level"></span>
 }}}
 
-==Prepare a Progress Indicator==
-Because the server typically takes more than 1 second to respond, it would be nice to have an progress indicator to 
+==Add a Progress Indicator==
+Since the Internet is slow because of the tubes, it would be nice to have a progress indicator to tell the user that their request is being processed. You can specify the progress indicator element by passing its ID as the fourth parameter of the `rel` attribute.
+{{{
+<a href="#" rel="get-nocache checkmail.pl mail_count loading">Check Mail</a>
+<span id="loading">Checking for new mail...</span>
+}}}
+When the above link is clicked, SimpleAjax will show the `"loading"` element, then call `checkmail.pl`, then when the server responds, it will hide the `"loading"` element and then place the response into the `"mail_count"` element.

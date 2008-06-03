@@ -33,7 +33,7 @@ The parameters have the following meaning:
 || Element ID for response || The ID of an element on the page that the server response should be put into. || header1 ||
 || Element ID of progress bar || The ID of an element that is also a progress indicator. When a server request is sent, this progress indicator is shown. When the server provides a response, the progress indicator is hidden. || waiting1 ||
 
-==Add a Place for Results==
+==Make a Place for the Server Response==
 When the server responds it will return a snippet of HTML. Find a place on the website where the HTML should be placed. It can be a div element, a table cell, or even another form element. Give that element an ID and make sure that that ID is also in the previously mentioned `rel` attribute.
 {{{
 Your security level is: <span id="sec_level"></span>

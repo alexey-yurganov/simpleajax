@@ -24,33 +24,55 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 var SimpleAjax = window.SimpleAjax || (function(S) {
 
-var handlers = {};  //event handlers stored here
+    var handlers = {};  //event handlers stored here
 
-/*
-* Optimized function to convert a string to lowercase.
-*/
-var toLowerCase = (function() {
-    var c = {};
-    return function(s) {
-        return !s ? "" : c[s] || (c[s] = s.toLowerCase());
+    /*
+    * Optimized function to convert a string to lowercase.
+    */
+    var toLowerCase = (function() {
+        var c = {};
+        return function(/*String*/s) {
+            return !s ? "" : c[s] || (c[s] = s.toLowerCase());
+        };
+    })();
+
+    /*
+    * Creates a DOM tree from an HTML string.
+    */
+    var make = function(/*String*/s) {
+        var n = document.createElement("div");
+        n.innerHTML = s;
+        return n.firstChild;
     };
-})();
 
-/*
-* Creates a DOM tree from an HTML string.
-*/
-var make = function(s) {
-    var n = document.createElement("div");
-    n.innerHTML = s;
-    return n.firstChild;
-};
+    /*
+    * Shortcut for getElementById.
+    */
+    var byId = function(/*String|Node*/s) {
+        var d = document;
+        return !s ? s : s.nodeType ? s : d.getElementById ? d.getElementById(s) : d.all(s);
+    };
 
-S = {
+    /*
+    * Retrieves the computed style object of a node.
+    */
+    S.css = function(/*Node*/n) {
+        var w = window.defaultView;
+
+        S.css = (w && w.getComputedStyle) ? 
+            function(n) {
+                return w.getComputedStyle(n, null);
+            } : function(n) {
+                return n.currentStyle || n.style;
+            };
+
+        return S.css(n);
+    };
 
     /*
     * Registers an event handler against a type of element.
     */
-    register: function(/*String*/event, /*String*/tag, /*Object*/attrs,
+    S.register = function(/*String*/event, /*String*/tag, /*Object*/attrs,
                         /*Function|String*/func, /*Object*/ctx) {
         if(!handlers[event]) {
             handlers[event] = {};
@@ -81,13 +103,13 @@ S = {
         }
 
         handlers[event][tag].push({attrs: attrs, tag: tag, func: func, ctx: ctx});
-    },
+    };
 
     /*
     * A single function, called by the native event dispatcher, that processes 
     * the event and re-delegates it to our event handlers.
     */
-    onEvent: (function() {
+    S.onEvent = (function() {
 
         var hasAllAttributes = function(/*Element*/node, /*Object*/attrs) {
             if(!attrs) return 1;
@@ -140,13 +162,13 @@ S = {
 
             } while((node = node.parentNode));
         };
-    })(),
+    })();
 
     /*
     * The default event handler that is used if register() is called without
     * specifying a custom event handler.
     */
-    handleEvent: function(/*Event*/e) {
+    S.handleEvent = function(/*Event*/e) {
         //we store our parameters in the "rel" attribute
         var p = (e.target.getAttribute("rel") || "").split(" ");
 
@@ -155,8 +177,8 @@ S = {
         //check first param is an HTTP method
         if(!/^(get|get-nocache|post|put|delet[e])$/.test(method)) return;
 
-        var url = S.guessURL(e.target) || "";
-        var formData = S.guessForm(e.target);
+        var url = S.getURL(e.target) || "";
+        var formData = S.getForm(e.target);
         var toNode = e.target;
         var busyNode;
 
@@ -180,17 +202,19 @@ S = {
                 break;
         }
 
+        if(toNode == "null") toNode = 0;
+
         if(url) {
             e.preventDefault();
             S.doAction(e, method, url, formData, toNode, busyNode);
         }
-    },
+    };
 
     /*
     * Retrieves data from the specified URL and places it inside toNode,
     * showing busyNode while the data is loading.
     */
-    doAction: function(/*Event*/e, /*String*/method, /*String*/url,
+    S.doAction = function(/*Event*/e, /*String*/method, /*String*/url,
                         /*Object*/data, /*Node|String*/toNode, /*String*/busyNode) {
 
         //only show busy if action was intentional
@@ -200,23 +224,28 @@ S = {
             if(showBusy) S.setBusy(0, busyNode);
 
             if(ok) {  //if HTTP 200, etc.
-                S.flash(toNode, 240, function() {
-                    S.setNodeValue(toNode, str);
-                });
+                if(toNode) {
+                    if(byId(toNode)) {
+                        S.flash(toNode, 240, function() {
+                            S.setNodeValue(toNode, str);
+                        });
+                    } else alert("Tag with id '" + url + "' not found.");
+                }
 
             } else if(xhr) {
-                alert("Server Error: " + xhr.status + " " + xhr.statusText);
+                alert("Server Error: " + xhr.status + " " + xhr.statusText +
+                      "\nFor:" + url.replace(/^(.{70}).*$/,"$1..."));
             }
         });
 
         if(showBusy) S.setBusy(1, busyNode);
-    },
+    };
 
     /*
     * Guesses the implied URL from the given element. If it is an anchor, the 
     * href is returned. If is a form, the form action is returned.
     */
-    guessURL: function(/*Node*/n) {
+    S.getURL = function(/*Node*/n) {
         var tag = toLowerCase(n.tagName);
         if(tag == "a") {
             return n.href;
@@ -225,7 +254,7 @@ S = {
             if(tag != "form") n = n.form;
             return n.attributes["action"].value;
         }
-    },
+    };
 
     /*
     * Modifies the first URL based on properties found in the second URL.
@@ -233,7 +262,7 @@ S = {
     * domain with a leading "/", (2) the filename and query part of a URL, 
     * (3) the query part of a URL including the leading "?".
     */
-    mergeURLs: (function() {
+    S.mergeURLs = (function() {
 
         // splits the query part of a URL into its parameters
         var split = function(/*String*/str, /*Object?*/hash) {
@@ -275,9 +304,9 @@ S = {
                 return orig + extra.split("?")[0] + "?" + params;
             }
         };
-    })(),
+    })();
 
-    guessForm: function(/*Node*/n) {
+    S.getForm = function(/*Node*/n) {
         var tag = toLowerCase(n.tagName);
         if(!n || !/input|button|textarea|form/.test(tag)) return;
 
@@ -307,39 +336,27 @@ S = {
             }
         }
         return o;
-    },
+    };
 
     /*
-    * Shortcut for getElementById.
+    * Loads external JS files asynchronously and ensures only loaded once.
     */
-    byId: function(/*String|Node*/s) {
-        var d = document;
-        return !s ? s : s.nodeType ? s : d.getElementById ? d.getElementById(s) : d.all(s);
-    },
-
-    /*
-    * Retrieves the computed style object of a node.
-    */
-    css: function(/*Node*/n) {
-        var w = window.defaultView;
-
-        S.css = (w && w.getComputedStyle) ? 
-            function(n) {
-                return w.getComputedStyle(n, null);
-            } : function(n) {
-                return n.currentStyle || n.style;
-            };
-
-        return S.css(n);
-    },
+    var loadJSURL = (function() {
+        var c = {};
+        return function(s) {
+            if(!c[s]) {
+                c[s] = document.body.appendChild(make("<scr"+"ipt><\/scr"+"ipt>")).src = s;
+            }
+        };
+    })();
 
     /*
     * Set a node's content to the specified string. What content is set depends
     * on the node. If it's an input, its value is set. If it's an image, its
     * src is set. Anything else, its innerHTML is set.
     */
-    setNodeValue: function(/*Node*/node, /*String*/value) {
-        node = S.byId(node);
+    S.setNodeValue = function(/*Node*/node, /*String*/value) {
+        node = byId(node);
 
         var tag = toLowerCase(node.tagName);
 
@@ -381,10 +398,7 @@ S = {
                 while(n.firstChild) c.appendChild(n.firstChild);
             };
 
-            if(!value) {
-                //ignore
-
-            } else if(tag == "img") {
+            if(tag == "img") {
                 node.src = value;
 
             } else if(tag == "select") {
@@ -412,16 +426,17 @@ S = {
 
             //load external scripts. Note that since scripts were
             //marked defer, they can be loaded in any order.
+
             for(var i = 0; i < links.length; i++) {
-                document.body.appendChild(make("<script><\/scri"+"pt>")).src = links[i];
+                loadJSURL(links[i]);
             }
         }
-    },
+    };
 
     /*
     * A cache of progress indicators that are currently being shown.
     */
-    busyCache: {},
+    var busyCache = {};
 
     /*
     * Sets the visibility of a node, that is presumed to be a progress 
@@ -429,11 +444,11 @@ S = {
     * used by 2 separate processes. If the node doesn't exist, a default
     * progress indicator is created and used.
     */
-    setBusy: function(/*boolean*/busy, /*String*/node) {
-        node = S.byId(node);
+    S.setBusy = function(/*boolean*/busy, /*String*/node) {
+        node = byId(node);
 
         if(!node) {
-            node = S.byId("simpleajax-busy");
+            node = byId("simpleajax-busy");
 
             if(!node) {
                 var d = document;
@@ -458,30 +473,29 @@ S = {
             }
         }
 
-        var cache = S.busyCache;
         var id = node.id || "*";
 
         //keep track of how many processes are using this indicator
-        cache[id] = (cache[id] || 0) + (busy ? 1 : -1);
+        busyCache[id] = (busyCache[id] || 0) + (busy ? 1 : -1);
 
         var _update = function() {
-            node.style.display = (cache[id] > 0) ? "" : "none";
+            node.style.display = (busyCache[id] > 0) ? "" : "none";
         };
 
         //show the indicator after 300ms incase the process finishes quickly
-        if(cache[id] == 1) setTimeout(_update, 300); else _update();
+        if(busyCache[id] == 1) setTimeout(_update, 300); else _update();
 
         //if the same indicator is used again, flash it once to indicate activity
-        if(cache[id] > 1) S.flash(node, 200);
-    },
+        if(busyCache[id] > 1) S.flash(node, 200);
+    };
 
     /*
     * Flashes a node from visible to invisible to visible.
     */
-    flash: function(/*Node*/node, /*int*/duration, callback) {
-        node = S.byId(node);
+    S.flash = function(/*Node*/node, /*int*/duration, callback) {
+        node = byId(node);
 
-        //get the current opacity
+        //get the original opacity
         var v = S.css(node);
         v = parseFloat((/alpha\(opacity=(\d+)\)/i.exec(v.filter)||{})[1]/100 || v.opacity || 1);
 
@@ -494,20 +508,20 @@ S = {
         S.anim(node, v, 0, duration, step, function() {
             S.anim(node, v, v, 0, step, callback);
         });
-    },
+    };
 
     /*
     * Animates a node for "duration" length of time from values "from" to "to".
     * Actual CSS manipulation is done by "step".
     */
-    anim: function(/*Node*/node, /*int*/from, /*int*/to, /*int*/duration, /*Function*/step, /*Function*/callback) {
+    S.anim = function(/*Node*/node, /*int*/from, /*int*/to, /*int*/duration, /*Function*/step, /*Function*/callback) {
         var start = new Date().getTime();
         var P = Math.PI/2;
         var func = function() {
             step(node, from);
             if(from != to) {
-                var elapse = new Date().getTime() - start;
-                from = (elapse - duration >= 40) ? to : from + Math.sin(elapse/duration*P)*(to - from);
+                var elapsed = new Date().getTime() - start;
+                from = (elapsed - duration >= 40) ? to : from + Math.sin(elapsed/duration*P)*(to - from);
                 setTimeout(func, 40);
 
             } else if(callback) {
@@ -515,13 +529,13 @@ S = {
             }
         };
         func();
-    },
+    };
 
     /*
     * A cache of GET responses that is returned again if the same GET 
-    * request is sent twice.
+    * request is sent twice. This can also be used to preload URLs.
     */
-    xhrCache: {},
+    S.xhrCache = {};
 
     /*
     * Loads a URL and returns the data as a string. Note that the URL must
@@ -530,17 +544,17 @@ S = {
     * If the URL is a fragment identifier, the innerHTML of the element with
     * that id is returned immediately.
     */
-    getURL: function(/*String*/method, /*String*/url, /*String*/data, /*Function*/func) {
+    S.getURL = function(/*String*/method, /*String*/url, /*String*/data, /*Function*/func) {
         method = toLowerCase(method);
 
-        if(/^data:/.test(url)) {  //data URL
+        if(/^data:/.test(url)) {  //if data URL, return inline data
             return func(unescape(url.replace(/^data:,?/, "")), 1, null);
 
-        } else if(/^#./.test(url)) {  //fragment identifier
-            var node = S.byId(url.substr(1));
+        } else if(/^#./.test(url)) {  //if fragment identifier, return innerHTML
+            var node = byId(url.substr(1));
             return node ? func(node.innerHTML, 1, null) : alert("Tag with id '" + url + "' not found.");
 
-        } else if(method == "get" && S.xhrCache[url]) {  //cached data
+        } else if(method == "get" && S.xhrCache[url]) {  //if cached, return cache
             return func(S.xhrCache[url], 1, null);
         }
 
@@ -549,7 +563,7 @@ S = {
             url += (/\?/.test(url) ? "&" : "?") + ".r=" + Math.random();
         }
 
-        //convert data object to URL string
+        //convert hash object to URL string
         if(typeof data != "string" && !(data instanceof String)) {
             var s = [];
             for(var i in data) s.push(escape(i) + "=" + escape(data[i]));
@@ -560,7 +574,7 @@ S = {
             if(!data) {
                 //usurp form data from params in URL
                 data = url.substr(url.indexOf("?") + 1, url.length);
-                url = url.split("?")[0];
+                url = url.split("?")[0];  //remove query from URL
 
             } else {
                 //copy params from URL into form data and avoid duplicates
@@ -599,9 +613,9 @@ S = {
             }
         };
         xhr.send(data);
-    },
+    };
 
-    getXHR: function() {
+    S.getXHR = function() {
         var xhr = [
             function() {return new XMLHttpRequest();},
             function() {return new ActiveXObject("Msxml2.XMLHTTP");},
@@ -611,24 +625,22 @@ S = {
         for(var i = 0; i < xhr.length; i++) {
             try {
                 var x = xhr[i]();
-                this._getXHR = xhr[i];
+                S.getXHR = xhr[i];
                 return x;
-
             } catch(e) {}
         }
-    }
-};
+    };
 
-//Here are the actual elements that we respond to:
-S.register("onclick", "a", {href:null});
-S.register("onclick", "input", {type:"submit"});
-S.register("onclick", "input", {type:"button"});
-S.register("onclick", "button", {type:"submit"});
-S.register("onclick", "button", {type:"button"});
-S.register("onchange", "input", {type:"text"});
-S.register("onchange", "select");
-S.register("onchange", "textarea");
-S.register("obnsubmit", "form");
+    //Here are the actual elements that we respond to:
+    S.register("onclick", "a", {href:null});
+    S.register("onclick", "input", {type:"submit"});
+    S.register("onclick", "input", {type:"button"});
+    S.register("onclick", "button", {type:"submit"});
+    S.register("onclick", "button", {type:"button"});
+    S.register("onchange", "input", {type:"text"});
+    S.register("onchange", "select");
+    S.register("onchange", "textarea");
+    S.register("obnsubmit", "form");
 
-return S;
-})();
+    return S;
+})({});

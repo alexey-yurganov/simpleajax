@@ -178,7 +178,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         if(!/^(get|get-nocache|post|put|delet[e])$/.test(method)) return;
 
         var toNode = e.target;
-        var url = S.getURL(toNode) || "";
+        var url = S.guessURL(toNode) || "";
         var formData = S.getForm(toNode);
         var busyNode;
 
@@ -245,7 +245,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     * Guesses the implied URL from the given element. If it is an anchor, the 
     * href is returned. If is a form, the form action is returned.
     */
-    S.getURL = function(/*Node*/n) {
+    S.guessURL = function(/*Node*/n) {
         var tag = toLowerCase(n.tagName);
         if(tag == "a") {
             return n.href;

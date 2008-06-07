@@ -1,0 +1,21 @@
+<tr>
+    <td class="tab">
+        <a href="#" rel="get tabs_local.txt news local_wait">Local</a>
+        <span id="local_wait" class="wait" style="display:none">&nbsp;</span>
+    </td>
+    <td class="tab selected">World</td>
+    <td class="tab">
+        <a href="#" rel="get tabs_galactic.txt news galactic_wait">Galactic</a>
+        <span id="galactic_wait" class="wait" style="display:none">&nbsp;</span>
+    </td>
+</tr>
+<tr>
+    <td colspan="3" style="padding:1em">
+        - <a href="http://www.theonion.com/content/news/potential_employee_uprising">
+        Potential Employee Uprising Quelled With Free Pizza</a><br>
+        - <a href="http://www.theonion.com/content/amvo/germans_making_green_bombs">
+        Germans making 'green' bombs</a><br>
+        - <a href="http://www.theonion.com/content/amvo/earliest_american_scat_found">
+        Earliest American Scat Found</a><br>
+    </td>
+</tr>

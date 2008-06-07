@@ -1,0 +1,16 @@
+<tr>
+    <td class="tab">
+        <a href="#" rel="get tabs_local.txt news local_wait">Local</a>
+        <span id="local_wait" class="wait" style="display:none">&nbsp;</span>
+    </td>
+    <td class="tab">
+        <a href="#" rel="get tabs_world.txt news world_wait">World</a>
+        <span id="world_wait" class="wait" style="display:none">&nbsp;</span>
+    </td>
+    <td class="tab selected">Galactic</td>
+</tr>
+<tr>
+    <td colspan="3" style="padding:1em; height:100px; vertical-align:top">
+        <i>(No news)</i>
+    </td>
+</tr>

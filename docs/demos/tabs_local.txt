@@ -1,0 +1,17 @@
+<tr>
+    <td class="tab selected">Local</td>
+    <td class="tab"><a href="#" rel="get tabs_world.txt news">World</a></td>
+    <td class="tab"><a href="#" rel="get tabs_galactic.txt news">Galactic</a></td>
+</tr>
+<tr>
+    <td colspan="3" style="padding:1em">
+        - <a href="http://www.theonion.com/content/video/new_wearable_feedbags_let">
+        New wearable feedbags let Americans eat&hellip;</a><br>
+        - <a href="http://www.theonion.com/content/news/black_guy_asks_nation_for_change">
+        Black guy asks nation for change</a><br>
+        - <a href="http://www.theonion.com/content/node/31006">
+        Scientology losing ground To new &hellip;</a><br>
+        - <a href="http://www.theonion.com/content/news/new_get_the_fuck_outta_the_road">
+        New program to increase pedestrian safety</a>
+    </td>
+</tr>

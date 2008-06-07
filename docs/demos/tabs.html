@@ -1,0 +1,38 @@
+<html>
+<script src="../../trunk/simpleajax-dev.js"></script>
+<style>
+#news {border:1px solid #339; border-collapse:collapse; line-height:1.5em}
+.tab {border:1px solid #339; background:#def; text-align:center; padding:3px; width:150px}
+.selected {background:#fff; border-bottom:0; font-weight:bold}
+#news a {text-decoration:none; color:#22a}
+#news a:hover {text-decoration:underline}
+.wait {position:absolute; margin:2px 5px; width:14px; height:14px; line-height:14px; background:url(loading14.gif) center no-repeat; opacity:0.3; filter:alpha(opacity=30)}
+</style>
+
+<table id="news" cellpadding="0" cellspacing="0">
+    <tr>
+        <td class="tab selected">Local</td>
+        <td class="tab">
+            <a href="#" rel="get tabs_world.txt news world_wait">World</a>
+            <span id="world_wait" class="wait" style="display:none">&nbsp;</span>
+        </td>
+        <td class="tab">
+            <a href="#" rel="get tabs_galactic.txt news galactic_wait">Galactic</a>
+            <span id="galactic_wait" class="wait" style="display:none">&nbsp;</span>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" style="padding:1em">
+            - <a href="http://www.theonion.com/content/video/new_wearable_feedbags_let">
+            New wearable feedbags let Americans eat&hellip;</a><br>
+            - <a href="http://www.theonion.com/content/news/black_guy_asks_nation_for_change">
+            Black guy asks nation for change</a><br>
+            - <a href="http://www.theonion.com/content/node/31006">
+            Scientology losing ground To new &hellip;</a><br>
+            - <a href="http://www.theonion.com/content/news/new_get_the_fuck_outta_the_road">
+            New program to increase pedestrian safety</a>
+        </td>
+    </tr>
+</table>
+
+</html>

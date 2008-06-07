@@ -170,16 +170,16 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     */
     S.handleEvent = function(/*Event*/e) {
         //we store our parameters in the "rel" attribute
-        var p = (e.target.getAttribute("rel") || "").split(" ");
+        var p = (e.target.getAttribute("rel") || "").split(/\s+/);
 
         var method = toLowerCase(p[0]);
 
         //check first param is an HTTP method
         if(!/^(get|get-nocache|post|put|delet[e])$/.test(method)) return;
 
-        var url = S.getURL(e.target) || "";
-        var formData = S.getForm(e.target);
         var toNode = e.target;
+        var url = S.getURL(toNode) || "";
+        var formData = S.getForm(toNode);
         var busyNode;
 
         switch(p.length) {
@@ -234,7 +234,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
 
             } else if(xhr) {
                 alert("Server Error: " + xhr.status + " " + xhr.statusText +
-                      "\nFor:" + url.replace(/^(.{70}).*$/,"$1..."));
+                      "\nFor: " + url.replace(/^(.{70}).*$/,"$1..."));
             }
         });
 
@@ -464,7 +464,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
                 if(style.setExpression && (!window.XMLHttpRequest || d.compatMode == "BackCompat")) {
                     var db = function(s) {
                         return "(document.body." + s + "||(document.documentElement||{})." + s + ")";
-                    }
+                    };
                     style.setExpression("left", db("scrollLeft") + "+(" + db("clientWidth") + "-this.offsetWidth)/2");
                     style.setExpression("top", db("scrollTop"));
                     style.margin = "0";

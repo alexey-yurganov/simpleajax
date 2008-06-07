@@ -70,55 +70,20 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     };
 
     /*
-    * Registers an event handler against a type of element.
-    */
-    S.register = function(/*String*/event, /*String*/tag, /*Object*/attrs,
-                        /*Function|String*/func, /*Object*/ctx) {
-        if(!handlers[event]) {
-            handlers[event] = {};
-
-            var b = document;
-            b = b.documentElement || b.body;
-            if(b.addEventListener) {
-                b.addEventListener(event.replace(/^on/, ""), S.onEvent, false);
-            } else {
-                b.attachEvent(event, S.onEvent);
-            }
-        }
-
-        if(!handlers[event][tag]) {
-            handlers[event][tag] = [];
-        }
-
-        //if no event handler is supplied, we'll use our default one
-        if(!func) {
-            func = S.handleEvent;
-            ctx = S;
-            attrs = attrs || {};
-            //if we're using the default handler, it requires a falsy "rel" attribute
-            attrs.rel = attrs.rel || 0;
-
-        } else if(func in ctx) {
-            func = ctx[func];
-        }
-
-        handlers[event][tag].push({attrs: attrs, tag: tag, func: func, ctx: ctx});
-    };
-
-    /*
     * A single function, called by the native event dispatcher, that processes 
     * the event and re-delegates it to our event handlers.
     */
-    S.onEvent = (function() {
+    var onEvent = (function() {
 
         var hasAllAttributes = function(/*Element*/node, /*Object*/attrs) {
-            if(!attrs) return 1;
-            for(var n in attrs) {
-                var val = node.getAttribute(n);
-                if(!val ||
-                   (attrs[n] && attrs[n].test && !attrs[n].test(val)) ||
-                   (attrs[n] && attrs[n] != val)) {
-                    return 0;
+            if(attrs) {
+                for(var n in attrs) {
+                    var val = node.getAttribute(n);
+                    if(!val ||
+                       (attrs[n] && attrs[n].test && !attrs[n].test(val)) ||
+                       (attrs[n] && attrs[n] != val)) {
+                        return 0;
+                    }
                 }
             }
             return 1;
@@ -163,6 +128,42 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
             } while((node = node.parentNode));
         };
     })();
+
+    /*
+    * Registers an event handler against a type of element.
+    */
+    S.register = function(/*String*/event, /*String*/tag, /*Object*/attrs,
+                        /*Function|String*/func, /*Object*/ctx) {
+        if(!handlers[event]) {
+            handlers[event] = {};
+
+            var b = document;
+            b = b.documentElement || b.body;
+            if(b.addEventListener) {
+                b.addEventListener(event.replace(/^on/, ""), onEvent, false);
+            } else {
+                b.attachEvent(event, onEvent);
+            }
+        }
+
+        if(!handlers[event][tag]) {
+            handlers[event][tag] = [];
+        }
+
+        //if no event handler is supplied, we'll use our default one
+        if(!func) {
+            func = S.handleEvent;
+            ctx = S;
+            attrs = attrs || {};
+            //if we're using the default handler, it requires a falsy "rel" attribute
+            attrs.rel = attrs.rel || 0;
+
+        } else if(func in ctx) {
+            func = ctx[func];
+        }
+
+        handlers[event][tag].push({attrs: attrs, tag: tag, func: func, ctx: ctx});
+    };
 
     /*
     * The default event handler that is used if register() is called without
@@ -286,14 +287,14 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         };
 
         return function(/*String*/orig, /*String*/extra) {
-            var n0 = extra.charAt(0);
-            if(n0 == "\/") {
-                return extra;
+            var s = extra.charAt(0);
+            if(s == "\/") {
+                s = extra;
 
-            } else if(n0 == "?") {
+            } else if(s == "?") {
                 //combine all query parameters together
                 var params = join(split(extra, split(orig)));
-                return orig.split("?")[0] + "?" + params;
+                s = orig.split("?")[0] + "?" + params;
 
             } else {
                 var params = join(split(extra, split(orig)));
@@ -301,41 +302,44 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
                 orig = orig.substr(0,
                     orig.split("?")[0].lastIndexOf("\/") + 1 || orig.length
                 );
-                return orig + extra.split("?")[0] + "?" + params;
+                s = orig + extra.split("?")[0] + "?" + params;
             }
+            return s;
         };
     })();
 
     S.getForm = function(/*Node*/n) {
         var tag = toLowerCase(n.tagName);
-        if(!n || !/input|button|textarea|form/.test(tag)) return;
 
-        var o = {};
-
-        if(n.name) {
-            if(tag == "button" ||
-               (tag == "input" && /button|submit/i.test(n.type))) {
-                o[n.name] = true;
-            }
-        }
-
-        var form = n.form || n;
-        for(var i = 0; i < form.elements.length; i++) {
-            var node = form.elements[i];
-            if(node.disabled || !node.name) return;
-
-            if(/select/i.test(node.tagName)) {
-                o[node.name] = [];
-                for(var j = 0; j < node.options.length; j++) {
-                    var opt = node.options[j];
-                    if(opt.selected) o[node.name].push(opt.value || opt.text);
+        if(/input|button|textarea|select|form/.test(tag)) {
+            var o = {};
+    
+            if(n.name) {
+                if(tag == "button" ||
+                   (tag == "input" && /button|submit/i.test(n.type))) {
+                    o[n.name] = true;
                 }
-
-            } else if(!/button|submit|reset|image/i.test(node.type)) {
-                o[node.name] = node.value;
             }
+    
+            var form = n.form || n;
+            for(var i = 0; i < form.elements.length; i++) {
+                var node = form.elements[i];
+                var name = node.name;
+                if(node.disabled || !name) return;
+    
+                if(/select/i.test(node.tagName)) {
+                    o[name] = [];
+                    for(var j = 0; j < node.options.length; j++) {
+                        var opt = node.options[j];
+                        if(opt.selected) o[name].push(opt.value || opt.text);
+                    }
+    
+                } else if(!/button|submit|reset|image/i.test(node.type)) {
+                    o[name] = node.value;
+                }
+            }
+            return o;
         }
-        return o;
     };
 
     /*
@@ -388,34 +392,28 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
                     }
                 );
 
-            //empties the contents of a node
-            var empty = function(n) {
-                while(n.firstChild) n.removeChild(n.firstChild);
-            };
-
-            //copies nodes from "n" to "c"
-            var copy = function(n, c) {
-                while(n.firstChild) c.appendChild(n.firstChild);
+            //moves nodes from "n" to "c".
+            var moveChildren = function(/*Node*/n, /*Node*/c) {
+                var fc;
+                while((fc = n.firstChild)) {
+                    c ? c.appendChild(fc) : n.removeChild(fc);
+                }
             };
 
             if(tag == "img") {
                 node.src = value;
 
             } else if(tag == "select") {
-                empty(node);
-                if(!/<option/i.test(value)) value = "<option>" + value + "<\/option>";
-                var n = make("<select>" + value + "<\/select>");
-                copy(n, node);
+                moveChildren(node);
+                moveChildren(make("<select>" + value + "<\/select>"), node);
 
             } else if(tag == "table") {
-                empty(node);
-                var n = make("<table>" + value + "<\/table>");
-                copy(n, node);
+                moveChildren(node);
+                moveChildren(make("<table>" + value + "<\/table>"), node);
 
             } else if(tag == "tr") {
-                empty(node);
-                var n = make("<table><tr>" + value + "<\/tr><\/table>").rows[0];
-                copy(n, node);
+                moveChildren(node);
+                moveChildren(make("<table><tr>" + value + "<\/tr><\/table>").rows[0], node);
 
             } else {
                 node.innerHTML = value;
@@ -445,8 +443,6 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     * progress indicator is created and used.
     */
     S.setBusy = function(/*boolean*/busy, /*String*/node) {
-        node = byId(node);
-
         if(!node) {
             node = byId("simpleajax-busy");
 
@@ -473,6 +469,8 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
             }
         }
 
+        if(!(node = byId(node))) return;
+
         var id = node.id || "*";
 
         //keep track of how many processes are using this indicator
@@ -492,22 +490,44 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     /*
     * Flashes a node from visible to invisible to visible.
     */
-    S.flash = function(/*Node*/node, /*int*/duration, callback) {
+    S.flash = function(/*Node*/node, /*int*/duration, /*Function*/callback) {
         node = byId(node);
 
-        //get the original opacity
-        var v = S.css(node);
-        v = parseFloat((/alpha\(opacity=(\d+)\)/i.exec(v.filter)||{})[1]/100 || v.opacity || 1);
-
-        var step = function(/*Node*/n, /*int*/v) {
-            n.style.opacity = v;
-            n.style.filter = "alpha(opacity=" + Math.round(v * 100) + ")";
-            n.style.zoom = 1;
+        //returns the opacity of the element as a number
+        var opacity = function(style) {
+            return (/alpha\(opacity=(\d+)\)/i.exec(style.filter)||{})[1]/100 || style.opacity/1;
         };
 
-        S.anim(node, v, 0, duration, step, function() {
-            S.anim(node, v, v, 0, step, callback);
-        });
+        //an animation step function that is used by the animation handler
+        var step = function(/*Node*/n, /*int*/v) {
+            n = n.style;
+            n.opacity = v;
+            n.filter = v ? "alpha(opacity=" + Math.round(v * 100) + ")" : "";
+            n.zoom = 1;
+        };
+
+        //The original opacity. We need this so that after the animation we
+        //can reset the node to have an undefined opacity if it didn't have
+        //one before.
+        var orig = opacity(node.style) || "";
+
+        //The computed opacity. We need this to know what what state the 
+        //animation should begin from.
+        var computed = opacity(S.css(node)) || 1;
+
+        var lock = "_animLock";
+
+        if(node[lock]) {  //don't allow concurrent animations on a node
+            callback();
+
+        } else {
+            node[lock] = 1;
+            S.anim(node, computed, 0, duration, step, function() {
+                step(node, orig);
+                node[lock] = 0;
+                callback();
+            });
+        }
     };
 
     /*
@@ -573,12 +593,12 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         if(method == "post") {
             if(!data) {
                 //usurp form data from params in URL
-                data = url.substr(url.indexOf("?") + 1, url.length);
+                data = url.substr(url.indexOf("?") + 1);
                 url = url.split("?")[0];  //remove query from URL
 
             } else {
                 //copy params from URL into form data and avoid duplicates
-                var params = (url.split("?")[1] || "").split("&");
+                var params = url.substr(url.indexOf("?") + 1).split("&");
                 var d = "&" + data;
                 for(var i = 0; i < params.length; i++) {
                     if(d.indexOf("&" + param[i].split("=")[0] + "=") == -1) {
@@ -600,9 +620,8 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
             if(xhr.readyState == 4) {
                 var ok = 0, v;
                 try {
-                    ok = ((xhr.status >= 200 && xhr.status < 300) ||
-                           xhr.status == 0 ||
-                           xhr.status == 304 || xhr.status == 1223);
+                    ok = xhr.status;
+                    ok = ((ok >= 200 && ok < 300) || ok == 0 || ok == 304 || ok == 1223);
 
                     v = xhr.responseText;
 
@@ -640,7 +659,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     S.register("onchange", "input", {type:"text"});
     S.register("onchange", "select");
     S.register("onchange", "textarea");
-    S.register("obnsubmit", "form");
+    S.register("onsubmit", "form");
 
     return S;
 })({});

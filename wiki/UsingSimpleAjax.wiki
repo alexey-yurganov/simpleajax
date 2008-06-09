@@ -10,14 +10,14 @@ First add the following script tag anywhere in your HTML.
 }}}
 
 ==Customize the HTML of the Button or Link==
-Then find the button or link which you want to respond to. The element can be any form element (e.g., text field, button, select box, check box, etc.) or it can be a hyperlink. Then add a `"rel"` attribute to it.
+Then find the button or link with which you want to invoke an AJAX action. That element can be any form element (e.g., text field, button, select box, check box, etc.) or it can be a hyperlink. Then add a `"rel"` attribute to it.
 
 e.g.,
 {{{
 <button rel="get getquote.cgi msg"></button>
 }}}
 {{{
-<input type="password" rel="post checksecure.cgi pwd_msg"><span id="pwd_msg"></span>
+<input type="password" rel="post checksecure.cgi sec"> Security level: <span id="sec"></span>
 }}}
 {{{
 <a href="moreinfo.html" rel="get more">More info...</a><div id="more"></div>
@@ -42,7 +42,7 @@ Your security level is: <span id="sec_level"></span>
 ==Add a Progress Indicator==
 Since the Internet is slow because of the tubes, it would be nice to have a progress indicator to tell the user that their request is being processed. You can specify the progress indicator element by passing its ID as the fourth parameter of the `rel` attribute.
 {{{
-<a href="#" rel="get-nocache checkmail.pl mail_count loading">Check Mail</a>
+<a href="#" rel="get-nocache checkmail.pl status loading">Check Mail</a>
 <span id="loading">Checking for new mail...</span>
 }}}
-When the above link is clicked, !SimpleAjax will show the `"loading"` element, then call `checkmail.pl`, then when the server responds, it will hide the `"loading"` element and then place the response into the `"mail_count"` element.
+When the above link is clicked, !SimpleAjax will show the `"loading"` element, then call `checkmail.pl`, then when the server responds, it will hide the `"loading"` element and then place the response into the `"status"` element.

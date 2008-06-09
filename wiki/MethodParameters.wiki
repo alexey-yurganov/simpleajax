@@ -7,7 +7,7 @@ To invoke !SimpleAjax, add a `rel` attribute to any hyperlink or form control:
 
    <a href="desc.php" *rel="get # div1 loading"*>View Description</a>
 
-=== This syntax consists of: ===
+This syntax consists of:
   * *"rel"*: When an element with a "rel" attribute is activated !SimpleAjax will take over and invoke the alternate AJAX behavior.
 
   * *[#The_HTTP_Method "get"]*: This must be a valid HTTP method (or variants of it) that will be used to retrieve the resource over the Internet. It can be "get", "post", or "get-nocache".
@@ -21,11 +21,11 @@ To invoke !SimpleAjax, add a `rel` attribute to any hyperlink or form control:
 === The HTTP Method ===
 This is a valid [http://en.wikipedia.org/wiki/HTTP#Request_methods HTTP method] that will be used to retrieve the resource over the Internet. The following methods are supported:
 
-  * Get: Used to indicate that retrieving the resource will not cause side effects. The responses of all GET requests will be cached so that subsequent requests to that URL are fast.
+  * GET: Used to indicate that retrieving the resource will not cause side effects. The responses of all GET requests will be cached so that subsequent requests to that URL are fast.
 
-  * Get-nocache: Same as GET except the URL is not cached by !SimpleAjax and the URL is modified each time so that it cannot be cached by any intermediate servers.
+  * GET-NOCACHE: Same as GET except the URL is not cached by !SimpleAjax and the URL is modified each time so that it cannot be cached by any intermediate servers.
 
-  * Post: Submits data to the server with the expectation that side effects may occur such as updates to the servers data.
+  * POST: Submits data to the server with the expectation that side effects may occur such as updates to the servers data.
 
 The only supported HTTP methods are "get, get-nocache, post, put and delete" and are case-insensitive. Any other method will be ignored.
 

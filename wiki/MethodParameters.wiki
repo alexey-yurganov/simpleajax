@@ -51,6 +51,11 @@ Three additionally supported URLs are:
 || data URL || `<a href="http://msn.com/enabout.html" rel="get data:hello%20world div1">` || hello world ||
 || fragment identifier || `<a href="http://msn.com/en/about.html" rel="get #test div1"></a><div id="test">hello world</div>` || hello world ||
 
+==== The URL as an optional parameter ====
+The URL is an optional parameter, when it is implied and when no loading parameter is needed. The following two URLs are equivalent:
+
+   `<a href="more.php" rel="get div1">` *is equal to* `<a href="more.php" rel="get # div1">`
+
 === The Content ID ===
 This is an element on the page that will have its children updated when the server responds. It can be any element, but must be marked with an ID.
 
@@ -78,7 +83,7 @@ Your transaction was: <span id="div1"></span>
 }}}
 
 === The Loading ID ===
-This is an element that will be shown and then hidden to indicate to the user that their request is in progress. This parameter is optional.
+This is an element that will be shown or hidden as necessary to indicate to the user that their request is in progress. This is purely a usability feature and this parameter is optional.
 
 e.g.,
 {{{

@@ -10,12 +10,14 @@ To invoke !SimpleAjax, add a `rel` attribute to any hyperlink or form control:
 This invocation consists of:
   # The _rel_ attribute: When an element with a "rel" attribute is activated !SimpleAjax will take over and invoke the alternate AJAX behavior.
 
-  # [#the_get_method The _get_ method]: This must be a valid HTTP method (or variants of it) that will be used to retrieve the resource over the Internet. It can be "get", "post", or "get-nocache".
+  # [#The_get_method The _get_ method]: This must be a valid HTTP method (or variants of it) that will be used to retrieve the resource over the Internet. It can be "get", "post", or "get-nocache".
 
-  # The _#_ URL: This must be a well-formed URL. Relative URLs are accepted, and they are relative to he implied resource of the hyperlink or form element.
+  # [#The_#_URL The _#_ URL]: This must be a well-formed URL. Relative URLs are accepted, and they are relative to he implied resource of the hyperlink or form element.
 
   # The _div1_ name: This is the ID of an element on the current page that will be used to display the server results. It also accepts "null" as a name to indicate that the response should not be displayed.
 
   # The _loading_ name: This is the ID of an element on the current page that will be shown when a server request is being sent and will be hidden when the server response has arrived. Effectively this is an optional progress indicator.
 
 == The _get_ method ==
+
+==The _#_ URL ==

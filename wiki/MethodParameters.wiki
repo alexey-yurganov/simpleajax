@@ -8,42 +8,48 @@ To invoke !SimpleAjax, add a `rel` attribute to any hyperlink or form control:
    <a href="desc.php" *rel="get # div1 loading"*>View Description</a>
 
 === This syntax consists of: ===
-  * _"rel"_: When an element with a "rel" attribute is activated !SimpleAjax will take over and invoke the alternate AJAX behavior.
+  * *"rel"*: When an element with a "rel" attribute is activated !SimpleAjax will take over and invoke the alternate AJAX behavior.
 
-  * _[#The_Get_Method "get"]_: This must be a valid HTTP method (or variants of it) that will be used to retrieve the resource over the Internet. It can be "get", "post", or "get-nocache".
+  * *[#The_HTTP_Method "get"]*: This must be a valid HTTP method (or variants of it) that will be used to retrieve the resource over the Internet. It can be "get", "post", or "get-nocache".
 
-  * _[#The_#_URL "#"]_: This is a URL indicating the resource to download. Relative URLs are accepted and are relative to the implied resource at the hyperlink or form element.
+  * *[#The_#_URL "#"]*: This is a URL indicating the resource to download. Relative URLs are accepted and are relative to the implied resource at the hyperlink or form element.
 
-  * _[#The_div1_ID "div1"]_: This is the ID of an element (on the current page) that will be used to display the server results. It also accepts "null" as a name to indicate that the response should not be displayed.
+  * *[#The_div1_ID "div1"]*: This is the ID of an element (on the current page) that will be used to display the server results. It also accepts "null" as a name to indicate that the response should not be displayed.
 
-  * _[#The_loading_ID "loading"]_: This is the ID of an element that will be shown when a server request is being sent and will be hidden when the server response has arrived. Effectively this is an progress indicator.
+  * *[#The_loading_ID "loading"]*: This is the ID of an element that will be shown when a server request is being sent and will be hidden when the server response has arrived. Effectively this is an progress indicator.
 
-=== The Get Method ===
+=== The HTTP Method ===
 This is a valid [http://en.wikipedia.org/wiki/HTTP#Request_methods HTTP method] that will be used to retrieve the resource over the Internet. The following methods are supported:
 
-  * Get: Used to indicate that retrieving the resource will not cause side effects. !SimpleAjax will automatically cache the responses of all GET requests so that subsequent requests to the same URL will not require contacting the server.
+  * Get: Used to indicate that retrieving the resource will not cause side effects. The responses of all GET requests will be cached so that subsequent requests to that URL are fast.
 
-  * Get-noCache: Same as GET except the URL is not cached by !SimpleAjax and the URL is modified each time so that it cannot be cached by any intermediate Internet servers.
+  * Get-nocache: Same as GET except the URL is not cached by !SimpleAjax and the URL is modified each time so that it cannot be cached by any intermediate servers.
 
-  * Post: Submits data to the server with the expectation that side effects may occur such as updates to the server's data.
+  * Post: Submits data to the server with the expectation that side effects may occur such as updates to the servers data.
 
 The only supported HTTP methods are "get, get-nocache, post, put and delete" and are case-insensitive. Any other method will be ignored.
 
 === The # URL ===
-This is a URL to a resource on the Internet or on the current page. It can be a relative URL, in which it is relative to the implied URL of the element (and not to the current page). i.e., If the element is a hyperlink with another URL in the `href` attribute, the secondary URL will be relative to the `href` URL.
+This is a URL to a resource on the Internet. It can be a relative URL, in which it is relative to the implied URL of the element.
 
-Three specially supported URLs are "implied" URLs, "data" URLs and "fragment identifier" URLs. An _implied URL_ is just the URL implied by the element with no change. A _data URL_ specifies data that is inline in the URL (`<a href="data:hello world"></a>`). A _fragment identifier_ specifies data that is readily found on the current page.
+Three additionally supported URLs are:
+  * An _implied URL_ is just the URL implied by the element. The implied URL of a hyperlink is its `href` URL.
 
-This table illustrates the different scenarios:
+  * A _data URL_ specifies data that is [http://en.wikipedia.org/wiki/Data:_URI_scheme inline] in the URL (`<a href="data:hello%20world"></a>`).
+
+  * A _fragment identifier_ specifies data that is readily found on the current page.
+
+==== This table illustrates the different scenarios: ====
+
 || *Concept* || *Example HTML* || *Resulting data* ||
-|| Absolute URL || <a href="http://msn.com/en/about.html" rel="get http://msn.com/en/about.html div1"> || http_:_//msn.com/en/about.html ||
-|| Implied URL || <a href="http://msn.com/en/about.html" rel="get # div1"> || http_:_//msn.com/en/about.html ||
-|| Relative URL || <a href="http://msn.com/en/about.html" rel="get help.html div1"> || http_:_//msn.com/en/help.html ||
-|| Relative URL || <a href="http://msn.com/en/about.html" rel="get /more.html div1"> || http_:_//msn.com/more.html ||
-|| Relative URL || <a href="http://msn.com/en/about.html" rel="get ?id=3 div1"> || http_:_//msn.com/en/about.html?id=3 ||
-|| Relative URL || <a href="http://msn.com/en/about.html" rel="get help.html?id=3 div1"> || http_:_//msn.com/en/help.html?id=3 ||
-|| data URL || <a href="http://msn.com/enabout.html" rel="get data:hello%20world div1"> || hello world ||
-|| fragment identifier || <a href="http://msn.com/en/about.html" rel="get #test div1"></a><div id="test">hello world</div> || hello world ||
+|| Absolute URL || `<a href="http://msn.com/en/about.html" rel="get http://msn.com/en/about.html div1">` || http_:_//msn.com/en/about.html ||
+|| Implied URL || `<a href="http://msn.com/en/about.html" rel="get # div1">` || http_:_//msn.com/en/about.html ||
+|| Relative URL || `<a href="http://msn.com/en/about.html" rel="get help.html div1">` || http_:_//msn.com/en/help.html ||
+|| Relative URL || `<a href="http://msn.com/en/about.html" rel="get /more.html div1">` || http_:_//msn.com/more.html ||
+|| Relative URL || `<a href="http://msn.com/en/about.html" rel="get ?id=3 div1">` || http_:_//msn.com/en/about.html?id=3 ||
+|| Relative URL || `<a href="http://msn.com/en/about.html" rel="get help.html?id=3 div1">` || http_:_//msn.com/en/help.html?id=3 ||
+|| data URL || `<a href="http://msn.com/enabout.html" rel="get data:hello%20world div1">` || hello world ||
+|| fragment identifier || `<a href="http://msn.com/en/about.html" rel="get #test div1"></a><div id="test">hello world</div>` || hello world ||
 
 === The div1 ID ===
 

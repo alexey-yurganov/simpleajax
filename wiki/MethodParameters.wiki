@@ -14,9 +14,9 @@ This syntax consists of:
 
   * *[#The_#_URL "#"]*: This is a URL indicating the resource to download. Relative URLs are accepted and are relative to the implied resource at the hyperlink or form element.
 
-  * *[#The_div1_ID "div1"]*: This is the ID of an element (on the current page) that will be used to display the server results. It also accepts "null" as a name to indicate that the response should not be displayed.
+  * *[#The_Content_ID "div1"]*: This is the ID of an element (on the current page) that will be used to display the server results. It also accepts "null" as a name to indicate that the response should not be displayed.
 
-  * *[#The_loading_ID "loading"]*: This is the ID of an element that will be shown when a server request is being sent and will be hidden when the server response has arrived. Effectively this is an progress indicator.
+  * *[#The_Loading_ID "loading"]*: This is the ID of an element that will be shown when a server request is being sent and will be hidden when the server response has arrived. Effectively this is an progress indicator.
 
 === The HTTP Method ===
 This is a valid [http://en.wikipedia.org/wiki/HTTP#Request_methods HTTP method] that will be used to retrieve the resource over the Internet. The following methods are supported:
@@ -51,8 +51,8 @@ Three additionally supported URLs are:
 || data URL || `<a href="http://msn.com/enabout.html" rel="get data:hello%20world div1">` || hello world ||
 || fragment identifier || `<a href="http://msn.com/en/about.html" rel="get #test div1"></a><div id="test">hello world</div>` || hello world ||
 
-=== The div1 ID ===
-This is an element on the page that should be updated when the server responds. It can be any element, but must be marked with an ID.
+=== The Content ID ===
+This is an element on the page that will have its children updated when the server responds. It can be any element, but must be marked with an ID.
 
 e.g.,
 
@@ -77,4 +77,13 @@ Your transaction was: <span id="div1"></span>
 <select>
 }}}
 
-=== The loading ID ===
+=== The Loading ID ===
+This is an element that will be shown and then hidden to indicate to the user that their request is in progress. This parameter is optional.
+
+e.g.,
+{{{
+<div id="report">
+  <a href="report.php" rel="get-nocache # report loading">Show Report</a>
+  <img src="throbber.gif" id="loading" style="display:none">
+</div>
+}}}

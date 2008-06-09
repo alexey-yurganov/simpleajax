@@ -7,7 +7,7 @@ To invoke !SimpleAjax, add a `rel` attribute to any hyperlink or form control:
 
    <a href="desc.php" *rel="get # div1 loading"*>View Description</a>
 
-This invocation consists of:
+=== This syntax consists of: ===
   * _"rel"_: When an element with a "rel" attribute is activated !SimpleAjax will take over and invoke the alternate AJAX behavior.
 
   * _[#The_Get_Method "get"]_: This must be a valid HTTP method (or variants of it) that will be used to retrieve the resource over the Internet. It can be "get", "post", or "get-nocache".

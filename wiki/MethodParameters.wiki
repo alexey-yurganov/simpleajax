@@ -35,9 +35,9 @@ This is a URL to a resource on the Internet. It can be a relative URL, in which 
 Three additionally supported URLs are:
   * An _implied URL_ is just the URL implied by the element. The implied URL of a hyperlink is its `href` URL.
 
-  * A _data URL_ specifies data that is [http://en.wikipedia.org/wiki/Data:_URI_scheme inline] in the URL (`<a href="data:hello%20world"></a>`).
+  * A _data URL_ specifies data that is [http://en.wikipedia.org/wiki/Data:_URI_scheme inline] in the URL.
 
-  * A _fragment identifier_ specifies data that is readily found on the current page.
+  * A _fragment identifier_ identifies data that is readily found on the current page.
 
 ==== This table illustrates the different scenarios: ====
 
@@ -52,5 +52,29 @@ Three additionally supported URLs are:
 || fragment identifier || `<a href="http://msn.com/en/about.html" rel="get #test div1"></a><div id="test">hello world</div>` || hello world ||
 
 === The div1 ID ===
+This is an element on the page that should be updated when the server responds. It can be any element, but must be marked with an ID.
+
+e.g.,
+
+{{{
+Your transaction was: <span id="div1"></span>
+}}}
+{{{
+<table id="div1" border="0">
+  <tr>
+    <td>GOOG</td><td>567</td>
+    <td>IBM</td><td>124.94</td>
+    <td>MSFT</td><td>27.49</td>
+  </tr>
+</table>
+}}}
+{{{
+<select id="div1">
+  <option>Haiti</option>
+  <option>Honduras</option>
+  <option>Hong Kong</option>
+  <option>Hungary</option>
+<select>
+}}}
 
 === The loading ID ===

@@ -73,61 +73,42 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     * A single function, called by the native event dispatcher, that processes 
     * the event and re-delegates it to our event handlers.
     */
-    var onEvent = (function() {
+    var onEvent = function(/*Event*/e) {
+        e = e || window.event;
 
-        var hasAllAttributes = function(/*Element*/node, /*Object*/attrs) {
-            if(attrs) {
-                for(var n in attrs) {
-                    var val = node.getAttribute(n);
+        //make IE events more W3C-like
+        if(!e.preventDefault) {
+            e.preventDefault = function() {e.returnValue = false;};
+            e.stopPropagation = function() {e.cancelBubble = true;};
+            e.target = e.srcElement;
+            e.relatedTarget = (e.type == "mouseout") ? e.toElement : e.fromElement;
+        }
+
+        var tags = handlers[e.type] || handlers["on" + e.type];
+        var node = e.target;
+        var list, o;
+        do {
+            list = tags[toLowerCase(node.tagName)] || [];
+
+            for(var i = 0; i < list.length; i++) {
+                var attrs = list[i].attrs || {};
+
+                //ensure all required attributes exist on the node
+                for(var s in attrs) {
+                    var val = node.getAttribute(s);
                     if(!val ||
-                       (attrs[n] && attrs[n].test && !attrs[n].test(val)) ||
-                       (attrs[n] && attrs[n] != val)) {
-                        return 0;
+                       (attrs[s] && attrs[s].test && !attrs[s].test(val)) ||
+                       (attrs[s] && attrs[s] != val)) {
+                        continue;
                     }
                 }
-            }
-            return 1;
-        };
 
-        return function(/*Event*/e) {
-            e = e || window.event;
-
-            //make IE events more W3C-like
-            if(!e.preventDefault) {
-                e.preventDefault = function() {e.returnValue = false;};
-                e.stopPropagation = function() {e.cancelBubble = true;};
-                e.target = e.srcElement;
-                e.relatedTarget = (e.type == "mouseout") ? e.toElement : e.fromElement;
+                o = list[i];
+                if(o.func.call(o.ctx, e, o) == true) return;
             }
 
-            var tags = handlers[e.type] || handlers["on" + e.type];
-            var node = e.target;
-            var list, o;
-            do {
-
-                //first call the handlers registered against specific types of elements
-                list = tags[toLowerCase(node.tagName)] || [];
-                for(var i = 0; i < list.length; i++) {
-                    if(hasAllAttributes(node, list[i].attrs)) {
-                        o = list[i];
-                        if(o.func.call(o.ctx, e, o) == true) return;
-                    }
-                }
-
-                //then call the handlers registered against all types of elements
-                list = tags["*"];
-                if(list && e.type != "mouseover" && e.type != "mouseout") {
-                    for(var i = 0; i < list.length; i++) {
-                        if(hasAllAttributes(node, list[i].attrs)) {
-                            o = list[i];
-                            if(o.func.call(o.ctx, e, o) == true) return;
-                        }
-                    }
-                }
-
-            } while((node = node.parentNode));
-        };
-    })();
+        } while((node = node.parentNode));
+    };
 
     /*
     * Registers an event handler against a type of element.
@@ -288,10 +269,10 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
 
         return function(/*String*/orig, /*String*/extra) {
             var s = extra.charAt(0);
-            if(s == "\/") {
+            if(s == "\/") {  //absolute path URL
                 s = extra;
 
-            } else if(s == "?") {
+            } else if(s == "?") {  //query only URL
                 //combine all query parameters together
                 var params = join(split(extra, split(orig)));
                 s = orig.split("?")[0] + "?" + params;
@@ -314,11 +295,10 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         if(/input|button|textarea|select|form/.test(tag)) {
             var o = {};
     
-            if(n.name) {
-                if(tag == "button" ||
-                   (tag == "input" && /button|submit/i.test(n.type))) {
-                    o[n.name] = true;
-                }
+            if(n.name && (tag == "button" ||
+               (tag == "input" && /button|submit|image/i.test(n.type)))
+              ) {
+                o[n.name] = true;
             }
     
             var form = n.form || n;

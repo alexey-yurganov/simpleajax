@@ -33,7 +33,7 @@ The only supported HTTP methods are "get, get-nocache, post, put and delete" and
 This is a URL to a resource on the Internet. It can be a relative URL, in which it is relative to the implied URL of the element.
 
 Three additionally supported URLs are:
-  * An _implied URL_ is just the URL implied by the element. The implied URL of a hyperlink is its `href` URL.
+  * An _implied URL_ (#) is just the URL implied by the element. The implied URL of a hyperlink is its `href` URL.
 
   * A _data URL_ specifies data that is [http://en.wikipedia.org/wiki/Data:_URI_scheme inline] in the URL.
 

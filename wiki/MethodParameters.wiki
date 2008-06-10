@@ -47,6 +47,7 @@ Three additionally supported URLs are:
 || Relative URL || `<a href="http://msn.com/en/about.html" rel="get help.html div1">` || http_:_//msn.com/en/help.html ||
 || Relative URL || `<a href="http://msn.com/en/about.html" rel="get /more.html div1">` || http_:_//msn.com/more.html ||
 || Relative URL || `<a href="http://msn.com/en/about.html" rel="get ?id=3 div1">` || http_:_//msn.com/en/about.html?id=3 ||
+|| Relative URL || `<a href="http://msn.com/en/about.html?n=2" rel="get ?id=3 div1">` || http_:_//msn.com/en/about.html?n=2&id=3 ||
 || Relative URL || `<a href="http://msn.com/en/about.html" rel="get help.html?id=3 div1">` || http_:_//msn.com/en/help.html?id=3 ||
 || data URL || `<a href="http://msn.com/en/about.html" rel="get data:hello%20world div1">` || hello world ||
 || Fragment Identifier || `<a href="http://msn.com/en/about.html" rel="get #from div1"></a><div id="from">hello world</div>` || hello world ||

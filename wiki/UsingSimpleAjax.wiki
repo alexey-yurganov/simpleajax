@@ -1,5 +1,5 @@
 #summary This tutorial teaches you how to use SimpleAjax on your website in a quick and simple way.
-#labels Featured
+#labels Phase-Deploy
 
 =Using !SimpleAjax=
 

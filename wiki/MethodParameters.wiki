@@ -10,9 +10,9 @@ To invoke !SimpleAjax, add a `rel` attribute to any hyperlink or form control:
 This syntax consists of:
   * *"rel"*: When an element with a "rel" attribute is activated !SimpleAjax will take over and invoke the alternate AJAX behavior.
 
-  * *[#The_HTTP_Method "get"]*: This must be a valid HTTP method (or variants of it) that will be used to retrieve the resource over the Internet. It can be "get", "post", or "get-nocache".
+  * *[#The_HTTP_Method "get"]*: This must be a valid HTTP method (or variants of it) that will be used to retrieve the resource over the Internet. It can be "post", "get", or "get-nocache".
 
-  * *[#The_#_URL "#"]*: This is a URL indicating the resource to download. Relative URLs are accepted and are relative to the implied resource at the hyperlink or form element.
+  * *[#The_#_URL "#"]*: This is a URL indicating the resource to download. Relative URLs are accepted.
 
   * *[#The_Content_ID "div1"]*: This is the ID of an element (on the current page) that will be used to display the server results. It also accepts "null" as a name to indicate that the response should not be displayed.
 
@@ -30,7 +30,7 @@ This is a valid [http://en.wikipedia.org/wiki/HTTP#Request_methods HTTP method] 
 The only supported HTTP methods are "get, get-nocache, post, put and delete" and are case-insensitive. Any other method will be ignored.
 
 === The # URL ===
-This is a URL to a resource on the Internet. It can be a relative URL, in which it is relative to the implied URL of the element.
+This is a URL to a resource on the Internet. It can be a relative URL, in which it is relative to the implied URL.
 
 Three additionally supported URLs are:
   * An _implied URL_ (#) is just the URL implied by the element. The implied URL of a hyperlink is its `href` URL.
@@ -49,7 +49,7 @@ Three additionally supported URLs are:
 || Relative URL || `<a href="http://msn.com/en/about.html" rel="get ?id=3 div1">` || http_:_//msn.com/en/about.html?id=3 ||
 || Relative URL || `<a href="http://msn.com/en/about.html" rel="get help.html?id=3 div1">` || http_:_//msn.com/en/help.html?id=3 ||
 || data URL || `<a href="http://msn.com/en/about.html" rel="get data:hello%20world div1">` || hello world ||
-|| Fragment Identifier || `<a href="http://msn.com/en/about.html" rel="get #test div1"></a><div id="test">hello world</div>` || hello world ||
+|| Fragment Identifier || `<a href="http://msn.com/en/about.html" rel="get #from div1"></a><div id="from">hello world</div>` || hello world ||
 
 ==== The URL as an optional parameter ====
 The URL is an optional parameter, when it is implied and when no loading parameter is needed. The following two URLs are equivalent:

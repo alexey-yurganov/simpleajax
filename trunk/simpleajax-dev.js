@@ -90,7 +90,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         do {
             list = tags[toLowerCase(node.tagName)] || [];
 
-            for(var i = 0; i < list.length; i++) {
+            z:for(var i = 0; i < list.length; i++) {
                 var attrs = list[i].attrs || {};
 
                 //ensure all required attributes exist on the node
@@ -99,7 +99,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
                     if(!val ||
                        (attrs[s] && attrs[s].test && !attrs[s].test(val)) ||
                        (attrs[s] && attrs[s] != val)) {
-                        continue;
+                        continue z;
                     }
                 }
 

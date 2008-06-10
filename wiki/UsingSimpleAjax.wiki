@@ -26,8 +26,8 @@ e.g.,
 ===Parameters===
 The `rel` attribute value is a space delimited list of 4 [MethodParameters parameters]:
 || *Index* || *Parameter* || *Meaning* || *Example * ||
-|| 1st || Method || The HTTP method that will be used to send the data. || get, get-nocache, post ||
-||2nd`*` || URL || Where the data should be sent to. || checkid?usr=3&auto=yes ||
+|| 1st || Method || The HTTP method that will be used to send the data. || get, post ||
+||2nd`*` || URL || Where the data should be sent to. || checkid.php?usr=3&auto=yes ||
 ||3rd || Element ID for response || The ID of an element on the page that the server response should be put into. || header1 ||
 ||4th`*` || Element ID of progress bar || The ID of an element that is also a progress indicator. When a server request is sent, this progress indicator is shown. When the server provides a response, the progress indicator is hidden. || waiting1 ||
 

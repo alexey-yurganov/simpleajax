@@ -3,6 +3,6 @@
 = Features of !SimpleAjax =
 
 == Introduction ==
-!SimpleAjax is not a [http://code.google.com/webtoolkit/ framework] or a [http://developer.yahoo.com/yui/ library]. It doesn't help you write [http://www.prototypejs.org/ object-oriented code], or [http://jquery.com/ functional code], or make [http://script.aculo.us/ things fly] across the page. It doesn't try to simulate the desktop with [http://www.extjs.com widgets] and [http://dojotoolkit.org menus]. Instead it is designed to do one thing only, which is to send data to the server without reloading the page. This is what the core of AJAX is really about; enabling user-interaction without disrupting the user's work-flow. In other words, make pages interactive without leaving the page.
+!SimpleAjax is not a [http://code.google.com/webtoolkit/ framework] or a [http://developer.yahoo.com/yui/ library]. It doesn't help you write [http://www.prototypejs.org/ object-oriented code], or [http://jquery.com/ compact code], or make [http://script.aculo.us/ things fly] across the page. It doesn't try to simulate the desktop with [http://www.extjs.com widgets] and [http://dojotoolkit.org menus]. Instead it is designed to do one thing only, which is to send data to the server without reloading the page. This is what the core of AJAX is really about; enabling user-interaction without disrupting the user's work-flow. In other words, make pages interactive without leaving the page.
 
 == Simplicity ==

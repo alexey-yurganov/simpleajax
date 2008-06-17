@@ -2,14 +2,11 @@
 #labels Phase-Design
 = Features of !SimpleAjax =
 
-== Introduction ==
-!SimpleAjax is not a [http://code.google.com/webtoolkit/ framework] or a [http://developer.yahoo.com/yui/ library]. It doesn't help you write [http://www.prototypejs.org/ object-oriented code], or [http://jquery.com/ compact code], or make [http://script.aculo.us/ things fly] across the page. It doesn't try to simulate the desktop with [http://www.extjs.com dialogs] and [http://dojotoolkit.org widgets]. Instead it is designed to do one thing only, which is to send data to the server without reloading the page. This is what the core of AJAX is really about; enabling user-interaction without disrupting the user's work-flow. In other words, make pages interactive without leaving the page.
-
-While other libraries are expanding and pushing the boundaries, we take a step back saying, "do I really need all that?" !SimpleAjax goes back to the basics of sending data to the server and processing the response, and puts it all in a nice small tool that is easy to use and pick-up.
-
 == Simplicity ==
-At its core, !SimpleAjax remain simple by designing around its three principles:
+At its core, !SimpleAjax remains simple by designing around its three principles:
 
   # Don't require code if it's not necessary.
   # Small APIs are fast to learn.
   # Short syntaxes are fast to read and write.
+
+Because the goal of !SimpleAjax is so simple, it is able to achieve it without requiring an expressive language.

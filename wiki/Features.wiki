@@ -3,10 +3,10 @@
 = Features of !SimpleAjax =
 
 == Simplicity ==
-At its core, !SimpleAjax remains simple by designing around its three principles:
+!SimpleAjax remains simple by following three principles:
 
-  # Don't require code if it's not necessary.
-  # Small APIs are fast to learn.
-  # Short syntaxes are fast to read and write.
+*Don't require code if it's not necessary.* By designing !SimpleAjax to function without requiring every element to be registered, !SimpleAjax frees the developer from having to write any housekeeping code. And by 
 
-Because the goal of !SimpleAjax is so simple, it is able to achieve it without requiring an expressive language.
+*Small APIs are fast to learn.*
+
+*Short syntaxes are fast to read and write.*

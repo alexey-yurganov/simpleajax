@@ -234,7 +234,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
 
         } else if(/input|textarea|button|select|form/.test(tag)) {
             if(tag != "form") n = n.form;
-            return n.attributes["action"].value;
+            return n ? n.attributes["action"].value : n;
         }
     };
 
@@ -283,39 +283,47 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
                 orig = orig.substr(0,
                     orig.split("?")[0].lastIndexOf("\/") + 1 || orig.length
                 );
-                s = orig + extra.split("?")[0] + "?" + params;
+                s = orig + extra.split("?")[0] + (params ? "?" + params : "");
             }
             return s;
         };
     })();
 
+    /*
+    * Gets the form data for a given form element, or null.
+    */
     S.getForm = function(/*Node*/n) {
         var tag = toLowerCase(n.tagName);
 
-        if(/input|button|textarea|select|form/.test(tag)) {
+        if(/input|button|textarea|select|form/.test(tag) && (tag == "form" || n.form)) {
             var o = {};
-    
+
+            //set the activated control's name to true
             if(n.name && (tag == "button" ||
                (tag == "input" && /button|submit|image/i.test(n.type)))
               ) {
                 o[n.name] = true;
             }
-    
+
             var form = n.form || n;
-            for(var i = 0; i < form.elements.length; i++) {
-                var node = form.elements[i];
+            var elements = form.elements;
+
+            for(var i = 0; i < elements.length; i++) {
+
+                var control = elements[i];
                 var name = node.name;
-                if(node.disabled || !name) return;
-    
-                if(/select/i.test(node.tagName)) {
+
+                if(control.disabled || !name) return;
+
+                if(/select/i.test(control.tagName)) {
                     o[name] = [];
-                    for(var j = 0; j < node.options.length; j++) {
-                        var opt = node.options[j];
+                    for(var j = 0; j < control.options.length; j++) {
+                        var opt = control.options[j];
                         if(opt.selected) o[name].push(opt.value || opt.text);
                     }
-    
-                } else if(!/button|submit|reset|image/i.test(node.type)) {
-                    o[name] = node.value;
+
+                } else if(!/button|submit|reset|image/i.test(control.type)) {
+                    o[name] = control.value;
                 }
             }
             return o;
@@ -611,7 +619,13 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
                 func(v, ok, xhr);
             }
         };
-        xhr.send(data);
+
+        try {
+            xhr.send(data);
+        } catch(e) {
+            alert(e.message);
+            throw e;
+        }
     };
 
     S.getXHR = function() {

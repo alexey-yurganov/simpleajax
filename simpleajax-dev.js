@@ -364,7 +364,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
                 .replace(/^<html[^>]*>|<\/html>$/g, "")
 
                 //remove any scripts
-                .replace(/<[s]cript([^>]*)>(.*?)<\/[s]cript>/ig,
+                .replace(/<[s]cript([^>]*)>([\S\s]*?)<\/[s]cript>/ig,
                     function(str, attr, inline) {
 
                         //search for external scripts marked "defer"

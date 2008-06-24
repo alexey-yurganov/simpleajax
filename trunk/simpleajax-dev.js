@@ -160,7 +160,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         if(!/^(get|get-nocache|post|put|delet[e])$/.test(method)) return;
 
         var toNode = e.target;
-        var url = S.guessURL(toNode) || "";
+        var url = guessURL(toNode) || "";
         var formData = S.getForm(toNode);
         var busyNode;
 
@@ -189,6 +189,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         if(url) {
             e.preventDefault();
             S.doAction(e, method, url, formData, toNode, busyNode);
+            return true;
         }
     };
 
@@ -227,13 +228,13 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     * Guesses the implied URL from the given element. If it is an anchor, the 
     * href is returned. If is a form, the form action is returned.
     */
-    S.guessURL = function(/*Node*/n) {
+    var guessURL = function(/*Node*/n) {
         var tag = toLowerCase(n.tagName);
         if(tag == "a") {
             return n.href;
 
-        } else if(/input|textarea|button|select|form/.test(tag)) {
-            if(tag != "form") n = n.form;
+        } else if(/input|textarea|button|select/.test(tag)) {
+            n = n.form;
             return n ? n.attributes["action"].value : n;
         }
     };
@@ -644,6 +645,21 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         }
     };
 
+    //since the onchange event doesn't bubble in IE, we will mimic it here
+    //by intercepting onchange and manually firing oncellchange
+    if(document.body.setExpression) {
+        document.body.attachEvent("onfocusin", function() {
+            var node = event.srcElement;
+            var type = node.type;
+            if(type && !node.$onchange && (type == "text" || type == "select-one" || type == "select-multiple")) {
+                node.$onchange = 1;
+                var ac = arguments.callee;
+                ac.f = ac.f || new Function("event.srcElement.fireEvent('oncellchange',event);");
+                node.attachEvent("onchange", ac.f);
+            }
+        });
+    }
+
     //Here are the actual elements that we respond to:
     S.register("onclick", "a", {href:null});
     S.register("onclick", "input", {type:"submit"});
@@ -653,7 +669,9 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     S.register("onchange", "input", {type:"text"});
     S.register("onchange", "select");
     S.register("onchange", "textarea");
-    S.register("onsubmit", "form");
+    S.register("oncellchange", "input", {type:"text"});
+    S.register("oncellchange", "select");
+    S.register("oncellchange", "textarea");
 
     return S;
 })({});

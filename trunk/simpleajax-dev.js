@@ -50,7 +50,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     */
     var byId = function(/*String|Node*/s) {
         var d = document;
-        return !s ? s : s.nodeType ? s : d.getElementById ? d.getElementById(s) : d.all(s);
+        return !s ? s : s.nodeType ? s : d.getElementById(s);
     };
 
     /*
@@ -646,19 +646,25 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     };
 
     //since the onchange event doesn't bubble in IE, we will mimic it here
-    //by intercepting onchange and manually firing oncellchange
-    if(document.body.setExpression) {
-        document.body.attachEvent("onfocusin", function() {
-            var node = event.srcElement;
-            var type = node.type;
-            if(type && !node.$onchange && (type == "text" || type == "select-one" || type == "select-multiple")) {
-                node.$onchange = 1;
-                var ac = arguments.callee;
-                ac.f = ac.f || new Function("event.srcElement.fireEvent('oncellchange',event);");
-                node.attachEvent("onchange", ac.f);
-            }
-        });
-    }
+    //by intercepting onchange and manually firing oncellchange, which does
+    //bubble.
+    (function() {
+        var onchange = new Function("event.srcElement.fireEvent('oncellchange',event);");
+        var body = document.documentElement || {};
+        var mark = "simpleajax";
+
+        if("onfocusin" in body) {
+            body.attachEvent("onfocusin", function() {
+                var node = event.srcElement;
+                var type = node.type;
+                if(type && "value" in node && !node[mark] &&
+                   (type == "text" || type == "select-one" || type == "select-multiple")) {
+                    node[mark] = {};
+                    node.attachEvent("onchange", onchange);
+                }
+            });
+        }
+    })();
 
     //Here are the actual elements that we respond to:
     S.register("onclick", "a", {href:null});

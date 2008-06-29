@@ -504,7 +504,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         //animation should begin from.
         var computed = opacity(S.css(node)) || 1;
 
-        var lock = "_animLock";
+        var lock = "noanim";
 
         if(node[lock]) {  //don't allow concurrent animations on a node
             callback();
@@ -645,15 +645,14 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         }
     };
 
-    //since the onchange event doesn't bubble in IE, we will mimic it here
-    //by intercepting onchange and manually firing oncellchange, which does
-    //bubble.
     (function() {
-        var onchange = new Function("event.srcElement.fireEvent('oncellchange',event);");
+        //since the onchange event doesn't bubble in IE, we will mimic it here
+        //by intercepting onchange and manually firing oncellchange, which does
+        //bubble.
         var body = document.documentElement || {};
-        var mark = "simpleajax";
-
-        if("onfocusin" in body) {
+        if("onfocusin" in body) {  //if IE
+            var onchange = new Function("event.srcElement.fireEvent('oncellchange',event);");
+            var mark = "simpleajax";
             body.attachEvent("onfocusin", function() {
                 var node = event.srcElement;
                 var type = node.type;
@@ -664,20 +663,35 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
                 }
             });
         }
-    })();
+        body = 0;
 
-    //Here are the actual elements that we respond to:
-    S.register("onclick", "a", {href:null});
-    S.register("onclick", "input", {type:"submit"});
-    S.register("onclick", "input", {type:"button"});
-    S.register("onclick", "button", {type:"submit"});
-    S.register("onclick", "button", {type:"button"});
-    S.register("onchange", "input", {type:"text"});
-    S.register("onchange", "select");
-    S.register("onchange", "textarea");
-    S.register("oncellchange", "input", {type:"text"});
-    S.register("oncellchange", "select");
-    S.register("oncellchange", "textarea");
+        //Here are the actual elements that we respond to:
+        var events = {
+            onclick: [
+                ["a", {href:null}],
+                ["input", {type:"submit"}],
+                ["input", {type:"button"}],
+                ["button", {type:"submit"}],
+                ["button", {type:"button"}]
+            ],
+            onchange: [
+                ["input", {type:"text"}],
+                ["select"],
+                ["textarea"]
+            ],
+            oncellchange: [
+                ["input", {type:"text"}],
+                ["select"],
+                ["textarea"]
+            ]
+        };
+
+        for(var i in events) {
+            for(var j = 0; j < events[i].length; j++) {
+                S.register(i, events[i][j][0], events[i][j][1]);
+            }
+        }
+    })();
 
     return S;
 })({});

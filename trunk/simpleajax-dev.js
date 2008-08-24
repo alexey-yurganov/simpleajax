@@ -49,8 +49,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     * Shortcut for getElementById.
     */
     var byId = function(/*String|Node*/s) {
-        var d = document;
-        return !s ? s : s.nodeType ? s : d.getElementById(s);
+        return !s ? s : s.nodeType ? s : document.getElementById(s);
     };
 
     /*
@@ -79,13 +78,15 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         //make IE events more W3C-like
         if(!e.preventDefault) {
             e.preventDefault = function() {e.returnValue = false;};
-            e.stopPropagation = function() {e.cancelBubble = true;};
             e.target = e.srcElement;
-            e.relatedTarget = (e.type == "mouseout") ? e.toElement : e.fromElement;
         }
 
         var tags = handlers[e.type] || handlers["on" + e.type];
         var node = e.target;
+
+        if(node.disabled || 
+            ((node.options||[])[(node.selectedIndex+1||1)-1]||{}).disabled) return;
+
         var list, o;
         do {
             list = tags[toLowerCase(node.tagName)] || [];
@@ -127,9 +128,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
             }
         }
 
-        if(!handlers[event][tag]) {
-            handlers[event][tag] = [];
-        }
+        if(!handlers[event][tag]) handlers[event][tag] = [];
 
         //if no event handler is supplied, we'll use our default one
         if(!func) {
@@ -152,14 +151,14 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     */
     S.handleEvent = function(/*Event*/e) {
         //we store our parameters in the "rel" attribute
-        var p = (e.target.getAttribute("rel") || "").split(/\s+/);
+        var toNode = e.target;
+        var p = (toNode.getAttribute("rel") || "").split(/\s+/);
 
         var method = toLowerCase(p[0]);
 
         //check first param is an HTTP method
         if(!/^(get|get-nocache|post|put|delet[e])$/.test(method)) return;
 
-        var toNode = e.target;
         var url = guessURL(toNode) || "";
         var formData = S.getForm(toNode);
         var busyNode;
@@ -188,6 +187,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
 
         if(url) {
             e.preventDefault();
+            S.flipCSS(e.target);
             S.doAction(e, method, url, formData, toNode, busyNode);
             return true;
         }
@@ -222,6 +222,21 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         });
 
         if(showBusy) S.setBusy(1, busyNode);
+    };
+
+    /*
+    * Checks a node for the existence of class "flip-1" or "flip-1-3" and changes
+    * it into "flip-0" or "flip-2-3" respectively. This allows the developer
+    * to style a node differently immediately after it has been clicked.
+    */
+    S.flipCSS = function(/*Node|String*/node) {
+        node = byId(node);
+        var reg = /^([\S\s]*\s)?(flip-)(\d+)(-\d+)?(\s[\S\s]*)?$/,
+            s = reg.exec(node ? node.className : "");
+        if(s) {
+            s[3] = s[4] ? (s[3]/1 + 1) % s[4]/1 : s[3] == "0" ? 1 : 0;
+            node.className = s.slice(1).join("");
+        }
     };
 
     /*
@@ -320,7 +335,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
                     o[name] = [];
                     for(var j = 0; j < control.options.length; j++) {
                         var opt = control.options[j];
-                        if(opt.selected) o[name].push(opt.value || opt.text);
+                        if(opt.selected && !opt.disabled) o[name].push(opt.value || opt.text);
                     }
 
                 } else if(!/button|submit|reset|image/i.test(control.type)) {
@@ -384,8 +399,10 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
             //moves nodes from "n" to "c".
             var moveChildren = function(/*Node*/n, /*Node*/c) {
                 var fc;
-                while((fc = n.firstChild)) {
-                    c ? c.appendChild(fc) : n.removeChild(fc);
+                if(c) {
+                    while((fc = n.firstChild)) c.appendChild(fc);
+                } else {
+                    while((fc = n.firstChild)) n.removeChild(fc);
                 }
             };
 
@@ -394,7 +411,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
 
             } else if(tag == "select") {
                 moveChildren(node);
-                moveChildren(make("<select>" + value + "<\/select>"), node);
+                moveChildren(make("<select multiple>" + value + "<\/select>"), node);
 
             } else if(tag == "table") {
                 moveChildren(node);
@@ -575,7 +592,10 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
         //convert hash object to URL string
         if(typeof data != "string" && !(data instanceof String)) {
             var s = [];
-            for(var i in data) s.push(escape(i) + "=" + escape(data[i]));
+            for(var i in data) s.push(
+                escape(i) + "=" + 
+                escape(data[i].join && data[i].slice ? data[i].join("&" + escape(i) + "=") : data[i])
+            );
             data = s.join("&");
         }
 
@@ -601,9 +621,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
 
         xhr.open(method == "get-nocache" ? "GET" : method.toUpperCase(), url, true);
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-        if(method == "post") {
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        }
+        if(method == "post") xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
         xhr.onreadystatechange = function() {
             if(xhr.readyState == 4) {

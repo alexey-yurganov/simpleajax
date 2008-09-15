@@ -1,0 +1,78 @@
+<html>
+<script src="../../trunk/simpleajax-dev.js"></script>
+<style>
+body {font:normal 1em Helvetica}
+h2, h3 {border:1px dashed #bbb; padding:3px 0.5em}
+h3 {font-size:0.8em; font-weight:normal}
+a:link, a:visited {color:#00d}
+a:hover {color:#66f}
+td.section {text-align:center; vertical-align:top; padding:0 0 20px 0; border:1px solid #bbb}
+td h3 {margin:1px 1px 20px 1px; padding:3px; background:#eee; color:#777; border:0}
+.flip-0-3 {background:red}
+.flip-1-3 {background:yellow}
+.flip-2-3 {background:green}
+</style>
+
+<div class="section simple">
+    <h2>Elementary Examples:</h2>
+
+    <table cellspacing="10" style="border:0px; width:100%">
+        <tr>
+            <td class="section" style="width:50%">
+                <h3><a name="one_button_example"></a>Simple button example</h3>
+                <input type="button" rel="get one_button.txt one_button" value="Ping">
+                <span id="one_button" style="margin-left:1em"><i style="color:#999">&lt;Click ping&gt;</i></span>
+            </td>
+
+            <td class="section" style="width:50%">
+                <h3><a name="prog_help_example"></a>Progressive help example</h3>
+                <div id="prog_help"><a href="#" rel="get prog_help.txt prog_help">What is knowledge?</a></div>
+            </td>
+        </tr>
+
+        <tr>
+            <td class="section" style="width:50%">
+                <h3><a name="captcha_example"></a>CAPTCHA example:</h3>
+                <div id="captcha">
+                    <img src="captcha.gif" width=113 height=46>
+                    <br><small>Enter the text you see above:</small>
+                    <br><input type="text" rel="get captcha.txt captcha">
+                </div>
+            </td>
+
+            <td class="section" style="width:50%">
+                <h3><a name="multi_selects_example"></a>Multi-selects example</h3>
+                <table cellspacing="5" cellpadding="0" border="0" align="center">
+                    <tr><th>Mode</th><th>From</th><th>To</th></tr>
+                    <tr>
+                        <td>
+                        <select rel="get m_selects.txt m_selects1" size="5" style="width:9em">
+                            <option>Plane<option>Train<option>Boat
+                            <option>Truck<option>Car<option>Taxi
+                        </select>
+                        </td>
+
+                        <td>
+                        <select id="m_selects1" rel="get m_selects.txt m_selects2" multiple size="5" style="width:9em">
+                            <option disabled>(select mode)
+                        </select>
+                        </td>
+
+                        <td>
+                        <select id="m_selects2" multiple size="5" style="width:9em">
+                            <option disabled>(select from)
+                        </select>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+
+</div>
+
+<hr>
+More later
+
+</html>

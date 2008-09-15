@@ -1,0 +1,5 @@
+<div style="border:1px solid #aca; background:#beb; color:#575; font:italic 0.9em serif; line-height:1.4em; padding:3px; margin:10px">
+&ldquo;Knowledge is invariably a matter of degree: you cannot put your finger upon 
+even the simplest datum and say this we know. 
+<span id="prog_help2"><a href="#" rel="get prog_help2.txt prog_help2">More...</a></span>&rdquo;
+</div>

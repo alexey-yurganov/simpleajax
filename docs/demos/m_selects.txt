@@ -1,0 +1,9 @@
+<option selected>Addis Ababa</option> <option>Ankara</option> <option>Astana</option> <option>Athens</option>
+<option>Beijing</option> <option>Beirut</option> <option>Belgrade</option> <option>Berlin</option>
+<option>Brussels</option> <option>Cairo</option> <option>Canberra</option> <option>Cape Town</option>
+<option>Copenhagen</option> <option>Damascus</option> <option>Dublin</option> <option>Hanoi</option>
+<option>Hong Kong</option> <option>Jerusalem</option> <option>Kabul</option> <option>Lisbon</option>
+<option>London</option> <option>Lusaka</option> <option>Madrid</option> <option>Moscow</option>
+<option>Nairobi</option> <option selected>New Delhi</option> <option>Ottawa</option> <option>Prague</option>
+<option>Quito</option> <option>Santo Domingo</option> <option>Singapore</option>
+<option>Tokyo</option> <option selected>Vienna</option> <option>Washington DC</option>

@@ -1,0 +1,2 @@
+<small><em style="color:#666">CAPTCHA Verification Passed</em></small>
+<input type="hidden" name="captcha" value="abcdef">

@@ -5,8 +5,15 @@
 == Simplicity ==
 !SimpleAjax remains simple by following three principles:
 
-*Don't require code if it's not necessary.* There are two major sins inherited from the history of !JavaScript: initializing a widget by passing it a node ID, and requiring the user to manually load/unload the widget. Often times writing such code is not necessary in the first place as the application is already in an environment where it could gather that information for itself. !SimpleAjax understands this principle and is designed to avoid needing to be loaded/unloaded in the first place, and where it does need to, it handles everything by itself.
+*Don't require code if it's not necessary.* In the world today there are two major sins inherited from the history of !JavaScript: initializing an object by passing it a node ID, and requiring the user to manually load/unload an object. Often times such actions are not even necessary in the first place as the object is already in an environment where it could gather the information for itself and perform its own housekeeping tasks. !SimpleAjax understands this principle and from the start it has been designed to avoid the need for loading/unloading, and where it does need to, it handles everything by itself. This means the developer has less code to write, debug and maintain.
 
 *Small APIs are fast to learn.* One requirement of !SimpleAjax is to be easy to learn and something you could start using in minutes. To meet that requirement, much focus was placed in making the core features work in as few steps as possible and requiring those steps to be easy to pick up and remember. That is why !SimpleAjax only has 1 function call and 4 parameters. We hope that after the first time, it becomes second nature from then on.
 
 *Short syntaxes are fast to read and write.* Taking a page out of jQuery, we realized that short and concise method names coupled with uniform conventions produced code that was quick to read, yet understandable enough to not cause confusion. Also, if a block of code could all be read in 1 sitting, then the user is more likely to be able to grasp it all in their head, than a block of code that causes the user to forget what happened at the start, by the time they reach the bottom.
+
+== Speed ==
+!SimpleAjax gains speed by understanding bottlenecks:
+
+*Startup and First Availability.* The worst tool becomes available only after the "onload" event has fired (which fires after all the page's images have downloaded), the second worst tool becomes available after the "DOMContentLoaded" event has fired (which fires after the page has downloaded), the best tool becomes available as soon as the tool is loaded.
+
+*Initialization Cost.* During initialization, some tools need to make a list of all the nodes on the page that match a certain criteria.

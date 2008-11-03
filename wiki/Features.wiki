@@ -12,8 +12,8 @@
 *Short syntaxes are fast to read and write.* Taking a page out of jQuery, we realized that short and concise method names coupled with uniform conventions produced code that was quick to read, yet understandable enough to not cause confusion. Also, if a block of code could all be read in 1 sitting, then the user is more likely to be able to grasp it all in their head, than a block of code that causes the user to forget what happened at the start, by the time they reach the bottom.
 
 == Speed ==
-!SimpleAjax gains speed by understanding bottlenecks:
+!SimpleAjax improves speed by working around bottlenecks:
 
-*Startup and First Availability.* The worst tool becomes available only after the "onload" event has fired (which fires after all the page's images have downloaded), the second worst tool becomes available after the "DOMContentLoaded" event has fired (which fires after the page has downloaded), the best tool becomes available as soon as the tool is loaded.
+*Startup and First Availability.* Some tools only become available after the "DOMContentLoaded" event has fired. But on slow networks, a page can be in a state of being partially visible and interactive, yet not fully loaded which means the tool is not available yet. !SimpleAjax improves on that by being available as soon as the tool is downloaded, which allows users to interact with it earlier.
 
-*Initialization Cost.* During initialization, some tools need to make a list of all the nodes on the page that match a certain criteria.
+*Initialization Cost.* During initialization, some tools need to make a list of all the nodes on the page that match a certain criteria and then act on them in some way. This operation is particularly costly. !SimpleAjax avoids this by doing lazy initialization.

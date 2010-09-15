@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html manifest="todoist.manifest">
+<head><title>Todoist</title>
+<link rel="apple-touch-icon" href="http://static.todoist.com/96444e78b51b8496f2817e2b59ef915d.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="viewport" content="width=800,initial-scale=1.0">
+<script>
+function $(s) {
+  return document.getElementById(s);
+}
+
+var todoist = {
+  data: {},
+  countdown: 0,
+
+  ajax: function(m, p) {
+    var s = document.createElement("script");
+    s.src = (m == "login" ? "https:/" : "http:/") 
+      + "/todoist.com/API/" 
+      + m 
+      + "?&callback=todoist.cb" + m 
+      + (this.token ? "&token=" + this.token : "") 
+      + (p || "")
+      + "&.rand=" + Math.random();
+    document.getElementsByTagName("head")[0].appendChild(s);
+  },
+
+  cookie: function(n, v, remove) {
+    if(remove) {
+      document.cookie = encodeURIComponent(n) + "=; expires=Mon, 1 Jan 1980 01:01:01 GMT";
+    } else if(v) {
+      document.cookie = encodeURIComponent(n) + "=" + 
+        encodeURIComponent(v) + "; expires=" + 
+        new Date(new Date().getTime() + 30*24*60*60*1000).toGMTString();
+    } else {
+      var s = " " + document.cookie + ";";
+      var i = s.indexOf(" " + n + "=");
+      if(i >= 0) return s.substr(s.indexOf("=", i) + 1, s.indexOf(";",i + 1));
+    }
+  },
+
+  onload: function() {
+    var dis = this;
+    this.transaction(function(t) {
+      t.executeSql(
+        "SELECT * FROM projs", [],
+        function(t, r) {
+          r = r.rows;
+          for(var i=0; i<r.length; i++) dis.data[r.item(i).id] = {name: r.item(i).name};
+        },
+        function() {
+          dis.goOnline();
+        }
+      );
+      t.executeSql(
+        "SELECT * FROM tasks", [],
+        function(t, r) {
+          r = r.rows;
+
+          if(r.length == 0) {
+            dis.goOnline();
+            return;
+          }
+
+          for(var i=0; i<r.length; i++) {
+            var proj = dis.data[r.item(i).project_id];
+            if(!proj.data) proj.data = [];
+
+            var tmp = r.item(i).due_date;
+
+            proj.data.push({
+              project_id: r.item(i).project_id,
+              content: r.item(i).content,
+              due_date: tmp ? new Date(tmp.substr(0,4), tmp.substring(5,7), tmp.substr(9)) : null,
+              priority: r.item(i).priority
+            });
+          }
+
+          dis.projCount = 0;
+          for(var i in dis.data) {
+            if(dis.data[i].data) dis.projCount++;
+          }
+          dis.updateView();
+
+        },
+        function() {
+          dis.goOnline();
+        }
+      );
+    }, $, $);
+  },
+
+  goOnline: function() {
+    if(this.token) {
+      this.ajax("getProjects");
+    } else if(!this.cookie("tduser") || !this.cookie("tdpass")) {
+      $("loginbox").style.display = "block";
+      $("loginnow").value = "Login";
+      $("loginnow").disabled = false;
+    } else {
+      this.login();
+    }
+  },
+
+  login: function() {
+      $("loginnow").value = "Loading...";
+      $("loginnow").disabled = true;
+      var u = this.cookie("tduser") || $("user").value;
+      var p = this.cookie("tdpass") || $("pass").value;
+      this.ajax("login", "&email="+u+"&password="+p);
+  },
+
+  cblogin: function(r) {
+    $("loginnow").value = "Login";
+    $("loginnow").disabled = false;
+    if(typeof r == "string") {
+      $("loginbox").style.display = "";
+      alert("Error: "+r);
+    } else {
+      $("loginbox").style.display = "none";
+      if($("user").value && $("savelogin").checked) this.cookie("tduser", $("user").value);
+      if($("pass").value && $("savelogin").checked) this.cookie("tdpass", $("pass").value);
+      this.token = r.api_token;
+      this.ajax("getProjects");
+    }
+  },
+
+  cbgetProjects: function(r) {
+    this.projCount = 0;
+
+    for(var i=0; i<r.length; i++) {
+      this.data[r[i].id] = {name: r[i].name};
+      this.countdown++;
+      this.ajax("getUncompletedItems", "&js_date=1&project_id=" + r[i].id);
+    }
+
+    var d = this.data;
+    this.transaction(function(t) {
+      t.executeSql("DELETE FROM projs", [], $, $);
+      t.executeSql("DELETE FROM tasks", [], $, $);
+      for(var i in d) {
+        t.executeSql("INSERT INTO projs (id, name) VALUES (?, ?)", [i, d[i].name], $, $);
+      }
+    }, $, $);
+  },
+
+  cbgetUncompletedItems: function(r) {
+    this.countdown--;
+
+    if(r && r.length) {
+      this.data[r[0].project_id].data = r;
+      this.projCount++;
+    }
+    if(this.countdown == 0) this.updateView();
+
+    if(r && r.length) {
+      var d = this.data[r[0].project_id].data;
+
+      this.transaction(function(t) {
+        var tmp, pad = function(i) {return i < 10 ? "0" + i : i};
+
+        for(var i=0; i<d.length; i++) {
+
+          tmp = d[i].due_date;
+          if(tmp) tmp = tmp.getUTCFullYear() + "-" + pad(tmp.getUTCMonth() + 1) + "-" + pad(tmp.getUTCDate());
+
+          t.executeSql(
+            "INSERT INTO tasks (project_id, content, due_date, priority) VALUES (?, ?, ?, ?)", 
+            [d[i].project_id, d[i].content, tmp, d[i].priority], $, $
+          );
+        }
+      }, $, $);
+    }
+  },
+
+  updateView: function() {
+    var html = [];
+    var width = Math.floor(97/this.projCount);
+
+    for(var i in this.data) {
+      var proj = this.data[i];
+      if(!proj.data) continue;
+
+      html.push("<div class='proj' style='width:"+width+"%'><h2><a href='javascript:todoist.addItem("+i+");'>"+proj.name+"</a></h2><ul>");
+      for(var j=0; j<proj.data.length; j++) {
+        var item = proj.data[j];
+        html.push("<li class=imp"+item.priority+">"+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
+      }
+      html.push("</ul></div>");
+    }
+    $("main").innerHTML = html.join("");
+    document.body.className = "flash";
+    setTimeout(function() {document.body.className = "";}, 100);
+  },
+
+  addItem: function(id) {
+    var s = prompt("What to add to '"+this.data[id].name+"'?");
+    if(s) this.ajax("addItem", "&project_id="+id+"&content="+encodeURIComponent(s));
+  },
+
+  cbaddItem: function(r) {
+    this.countdown++;
+    this.ajax("getUncompletedItems", "&js_date=1&project_id=" + r.project_id);
+  },
+
+  transaction: function(a, b, c) {
+    if(!this.dbms) {
+      this.dbms = [[a, b, c]];
+      var _dbms, dis = this;
+      try {
+        _dbms = window.openDatabase("todoist-dashboard", "1.0", "Tasks", 5*1024*1024);
+        _dbms.transaction(
+          function(t) {
+            t.executeSql("CREATE TABLE tasks (project_id INTEGER, content TEXT, due_date DATE, priority TINYINT)", [], $, $);
+            t.executeSql("CREATE TABLE projs (id INTEGER, name TEXT)", [], $, $);
+          }, 
+          $,
+          function() {  //ok
+            for(var i=0; i<dis.dbms.length; i++) _dbms.transaction.apply(_dbms, dis.dbms[i]);
+            dis.dbms = _dbms;
+          }
+        );
+      } catch(e) {
+        this.transaction = new Function("");
+        for(var i=0; i<this.dbms.length; i++) this.dbms[i][2]();
+      }
+    } else if(this.dbms.transaction) {
+      this.dbms.transaction(a, b, c);
+    } else {
+      this.dbms.push([a, b, c]);
+    }
+  }
+}
+</script>
+<style>
+body {font:9pt Arial; margin:0; padding:0; background:#000; color:#fff; -webkit-text-size-adjust:none}
+body.flash {background:#333}
+.proj {float:left; padding:5px; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
+.proj h2 {margin:0 0 0.2em 0; padding:0}
+a {font:9pt Arial; color:#fff}
+.proj h2 a {font:bold 11pt Arial; text-decoration:none}
+.due {color:#aaa; font:8pt Arial; margin-left:4%}
+ul,li {padding:0; margin:0; list-style:none; vertical-align:middle}
+li {padding:0 0 0.15em 1em; text-indent:-1em}
+li.impo1 {color:#faa}
+</style>
+</head>
+<body style="overflow:auto">
+<form id="loginbox" style="margin:5px;padding:0;display:none">
+User:<br><input id="user">
+<br>Pass:<br><input id="pass" type="password">
+<br><input type="button" id="loginnow" value="Login" onclick="todoist.login();">
+<br><input type=checkbox id="savelogin">Save login as cookie / 
+<a href="javascript:todoist.cookie('tduser',0,1);todoist.cookie('tdpass',0,1);">[clear cookies]</a>
+</form>
+<div style="float:left; width:1%"><a href="#" onclick="todoist.goOnline();" style="padding:3px">R</a></div>
+<div id="main"></div>
+<script>todoist.onload();</script>
+</body>
+</html>

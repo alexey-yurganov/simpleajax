@@ -72,7 +72,7 @@ var todoist = {
             proj.data.push({
               project_id: r.item(i).project_id,
               content: r.item(i).content,
-              due_date: tmp ? new Date(tmp.substr(0,4), 1*tmp.substring(5,7)-1, tmp.substr(9)) : null,
+              due_date: tmp ? new Date(tmp.substr(0,4), 1*tmp.substring(5,7)-1, tmp.substr(8)) : null,
               priority: r.item(i).priority
             });
           }

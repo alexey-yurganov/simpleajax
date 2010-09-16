@@ -121,8 +121,15 @@ var todoist = {
       $("loginbox").style.display = "none";
       if($("user").value && $("savelogin").checked) this.cookie("tduser", $("user").value);
       if($("pass").value && $("savelogin").checked) this.cookie("tdpass", $("pass").value);
+
       this.token = r.api_token;
-      this.ajax("getProjects");
+
+      if(this.addItemPrompt) {
+        this.ajax("addItem", "&project_id="+this.addItemPrompt.id+"&content="+encodeURIComponent(this.addItemPrompt.content));
+        this.addItemPrompt = null;
+      } else {
+        this.ajax("getProjects");
+      }
     }
   },
 
@@ -151,7 +158,12 @@ var todoist = {
     if(r && r.length) {
       this.data[r[0].project_id].data = r;
       this.projCount++;
+
+      this.transaction(function(t) {  //used by addItem
+        t.executeSql("DELETE FROM tasks WHERE project_id = ?", [r[0].project_id], $, $);
+      }, $, $);
     }
+
     if(this.countdown == 0) this.updateView();
 
     if(r && r.length) {
@@ -195,8 +207,15 @@ var todoist = {
   },
 
   addItem: function(id) {
-    var s = prompt("What to add to '"+this.data[id].name+"'?");
-    if(s) this.ajax("addItem", "&project_id="+id+"&content="+encodeURIComponent(s));
+    var s = prompt("What to add to '"+this.data[id].name+"'?", "");
+    if(s) {
+      if(this.token) {
+        this.ajax("addItem", "&project_id="+id+"&content="+encodeURIComponent(s));
+      } else {
+        this.addItemPrompt = {id:id, content:s};
+        this.goOnline();
+      }
+    }
   },
 
   cbaddItem: function(r) {
@@ -236,14 +255,15 @@ var todoist = {
 <style>
 body {font:9pt Arial; margin:0; padding:0; background:#000; color:#fff; -webkit-text-size-adjust:none}
 body.flash {background:#333}
-.proj {float:left; padding:5px; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
-.proj h2 {margin:0 0 0.2em 0; padding:0}
+.proj {float:left; min-width:160px; padding:3px; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
+.proj h2 {margin:0 0 0.3em 0; padding:0}
 a {font:9pt Arial; color:#fff}
 .proj h2 a {font:bold 11pt Arial; text-decoration:none}
 .due {color:#aaa; font:8pt Arial; margin-left:4%}
 ul,li {padding:0; margin:0; list-style:none; vertical-align:middle}
-li {padding:0 0 0.15em 1em; text-indent:-1em}
+li {padding:0 0 0.15em 0.8em; text-indent:-0.8em}
 li.impo1 {color:#faa}
+@media screen and (max-device-width: 480px) {body {width:1000px}}
 </style>
 </head>
 <body style="overflow:auto">

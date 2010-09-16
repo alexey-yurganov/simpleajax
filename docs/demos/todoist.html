@@ -200,7 +200,7 @@ var todoist = {
       html.push("<div class='proj' style='width:"+width+"%'><h2><a href='javascript:todoist.addItem("+i+");'>"+proj.name+"</a></h2><ul>");
       for(var j=0; j<proj.data.length; j++) {
         var item = proj.data[j];
-        html.push("<li class=imp"+item.priority+">"+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
+        html.push("<li class='imp"+item.priority+(j%2?" alt":"")+"'>"+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
       }
       html.push("</ul></div>");
     }
@@ -257,15 +257,16 @@ var todoist = {
 }
 </script>
 <style>
-body {font:9pt Arial; margin:0; padding:0; background:#000; color:#fff; -webkit-text-size-adjust:none}
+body {font:9pt Helvetica,Arial; margin:0; padding:0; background:#000; color:#fff; -webkit-text-size-adjust:none}
 body.flash {background:#333}
 .proj {float:left; min-width:160px; padding:3px; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0 0 0.3em 0; padding:0}
-a {font:9pt Arial; color:#fff}
-.proj h2 a {font:bold 11pt Arial; text-decoration:none}
-.due {color:#aaa; font:8pt Arial; margin-left:4%}
-ul,li {padding:0; margin:0; list-style:none; vertical-align:middle}
-li {padding:0 0 0.15em 0.8em; text-indent:-0.8em}
+a {font-size:9pt; color:#fff}
+.proj h2 a {font:bold 11pt Helvetica,Arial; text-decoration:none}
+.due {color:#aaa; font-size:8pt; margin-left:4%}
+ul,li {padding:0 0 1em 0; margin:0; list-style:none; vertical-align:middle}
+li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc}
+li.alt {color:#fff}
 li.imp4 {color:#faa}
 @media screen and (max-device-width: 480px) {body {width:1000px}}
 </style>

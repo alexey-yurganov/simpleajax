@@ -48,21 +48,15 @@ var todoist = {
         "SELECT * FROM projs", [],
         function(t, r) {
           r = r.rows;
+          if(r.length == 0) return dis.goOnline();
           for(var i=0; i<r.length; i++) dis.data[r.item(i).id] = {name: r.item(i).name};
-        },
-        function() {
-          dis.goOnline();
         }
       );
       t.executeSql(
         "SELECT * FROM tasks", [],
         function(t, r) {
           r = r.rows;
-
-          if(r.length == 0) {
-            dis.goOnline();
-            return;
-          }
+          if(r.length == 0) return dis.goOnline();
 
           for(var i=0; i<r.length; i++) {
             var proj = dis.data[r.item(i).project_id];
@@ -83,13 +77,9 @@ var todoist = {
             if(dis.data[i].data) dis.projCount++;
           }
           dis.updateView();
-
-        },
-        function() {
-          dis.goOnline();
         }
       );
-    }, $, function() {
+    }, function(e) {
       dis.goOnline();
     });
   },
@@ -147,12 +137,12 @@ var todoist = {
 
     var d = this.data;
     this.transaction(function(t) {
-      t.executeSql("DELETE FROM projs", [], $, $);
-      t.executeSql("DELETE FROM tasks", [], $, $);
+      t.executeSql("DELETE FROM projs");
+      t.executeSql("DELETE FROM tasks");
       for(var i in d) {
-        t.executeSql("INSERT INTO projs (id, name) VALUES (?, ?)", [i, d[i].name], $, $);
+        t.executeSql("INSERT INTO projs (id, name) VALUES (?, ?)", [i, d[i].name]);
       }
-    }, $, $);
+    });
   },
 
   cbgetUncompletedItems: function(r) {
@@ -163,8 +153,8 @@ var todoist = {
       this.projCount++;
 
       this.transaction(function(t) {  //used by addItem
-        t.executeSql("DELETE FROM tasks WHERE project_id = ?", [r[0].project_id], $, $);
-      }, $, $);
+        t.executeSql("DELETE FROM tasks WHERE project_id = ?", [r[0].project_id]);
+      });
     }
 
     if(this.countdown == 0) this.updateView();
@@ -182,10 +172,10 @@ var todoist = {
 
           t.executeSql(
             "INSERT INTO tasks (project_id, content, due_date, priority) VALUES (?, ?, ?, ?)", 
-            [d[i].project_id, d[i].content, tmp, d[i].priority], $, $
+            [d[i].project_id, d[i].content, tmp, d[i].priority]
           );
         }
-      }, $, $);
+      });
     }
   },
 
@@ -228,6 +218,9 @@ var todoist = {
   },
 
   transaction: function(a, b, c) {
+    var f = new Function("");
+    b = b || f;
+    c = c || f;
     if(!this.dbms) {
       this.dbms = [[a, b, c]];
       var _dbms, dis = this;
@@ -235,18 +228,19 @@ var todoist = {
         _dbms = window.openDatabase("todoist-dashboard", "1.0", "Tasks", 5*1024*1024);
         _dbms.transaction(
           function(t) {
-            t.executeSql("CREATE TABLE tasks (project_id INTEGER, content TEXT, due_date DATE, priority TINYINT)", [], $, $);
-            t.executeSql("CREATE TABLE projs (id INTEGER, name TEXT)", [], $, $);
-          }, 
-          $,
-          function() {  //ok
+            t.executeSql("CREATE TABLE IF NOT EXISTS tasks (project_id INTEGER, content TEXT, due_date DATE, priority TINYINT)");
+            t.executeSql("CREATE TABLE IF NOT EXISTS projs (id INTEGER, name TEXT)");
+          }, function() {
+            dis.transaction = f;
+            for(var i=0; i<dis.dbms.length; i++) dis.dbms[i][1](e);
+          }, function() {  //ok
             for(var i=0; i<dis.dbms.length; i++) _dbms.transaction.apply(_dbms, dis.dbms[i]);
             dis.dbms = _dbms;
           }
         );
       } catch(e) {
-        this.transaction = new Function("");
-        for(var i=0; i<this.dbms.length; i++) this.dbms[i][2]();
+        this.transaction = f;
+        for(var i=0; i<this.dbms.length; i++) this.dbms[i][1](e);
       }
     } else if(this.dbms.transaction) {
       this.dbms.transaction(a, b, c);
@@ -272,10 +266,10 @@ li.imp4 {color:#faa}
 </style>
 </head>
 <body style="overflow:auto">
-<form id="loginbox" style="margin:5px;padding:0;display:none">
-User:<br><input id="user">
+<form id="loginbox" style="margin:5px;padding:0;display:none" onsubmit="todoist.login();return false;">
+User:<br><input id="user" type="email">
 <br>Pass:<br><input id="pass" type="password">
-<br><input type="button" id="loginnow" value="Login" onclick="todoist.login();">
+<br><input type="submit" id="loginnow" value="Login">
 <br><input type=checkbox id="savelogin">Save login as cookie / 
 <a href="javascript:todoist.cookie('tduser',0,1);todoist.cookie('tdpass',0,1);">[clear cookies]</a>
 </form>

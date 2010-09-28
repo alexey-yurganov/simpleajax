@@ -33,9 +33,9 @@ var todoist = {
       if(remove) {
         localStorage.removeItem(n);
       } else if(v) {
-        localStorage.setItem(n, v);
+        localStorage.setItem(n, encodeURIComponent(v));
       } else {
-        return localStorage.getItem(n);
+        return decodeURIComponent(localStorage.getItem(n) || "");
       }
     } else if((elm = $("loginbox")) && "load" in elm && "save" in elm) {
       elm.load("todoist");
@@ -43,12 +43,12 @@ var todoist = {
         elm.removeAttribute(n);
         elm.save("todoist");
       } else if(v) {
-        elm.setAttribute(n, v);
+        elm.setAttribute(n, encodeURIComponent(v));
         elm.save("todoist");
       } else {
-        return elm.getAttribute(n);
+        return decodeURIComponent(elm.getAttribute(n) || "");
       }
-    } else {
+    } else {  
       if(remove) {
         document.cookie = encodeURIComponent(n) + "=; expires=Mon, 1 Jan 1980 01:01:01 GMT";
       } else if(v) {
@@ -58,7 +58,7 @@ var todoist = {
       } else {
         var s = " " + document.cookie + ";";
         var i = s.indexOf(" " + n + "=");
-        if(i >= 0) return s.substr(s.indexOf("=", i) + 1, s.indexOf(";",i + 1));
+        if(i >= 0) return decodeURIComponent(s.substr(s.indexOf("=", i) + 1, s.indexOf(";",i + 1)));
       }
     }
   },
@@ -121,8 +121,8 @@ var todoist = {
   login: function() {
       $("loginnow").value = "Loading...";
       $("loginnow").disabled = true;
-      var u = this.cookie("tduser") || $("user").value;
-      var p = this.cookie("tdpass") || $("pass").value;
+      var u = encodeURIComponent(this.cookie("tduser") || $("user").value);
+      var p = encodeURIComponent(this.cookie("tdpass") || $("pass").value);
       this.ajax("login", "&email="+u+"&password="+p);
   },
 
@@ -228,7 +228,7 @@ var todoist = {
 
   addItem: function(id) {
     var s = prompt("What to add to '"+this.data[id].name+"'?", "");
-    var ds = s ? prompt("Due when?", "today") : null;
+    var ds = s ? prompt("Due when?", (new Date().getHours() < 18 ? "today" : "tomorrow")) : null;
     if(s) {
       if(this.token) {
         this.ajax("addItem", "&project_id="+id+"&priority=1&content="+encodeURIComponent(s)+(ds?"&date_string="+encodeURIComponent(ds):""));
@@ -240,9 +240,13 @@ var todoist = {
   },
 
   cbaddItem: function(r) {
-    this.countdown++;
-    this.projCount--;
-    this.ajax("getUncompletedItems", "&js_date=1&project_id=" + r.project_id);
+    if(typeof r == "string") {
+      alert(r);
+    } else {
+      this.countdown++;
+      this.projCount--;
+      this.ajax("getUncompletedItems", "&js_date=1&project_id=" + r.project_id);
+    }
   },
 
   transaction: function(a, b, c) {

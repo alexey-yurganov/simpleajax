@@ -4,7 +4,7 @@
 <link rel="apple-touch-icon" href="http://static.todoist.com/96444e78b51b8496f2817e2b59ef915d.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="viewport" content="width=800,initial-scale=1.0">
+<meta name="viewport" content="width=800,initial-scale=1.25">
 <script>
 function $(s) {
   return document.getElementById(s);
@@ -29,37 +29,40 @@ var todoist = {
 
   cookie: function(n, v, remove) {
     var elm;
-    if(window.localStorage) {
-      if(remove) {
-        localStorage.removeItem(n);
-      } else if(v) {
-        localStorage.setItem(n, encodeURIComponent(v));
-      } else {
-        return decodeURIComponent(localStorage.getItem(n) || "");
+    try {
+      if(window.localStorage) {
+        if(remove) {
+          localStorage.removeItem(n);
+        } else if(v) {
+          localStorage.setItem(n, encodeURIComponent(v));
+        } else {
+          return decodeURIComponent(localStorage.getItem(n) || "");
+        }
+      } else if((elm = $("loginbox")) && "load" in elm && "save" in elm) {
+        elm.load("todoist");
+        if(remove) {
+          elm.removeAttribute(n);
+          elm.save("todoist");
+        } else if(v) {
+          elm.setAttribute(n, encodeURIComponent(v));
+          elm.save("todoist");
+        } else {
+          return decodeURIComponent(elm.getAttribute(n) || "");
+        }
       }
-    } else if((elm = $("loginbox")) && "load" in elm && "save" in elm) {
-      elm.load("todoist");
-      if(remove) {
-        elm.removeAttribute(n);
-        elm.save("todoist");
-      } else if(v) {
-        elm.setAttribute(n, encodeURIComponent(v));
-        elm.save("todoist");
-      } else {
-        return decodeURIComponent(elm.getAttribute(n) || "");
-      }
-    } else {  
-      if(remove) {
-        document.cookie = encodeURIComponent(n) + "=; expires=Mon, 1 Jan 1980 01:01:01 GMT";
-      } else if(v) {
-        document.cookie = encodeURIComponent(n) + "=" + 
-          encodeURIComponent(v) + "; expires=" + 
-          new Date(new Date().getTime() + 30*24*60*60*1000).toGMTString();
-      } else {
-        var s = " " + document.cookie + ";";
-        var i = s.indexOf(" " + n + "=");
-        if(i >= 0) return decodeURIComponent(s.substr(s.indexOf("=", i) + 1, s.indexOf(";",i + 1)));
-      }
+      return;
+    } catch(e) {}
+
+    if(remove) {
+      document.cookie = encodeURIComponent(n) + "=; expires=Mon, 1 Jan 1980 01:01:01 GMT";
+    } else if(v) {
+      document.cookie = encodeURIComponent(n) + "=" + 
+        encodeURIComponent(v) + "; expires=" + 
+        new Date(new Date().getTime() + 30*24*60*60*1000).toGMTString();
+    } else {
+      var s = " " + document.cookie + ";";
+      var i = s.indexOf(" " + n + "=");
+      if(i >= 0) return decodeURIComponent(s.substr(s.indexOf("=", i) + 1, s.indexOf(";",i + 1)));
     }
   },
 
@@ -89,7 +92,7 @@ var todoist = {
             proj.data.push({
               project_id: r.item(i).project_id,
               content: r.item(i).content,
-              due_date: tmp ? new Date(tmp.substr(0,4), 1*tmp.substring(5,7)-1, tmp.substr(8)) : null,
+              due_date: tmp ? new Date(Date.UTC(tmp.substr(0,4), 1*tmp.substring(5,7)-1, tmp.substr(8), 23, 59, 59)) : null,
               priority: r.item(i).priority
             });
           }
@@ -209,6 +212,9 @@ var todoist = {
   updateView: function() {
     var html = [];
     var width = Math.floor(97/this.projCount);
+    var item;
+    var bullet;
+    var now = new Date().getTime();
 
     for(var i in this.data) {
       var proj = this.data[i];
@@ -216,8 +222,13 @@ var todoist = {
 
       html.push("<div class='proj' style='width:"+width+"%'><h2><a href='javascript:todoist.addItem("+i+");'>"+proj.name+"</a></h2><ul>");
       for(var j=0; j<proj.data.length; j++) {
-        var item = proj.data[j];
-        html.push("<li class='imp"+item.priority+(j%2?" alt":"")+"'>"+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
+        item = proj.data[j];
+
+        bullet = item.due_date ? item.due_date.getTime() - now : -1;
+        bullet = bullet < 0 ? "bullold'>&bull;" : bullet < 60000*60*24 ? "bullnow'>&rArr;" : bullet < 60000*60*24*7 ? "bullweek'>&diams;" : "bullold'>&bull;";
+        bullet = "<span class='" + bullet + "</span>";
+
+        html.push("<li class='imp"+item.priority+(j%2?" alt":"")+"'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
       }
       html.push("</ul></div>");
     }
@@ -289,11 +300,12 @@ body.flash {background:#333}
 .proj h2 {margin:0 0 0.3em 0; padding:0}
 a {font-size:9pt; color:#fff}
 .proj h2 a {font:bold 11pt Helvetica,Arial; text-decoration:none}
-.due {color:#aaa; font-size:8pt; margin-left:4%}
+.due {color:#bbe; font-size:8pt; margin-left:4%}
 ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle}
 li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc}
 li.alt {color:#fff}
 li.imp4 {color:#faa}
+.bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa} .bullweek {color:#aaa}
 @media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} .proj {float:none; display:table-cell}}
 </style>
 </head>

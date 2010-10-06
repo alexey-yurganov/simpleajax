@@ -4,7 +4,7 @@
 <link rel="apple-touch-icon" href="http://static.todoist.com/96444e78b51b8496f2817e2b59ef915d.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="viewport" content="width=800,initial-scale=1.25">
+<meta name="viewport" content="width=800,initial-scale=1.3">
 <script>
 function $(s) {
   return document.getElementById(s);
@@ -14,6 +14,7 @@ var todoist = {
   data: {},
   countdown: 0,
   projCount: 0,
+  afterLogin: [],
 
   ajax: function(m, p) {
     var s = document.createElement("script");
@@ -142,14 +143,11 @@ var todoist = {
 
       this.token = r.api_token;
 
-      if(this.addItemPrompt) {
-        var item = this.addItemPrompt;
-        this.ajax(
-          "addItem", "&project_id="+item.id+
-          "&priority=1&content="+encodeURIComponent(item.content)+
-          (item.date_string?"&date_string="+encodeURIComponent(item.date_string):"")
-        );
-        this.addItemPrompt = null;
+      var al = this.afterLogin;
+      if(al.length) {
+        for(var i=0; i<al.length; i++) {
+          this.ajax(al[i][0], al[i][1]);
+        }
       } else {
         this.ajax("getProjects");
       }
@@ -228,7 +226,7 @@ var todoist = {
         bullet = bullet < 0 ? "bullold'>&bull;" : bullet < 60000*60*24 ? "bullnow'>&rArr;" : bullet < 60000*60*24*7 ? "bullweek'>&diams;" : "bullold'>&bull;";
         bullet = "<span class='" + bullet + "</span>";
 
-        html.push("<li class='imp"+item.priority+(j%2?" alt":"")+"'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
+        html.push("<li class='imp"+item.priority+(j%2?" alt":"")+"' onclick='todoist.completeItems("+item.id+","+i+",this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
       }
       html.push("</ul></div>");
     }
@@ -238,14 +236,15 @@ var todoist = {
   },
 
   addItem: function(id) {
+    if(!this.token) this.goOnline();
+
     var s = prompt("What to add to '"+this.data[id].name+"'?", "");
-    var ds = s ? prompt("Due when?", (new Date().getHours() < 18 ? "today" : "tomorrow")) : null;
+    var ds = s ? prompt("Today is "+new Date().toDateString()+".\nDue when?", (new Date().getHours() < 18 ? "today" : "tomorrow")) : null;
     if(s) {
       if(this.token) {
         this.ajax("addItem", "&project_id="+id+"&priority=1&content="+encodeURIComponent(s)+(ds?"&date_string="+encodeURIComponent(ds):""));
       } else {
-        this.addItemPrompt = {id:id, content:s, date_string:ds};
-        this.goOnline();
+        this.afterLogin.push(["addItem", "&project_id="+id+"&priority=1&content="+encodeURIComponent(s)+(ds?"&date_string="+encodeURIComponent(ds):"")]);
       }
     }
   },
@@ -258,6 +257,21 @@ var todoist = {
       this.projCount--;
       this.ajax("getUncompletedItems", "&js_date=1&project_id=" + r.project_id);
     }
+  },
+
+  completeItems: function(id, proj, n) {
+    if(confirm("Item done?")) {
+      if(this.token) {
+        this.ajax("completeItems", "&ids=%5B" + id + "%5D");
+      } else {
+        this.afterLogin.push(["completeItems", "&ids=&5B" + id + "%5D"]);
+        this.goOnline();
+      }
+      n.parentNode.removeChild(n);
+    }
+  },
+
+  cbcompleteItems: function(r) {
   },
 
   transaction: function(a, b, c) {

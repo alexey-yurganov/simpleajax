@@ -4,7 +4,7 @@
 <link rel="apple-touch-icon" href="http://static.todoist.com/96444e78b51b8496f2817e2b59ef915d.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="viewport" content="width=800,initial-scale=1.3">
+<meta name="viewport" content="width=800,initial-scale=1.35">
 <script>
 function $(s) {
   return document.getElementById(s);
@@ -209,7 +209,7 @@ var todoist = {
 
   updateView: function() {
     var html = [];
-    var width = Math.floor(97/this.projCount);
+    var width = Math.floor(97/(this.projCount||1));
     var item;
     var bullet;
     var now = new Date().getTime();
@@ -239,7 +239,7 @@ var todoist = {
     if(!this.token) this.goOnline();
 
     var s = prompt("What to add to '"+this.data[id].name+"'?", "");
-    var ds = s ? prompt("Today is "+new Date().toDateString()+".\nDue when?", (new Date().getHours() < 18 ? "today" : "tomorrow")) : null;
+    var ds = s ? prompt("Due when?", (new Date().getHours() < 18 ? "today" : "tomorrow")) : null;
     if(s) {
       if(this.token) {
         this.ajax("addItem", "&project_id="+id+"&priority=1&content="+encodeURIComponent(s)+(ds?"&date_string="+encodeURIComponent(ds):""));
@@ -272,6 +272,21 @@ var todoist = {
   },
 
   cbcompleteItems: function(r) {
+  },
+
+  logout: function() {
+    this.transaction(function(t) {
+      t.executeSql("DELETE FROM projs");
+      t.executeSql("DELETE FROM tasks");
+    });
+    this.cookie("tduser", 0, 1);
+    this.cookie("tdpass", 0, 1);
+    $("user").value = "";
+    $("pass").value = "";
+    this.projCount = this.token = 0;
+    this.data = {};
+    this.updateView();
+    this.goOnline();
   },
 
   transaction: function(a, b, c) {
@@ -327,12 +342,15 @@ li.imp4 {color:#faa}
 <form id="loginbox" style="margin:5px;padding:0;display:none;behavior:url(#default#userdata)" onsubmit="todoist.login();return false;">
 User:<br><input id="user" type="email">
 <br>Pass:<br><input id="pass" type="password">
-<br><input type="submit" id="loginnow" value="Login">
-<br><input type=checkbox id="savelogin">Save login as cookie / 
-<a href="javascript:todoist.cookie('tduser',0,1);todoist.cookie('tdpass',0,1);">[clear cookies]</a>
+<br><input type="submit" id="loginnow" value="Login"> <a href="http://todoist.com">Register</a>
+<br><input type=checkbox id="savelogin">Save login as cookie
 </form>
 <div style="float:left; width:1%"><a href="#" onclick="todoist.goOnline();" style="padding:3px">R</a></div>
 <div id="main"></div>
+<div style="clear:both;padding-top:1em;font-size:8pt;color:#aaa">
+<a href="#" onclick="this.style.display='none';this.nextSibling.style.display='';return false;" style="margin:3px">?</a><div style="display:none">
+Todoist Wall - click on project title to add a task / add website to home screen to remove Safari buttons / <a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a>
+</div></a></div>
 <script>todoist.onload();</script>
 </body>
 </html>

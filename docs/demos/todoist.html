@@ -40,19 +40,8 @@ var todoist = {
         } else {
           return decodeURIComponent(localStorage.getItem(n) || "");
         }
-      } else if((elm = $("loginbox")) && "load" in elm && "save" in elm) {
-        elm.load("todoist");
-        if(remove) {
-          elm.removeAttribute(n);
-          elm.save("todoist");
-        } else if(v) {
-          elm.setAttribute(n, encodeURIComponent(v));
-          elm.save("todoist");
-        } else {
-          return decodeURIComponent(elm.getAttribute(n) || "");
-        }
+        return;
       }
-      return;
     } catch(e) {}
 
     if(remove) {
@@ -76,7 +65,7 @@ var todoist = {
         function(t, r) {
           r = r.rows;
           if(r.length == 0) return dis.goOnline();
-          for(var i=0; i<r.length; i++) dis.data[r.item(i).id] = {name: r.item(i).name};
+          for(var i=0; i<r.length; i++) dis.data[r.item(i).id] = {name: r.item(i).name, order:r.item(i).item_order};
         }
       );
       t.executeSql(
@@ -92,6 +81,7 @@ var todoist = {
             var tmp = r.item(i).due_date;
 
             proj.data.push({
+              id: r.item(i).id,
               project_id: r.item(i).project_id,
               content: r.item(i).content,
               due_date: tmp ? new Date(Date.UTC(tmp.substr(0,4), 1*tmp.substring(5,7)-1, tmp.substr(8), 23, 59, 59)) : null,
@@ -159,7 +149,7 @@ var todoist = {
     this.projCount = 0;
 
     for(var i=0; i<r.length; i++) {
-      this.data[r[i].id] = {name: r[i].name};
+      this.data[r[i].id] = {name: r[i].name, order: r[i].item_order||0};
       this.countdown++;
       this.ajax("getUncompletedItems", "&js_date=1&project_id=" + r[i].id);
     }
@@ -169,7 +159,7 @@ var todoist = {
       t.executeSql("DELETE FROM projs");
       t.executeSql("DELETE FROM tasks");
       for(var i in d) {
-        t.executeSql("INSERT INTO projs (id, name) VALUES (?, ?)", [i, d[i].name]);
+        t.executeSql("INSERT INTO projs (id, name, item_order) VALUES (?, ?, ?)", [i, d[i].name, d[i].order]);
       }
     });
   },
@@ -200,8 +190,8 @@ var todoist = {
           if(tmp) tmp = tmp.getUTCFullYear() + "-" + pad(tmp.getUTCMonth() + 1) + "-" + pad(tmp.getUTCDate());
 
           t.executeSql(
-            "INSERT INTO tasks (project_id, content, due_date, priority) VALUES (?, ?, ?, ?)", 
-            [d[i].project_id, d[i].content, tmp, d[i].priority]
+            "INSERT INTO tasks (id, project_id, content, due_date, priority) VALUES (?, ?, ?, ?, ?)", 
+            [d[i].id, d[i].project_id, d[i].content, tmp, d[i].priority]
           );
         }
       });
@@ -215,11 +205,25 @@ var todoist = {
     var bullet;
     var now = new Date().getTime();
 
-    for(var i in this.data) {
-      var proj = this.data[i];
+    var projs = [];  //sort projs
+    for(var i in this.data) projs.push(i);
+    var i = projs.length - 1;
+    while(i >= 0) {
+      var j = this.data[projs[i]].order;
+      if(!j || i == j - 1) {
+        i--;
+      } else {
+        var tmp = projs[i];
+        projs[i] = projs[j-1];
+        projs[j-1] = tmp;
+      }
+    }
+
+    for(var i=0; i<projs.length; i++) {
+      var proj = this.data[projs[i]];
       if(!proj.data) continue;
 
-      html.push("<div class='proj' style='width:"+width+"%'><h2><a href='javascript:todoist.addItem("+i+");'>"+proj.name+"</a></h2><ul>");
+      html.push("<div class='proj' style='width:"+width+"%'><h2><a href='javascript:todoist.addItem("+projs[i]+");'>"+proj.name+"</a></h2><ul>");
       for(var j=0; j<proj.data.length; j++) {
         item = proj.data[j];
 
@@ -227,7 +231,7 @@ var todoist = {
         bullet = bullet < 0 ? "bullold'>&bull;" : bullet < 60000*60*24 ? "bullnow'>&rArr;" : bullet < 60000*60*24*7 ? "bullweek'>&diams;" : "bullold'>&bull;";
         bullet = "<span class='" + bullet + "</span>";
 
-        html.push("<li class='imp"+item.priority+(j%2?" alt":"")+"' onclick='todoist.completeItems("+item.id+","+i+",this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
+        html.push("<li class='imp"+item.priority+(j%2?" alt":"")+"' onclick='todoist.completeItems("+item.id+","+projs[i]+",this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
       }
       html.push("</ul></div>");
     }
@@ -265,10 +269,13 @@ var todoist = {
       if(this.token) {
         this.ajax("completeItems", "&ids=%5B" + id + "%5D");
       } else {
-        this.afterLogin.push(["completeItems", "&ids=&5B" + id + "%5D"]);
+        this.afterLogin.push(["completeItems", "&ids=%5B" + id + "%5D"]);
         this.goOnline();
       }
       n.parentNode.removeChild(n);
+      this.transaction(function(t) {
+        t.executeSql("DELETE FROM tasks WHERE id = ?", [id]);
+      });
     }
   },
 
@@ -301,9 +308,9 @@ var todoist = {
         _dbms = window.openDatabase("todoist-dashboard", "1.0", "Tasks", 5*1024*1024);
         _dbms.transaction(
           function(t) {
-            t.executeSql("CREATE TABLE IF NOT EXISTS tasks (project_id INTEGER, content TEXT, due_date DATE, priority TINYINT)");
-            t.executeSql("CREATE TABLE IF NOT EXISTS projs (id INTEGER, name TEXT)");
-          }, function() {
+            t.executeSql("CREATE TABLE IF NOT EXISTS tasks (id INTEGER, project_id INTEGER, content TEXT, due_date DATE, priority TINYINT)");
+            t.executeSql("CREATE TABLE IF NOT EXISTS projs (id INTEGER, name TEXT, item_order INTEGER)");
+          }, function(e) {
             dis.transaction = f;
             for(var i=0; i<dis.dbms.length; i++) dis.dbms[i][1](e);
           }, function() {  //ok
@@ -351,7 +358,7 @@ User:<br><input id="user" type="email">
 <div style="clear:both;padding-top:1em;font-size:8pt;color:#aaa">
 <a href="#" onclick="this.style.display='none';this.nextSibling.style.display='';return false;" style="margin:3px">?</a><div style="display:none">
 Todoist Wall - click on project title to add a task / add website to home screen to remove Safari buttons / <a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a>
-</div></a></div>
+</div></div>
 <script>todoist.onload();</script>
 </body>
 </html>

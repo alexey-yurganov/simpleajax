@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="format-detection" content="telephone=no">
-<meta name="viewport" content="width=800,initial-scale=1.35">
+<meta name="viewport" content="width=800,initial-scale=1.4">
 <script>
 function $(s) {
   return document.getElementById(s);
@@ -53,7 +53,7 @@ var todoist = {
     } else {
       var s = " " + document.cookie + ";";
       var i = s.indexOf(" " + n + "=");
-      if(i >= 0) return decodeURIComponent(s.substr(s.indexOf("=", i) + 1, s.indexOf(";",i + 1)));
+      if(i >= 0) return decodeURIComponent(s.substring(s.indexOf("=", i) + 1, s.indexOf(";",i + 1)));
     }
   },
 
@@ -137,7 +137,7 @@ var todoist = {
       var al = this.afterLogin;
       if(al.length) {
         for(var i=0; i<al.length; i++) {
-          this.ajax(al[i][0], al[i][1]);
+          if(al[i]) this.ajax(al[i][0], al[i][1]);
         }
       } else {
         this.ajax("getProjects");
@@ -236,12 +236,16 @@ var todoist = {
       html.push("</ul></div>");
     }
     $("main").innerHTML = html.join("");
+    if(this.projCount == 0) alert("No uncompleted tasks to show.");
     document.body.className = "flash";
     setTimeout(function() {document.body.className = "";}, 100);
   },
 
   addItem: function(id) {
-    if(!this.token) this.goOnline();
+    if(!this.token) {
+      this.goOnline();
+      this.afterLogin.push(null);
+    }
 
     var s = prompt("What to add to '"+this.data[id].name+"'?", "");
     var ds = s ? prompt("Due when?", (new Date().getHours() < 18 ? "today" : "tomorrow")) : null;
@@ -348,7 +352,7 @@ li.imp4 {color:#faa}
 </head>
 <body style="overflow:auto">
 <form id="loginbox" style="margin:5px;padding:0;display:none;behavior:url(#default#userdata)" onsubmit="todoist.login();return false;">
-User:<br><input id="user" type="email">
+User:<br><input id="user" type="email"><noscript style="color:red">Please enable JavaScript to login.</noscript>
 <br>Pass:<br><input id="pass" type="password">
 <br><input type="submit" id="loginnow" value="Login"> <a href="http://todoist.com">Register</a>
 <br><input type=checkbox id="savelogin">Save login as cookie

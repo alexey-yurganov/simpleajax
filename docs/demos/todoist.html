@@ -235,8 +235,8 @@ var todoist = {
       }
       html.push("</ul></div>");
     }
+    if(this.projCount == 0) html.push("List is empty.");
     $("main").innerHTML = html.join("");
-    if(this.projCount == 0) alert("No uncompleted tasks to show.");
     document.body.className = "flash";
     setTimeout(function() {document.body.className = "";}, 100);
   },

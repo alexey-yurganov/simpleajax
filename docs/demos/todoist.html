@@ -108,6 +108,7 @@ var todoist = {
       $("loginbox").style.display = "block";
       $("loginnow").value = "Login";
       $("loginnow").disabled = false;
+      window.scrollTo(0, 0);
     } else {
       this.login();
     }
@@ -147,6 +148,12 @@ var todoist = {
 
   cbgetProjects: function(r) {
     this.projCount = 0;
+
+    if(typeof r == "string") {
+      alert("Error: "+r);
+      this.token = null;
+      this.goOnline();
+    }
 
     for(var i=0; i<r.length; i++) {
       this.data[r[i].id] = {name: r[i].name, order: r[i].item_order||0};
@@ -205,6 +212,8 @@ var todoist = {
     var bullet;
     var now = new Date().getTime();
 
+    var ie6width = document.all ? ";_width:expression(document.body.clientWidth/("+this.projCount+'||1)<160?"160px":"'+width+'%")' : "";
+
     var projs = [];  //sort projs
     for(var i in this.data) projs.push(i);
     var i = projs.length - 1;
@@ -223,12 +232,21 @@ var todoist = {
       var proj = this.data[projs[i]];
       if(!proj.data) continue;
 
-      html.push("<div class='proj' style='width:"+width+"%'><h2><a href='javascript:todoist.addItem("+projs[i]+");'>"+proj.name+"</a></h2><ul>");
+      for(var j=0; j<proj.data.length; j++) {
+        item = proj.data[j];
+        bullet = item.due_date ? item.due_date.getTime() - now : -1;
+        item.due_now = bullet < 0 ? 0 : bullet < 60000*60*24 ? 2 : bullet < 60000*60*24*7 ? 1 : 0;
+        if(item.due_now == 2) {
+          proj.data.splice(j, 1);
+          proj.data.unshift(item);
+        }
+      }
+
+      html.push("<div class='proj' style='width:"+width+"%"+ie6width+"'><h2><a href='javascript:todoist.addItem("+projs[i]+");'>"+proj.name+"</a></h2><ul>");
       for(var j=0; j<proj.data.length; j++) {
         item = proj.data[j];
 
-        bullet = item.due_date ? item.due_date.getTime() - now : -1;
-        bullet = bullet < 0 ? "bullold'>&bull;" : bullet < 60000*60*24 ? "bullnow'>&rArr;" : bullet < 60000*60*24*7 ? "bullweek'>&diams;" : "bullold'>&bull;";
+        bullet = item.due_now == 2 ? "bullnow'>&rArr;" : item.due_now == 1 ?  "bullweek'>&diams;" : "bullold'>&bull;";
         bullet = "<span class='" + bullet + "</span>";
 
         html.push("<li class='imp"+item.priority+(j%2?" alt":"")+"' onclick='todoist.completeItems("+item.id+","+projs[i]+",this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
@@ -335,7 +353,7 @@ var todoist = {
 }
 </script>
 <style>
-body {font:9pt Helvetica,Arial; margin:0; padding:0; background:#000; color:#fff; -webkit-text-size-adjust:none}
+body {font:9pt Helvetica,Arial; _font-weight:bold; margin:0; padding:0; background:#000; color:#fff; -webkit-text-size-adjust:none}
 body.flash {background:#333}
 .proj {float:left; min-width:160px; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0 0 0.3em 0; padding:0}
@@ -346,12 +364,12 @@ ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle
 li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc}
 li.alt {color:#fff}
 li.imp4 {color:#faa}
-.bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa} .bullweek {color:#aaa}
+.bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa; margin-left:-0.5em} .bullweek {color:#aaa}
 @media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} .proj {float:none; display:table-cell}}
 </style>
 </head>
 <body style="overflow:auto">
-<form id="loginbox" style="margin:5px;padding:0;display:none;behavior:url(#default#userdata)" onsubmit="todoist.login();return false;">
+<form id="loginbox" style="margin:5px;padding:0;display:none" onsubmit="todoist.login();return false;">
 User:<br><input id="user" type="email"><noscript style="color:red">Please enable JavaScript to login.</noscript>
 <br>Pass:<br><input id="pass" type="password">
 <br><input type="submit" id="loginnow" value="Login"> <a href="http://todoist.com">Register</a>
@@ -361,7 +379,10 @@ User:<br><input id="user" type="email"><noscript style="color:red">Please enable
 <div id="main"></div>
 <div style="clear:both;padding-top:1em;font-size:8pt;color:#aaa">
 <a href="#" onclick="this.style.display='none';this.nextSibling.style.display='';return false;" style="margin:3px">?</a><div style="display:none">
-Todoist Wall - click on project title to add a task / add website to home screen to remove Safari buttons / <a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a>
+Todoist Wall -
+<br>(1) click on project title to add a task
+<br>(2) add website to home screen to remove Safari buttons
+<br><a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a>
 </div></div>
 <script>todoist.onload();</script>
 </body>

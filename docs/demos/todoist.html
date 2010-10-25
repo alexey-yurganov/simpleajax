@@ -361,7 +361,7 @@ a {font-size:9pt; color:#fff}
 .proj h2 a {font:bold 11pt Helvetica,Arial; text-decoration:none}
 .due {color:#bbe; font-size:8pt; margin-left:4%}
 ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle}
-li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc}
+li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -webkit-tap-highlight-color:rgba(255,255,255,0.2)}
 li.alt {color:#fff}
 li.imp4 {color:#faa}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa; margin-left:-0.5em} .bullweek {color:#aaa}
@@ -370,7 +370,7 @@ li.imp4 {color:#faa}
 </head>
 <body style="overflow:auto">
 <form id="loginbox" style="margin:5px;padding:0;display:none" onsubmit="todoist.login();return false;">
-User:<br><input id="user" type="email"><noscript style="color:red">Please enable JavaScript to login.</noscript>
+User:<br><input id="user" type="email">
 <br>Pass:<br><input id="pass" type="password">
 <br><input type="submit" id="loginnow" value="Login"> <a href="http://todoist.com">Register</a>
 <br><input type=checkbox id="savelogin">Save login as cookie
@@ -383,7 +383,7 @@ Todoist Wall -
 <br>(1) click on project title to add a task
 <br>(2) add website to home screen to remove Safari buttons
 <br><a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a>
-</div></div>
+</div></div><noscript style="color:#f55">Please enable JavaScript.</noscript>
 <script>todoist.onload();</script>
 </body>
 </html>

@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="format-detection" content="telephone=no">
-<meta name="viewport" content="width=800,initial-scale=1.4">
+<meta name="viewport" content="width=800,initial-scale=1.5">
 <script>
 function $(s) {
   return document.getElementById(s);
@@ -84,7 +84,7 @@ var todoist = {
               id: r.item(i).id,
               project_id: r.item(i).project_id,
               content: r.item(i).content,
-              due_date: tmp ? new Date(Date.UTC(tmp.substr(0,4), 1*tmp.substring(5,7)-1, tmp.substr(8), 23, 59, 59)) : null,
+              due_date: tmp ? new Date(Date.UTC(tmp.substr(0,4), 1*tmp.substring(5,7)-1, tmp.substring(8,10), 23, 59, 59)) : null,
               priority: r.item(i).priority
             });
           }
@@ -249,11 +249,20 @@ var todoist = {
         bullet = item.due_now == 2 ? "bullnow'>&rArr;" : item.due_now == 1 ?  "bullweek'>&diams;" : "bullold'>&bull;";
         bullet = "<span class='" + bullet + "</span>";
 
-        html.push("<li class='imp"+item.priority+(j%2?" alt":"")+"' onclick='todoist.completeItems("+item.id+","+projs[i]+",this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
+        html.push("<li class='imp"+item.priority+(j%2?" alt":"")+"' id='n"+item.id+"_"+projs[i]+"' onclick='todoist.completeItems(this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
       }
       html.push("</ul></div>");
     }
-    if(this.projCount == 0) html.push("List is empty.");
+    if(this.projCount == 0) html.push("<p>List is empty.</p>");
+
+    html.push("<div class='projs emptyprojs'>");
+
+    for(var i=0; i<projs.length; i++) {
+      var proj = this.data[projs[i]];
+      if(!proj.data) html.push("<a href='javascript:todoist.addItem("+projs[i]+");'>"+proj.name+"</a> ");
+    }
+    html.push("<\/div>");
+
     $("main").innerHTML = html.join("");
     document.body.className = "flash";
     setTimeout(function() {document.body.className = "";}, 100);
@@ -286,7 +295,9 @@ var todoist = {
     }
   },
 
-  completeItems: function(id, proj, n) {
+  completeItems: function(n) {
+    var id = n.id.split("_"), proj = id[1];
+    id = id[0].substr(1);
     if(confirm("Item done?")) {
       if(this.token) {
         this.ajax("completeItems", "&ids=%5B" + id + "%5D");
@@ -302,6 +313,68 @@ var todoist = {
   },
 
   cbcompleteItems: function(r) {
+  },
+
+  updateItem: function(n_id) {
+    var id = n_id.split("_"), proj = id[1];
+    id = id[0].substr(1);
+
+    if(!this.token) {
+      this.goOnline();
+      this.afterLogin.push(null);
+    }
+
+    var i, arr = this.data[proj].data;
+    for(i=0; i<arr.length; i++) {
+      if(arr[i].id == id) break;
+    }
+
+    var dateStr = arr[i].due_date;
+    if(dateStr) dateStr = (dateStr.getMonth() + 1) + "/" + dateStr.getDate() + " " + dateStr.getFullYear();
+
+    var s = prompt("Change to:", arr[i].content);
+    var ds = s ? prompt("Due when?", dateStr) : "";
+    if(s) {
+      arr[i].content = s;
+      arr[i].date_string = ds;
+      arr[i].due_date = null;
+      var params = ["js_date=1"];
+      for(var j in arr[i]) {
+        params.push(j + "=" + encodeURIComponent(arr[i][j] || ""));
+      }
+
+      if(this.token) {
+        this.ajax("updateItem", "&" + params.join("&"));
+      } else {
+        this.afterLogin.push(["updateItem", "&" + params.join("&")]);
+      }
+    }
+  },
+
+  cbupdateItem: function(r) {
+    if(typeof r == "string") {
+      alert(r);
+    } else {
+      var arr = this.data[r.project_id].data;
+      for(var i=0; i<arr.length; i++) {
+        if(arr[i].id == r.id) {
+          arr[i] = r;
+          break;
+        }
+      }
+
+      this.transaction(function(t) {
+        var tmp = r.due_date, pad = function(i) {return i < 10 ? "0" + i : i};
+        if(tmp) tmp = tmp.getUTCFullYear() + "-" + pad(tmp.getUTCMonth() + 1) + "-" + pad(tmp.getUTCDate());
+
+        t.executeSql(
+          "UPDATE tasks SET project_id=?, content=?, due_date=?, priority=? WHERE id=?", 
+          [r.project_id, r.content, tmp, r.priority, r.id]
+        );
+      });
+
+      this.updateView();
+    }
   },
 
   logout: function() {
@@ -359,6 +432,7 @@ body.flash {background:#333}
 .proj h2 {margin:0 0 0.3em 0; padding:0}
 a {font-size:9pt; color:#fff}
 .proj h2 a {font:bold 11pt Helvetica,Arial; text-decoration:none}
+.emptyprojs {font-size:8pt} .emptyprojs a {color:#999; margin-right:1em; text-decoration:none}
 .due {color:#bbe; font-size:8pt; margin-left:4%}
 ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle}
 li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -webkit-tap-highlight-color:rgba(255,255,255,0.2)}
@@ -381,9 +455,27 @@ User:<br><input id="user" type="email">
 <a href="#" onclick="this.style.display='none';this.nextSibling.style.display='';return false;" style="margin:3px">?</a><div style="display:none">
 Todoist Wall -
 <br>(1) click on project title to add a task
-<br>(2) add website to home screen to remove Safari buttons
+<br>(2) press and hold on task to edit
+<br>(3) tap on task to delete
+<br>(4) add website to home screen to remove Safari buttons
 <br><a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a>
 </div></div><noscript style="color:#f55">Please enable JavaScript.</noscript>
-<script>todoist.onload();</script>
+<script>
+todoist.onload();
+
+var touchTimer = ["ontouchstart" in document.body, function(e) {clearTimeout(touchTimer);}];
+document.body[touchTimer[0] ? "ontouchstart" : "onmousedown"] = function(e) {
+  clearTimeout(touchTimer);
+  e = e.target;
+  if(e && e.nodeType != 1) e = e.parentNode;
+  if(e && e.id && todoist.data) {
+    touchTimer = setTimeout("todoist.updateItem('"+e.id+"');", 1000);
+  }
+};
+document.body[touchTimer[0] ? "ontouchmove" : "onmousemove"] = touchTimer[1];
+document.body[touchTimer[0] ? "ontouchend" : "onmouseup"] = touchTimer[1];
+document.body.ongesturestart = touchTimer[1];
+touchTimer = 0;
+</script>
 </body>
 </html>

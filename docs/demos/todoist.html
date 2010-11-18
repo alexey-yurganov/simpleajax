@@ -58,6 +58,8 @@ var todoist = {
   },
 
   onload: function() {
+    this.token = this.cookie("tdtoken") || null;
+
     var dis = this;
     this.transaction(function(t) {
       t.executeSql(
@@ -84,7 +86,7 @@ var todoist = {
               id: r.item(i).id,
               project_id: r.item(i).project_id,
               content: r.item(i).content,
-              due_date: tmp ? new Date(Date.UTC(tmp.substr(0,4), 1*tmp.substring(5,7)-1, tmp.substring(8,10), 23, 59, 59)) : null,
+              due_date: tmp ? new Date(tmp.substr(0,4), 1*tmp.substring(5,7)-1, tmp.substring(8,10), 23, 59, 59) : null,
               priority: r.item(i).priority
             });
           }
@@ -104,22 +106,26 @@ var todoist = {
   goOnline: function() {
     if(this.token) {
       this.ajax("getProjects");
-    } else if(!this.cookie("tduser") || !this.cookie("tdpass")) {
+    } else {
       $("loginbox").style.display = "block";
       $("loginnow").value = "Login";
       $("loginnow").disabled = false;
       window.scrollTo(0, 0);
-    } else {
-      this.login();
     }
   },
 
   login: function() {
-      $("loginnow").value = "Loading...";
-      $("loginnow").disabled = true;
-      var u = encodeURIComponent(this.cookie("tduser") || $("user").value);
-      var p = encodeURIComponent(this.cookie("tdpass") || $("pass").value);
-      this.ajax("login", "&email="+u+"&password="+p);
+      var u = $("user").value;
+      var p = $("pass").value;
+
+      if(u && /^[0-9a-f]+$/.test(u) && !p) {
+        if(confirm("Login with private token?")) this.cblogin({api_token: encodeURIComponent(u)});
+
+      } else {
+        $("loginnow").value = "Loading...";
+        $("loginnow").disabled = true;
+        this.ajax("login", "&email="+encodeURIComponent(u)+"&password="+encodeURIComponent(p));
+      }
   },
 
   cblogin: function(r) {
@@ -130,10 +136,9 @@ var todoist = {
       alert("Error: "+r);
     } else {
       $("loginbox").style.display = "none";
-      if($("user").value && $("savelogin").checked) this.cookie("tduser", $("user").value);
-      if($("pass").value && $("savelogin").checked) this.cookie("tdpass", $("pass").value);
 
       this.token = r.api_token;
+      this.cookie("tdtoken", this.token);
 
       var al = this.afterLogin;
       if(al.length) {
@@ -193,8 +198,8 @@ var todoist = {
 
         for(var i=0; i<d.length; i++) {
 
-          tmp = d[i].due_date;
-          if(tmp) tmp = tmp.getUTCFullYear() + "-" + pad(tmp.getUTCMonth() + 1) + "-" + pad(tmp.getUTCDate());
+          tmp = d[i].due_date;  //new Date("Sun Apr 29 23:59:59 2007")
+          if(tmp) tmp = tmp.getFullYear() + "-" + pad(tmp.getMonth() + 1) + "-" + pad(tmp.getDate());
 
           t.executeSql(
             "INSERT INTO tasks (id, project_id, content, due_date, priority) VALUES (?, ?, ?, ?, ?)", 
@@ -235,7 +240,7 @@ var todoist = {
       for(var j=0; j<proj.data.length; j++) {
         item = proj.data[j];
         bullet = item.due_date ? item.due_date.getTime() - now : -1;
-        item.due_now = bullet < 0 ? 0 : bullet < 60000*60*24 ? 2 : bullet < 60000*60*24*7 ? 1 : 0;
+        item.due_now = !item.due_date ? 0 : bullet < 60000*60*24 ? 2 : bullet < 60000*60*24*7 ? 1 : 0;
         if(item.due_now == 2) {
           proj.data.splice(j, 1);
           proj.data.unshift(item);
@@ -255,7 +260,7 @@ var todoist = {
     }
     if(this.projCount == 0) html.push("<p>List is empty.</p>");
 
-    html.push("<div class='projs emptyprojs'>");
+    html.push("<div class='emptyprojs'>");
 
     for(var i=0; i<projs.length; i++) {
       var proj = this.data[projs[i]];
@@ -365,7 +370,7 @@ var todoist = {
 
       this.transaction(function(t) {
         var tmp = r.due_date, pad = function(i) {return i < 10 ? "0" + i : i};
-        if(tmp) tmp = tmp.getUTCFullYear() + "-" + pad(tmp.getUTCMonth() + 1) + "-" + pad(tmp.getUTCDate());
+        if(tmp) tmp = tmp.getFullYear() + "-" + pad(tmp.getMonth() + 1) + "-" + pad(tmp.getDate());
 
         t.executeSql(
           "UPDATE tasks SET project_id=?, content=?, due_date=?, priority=? WHERE id=?", 
@@ -382,8 +387,7 @@ var todoist = {
       t.executeSql("DELETE FROM projs");
       t.executeSql("DELETE FROM tasks");
     });
-    this.cookie("tduser", 0, 1);
-    this.cookie("tdpass", 0, 1);
+    this.cookie("tdtoken", 0, 1);
     $("user").value = "";
     $("pass").value = "";
     this.projCount = this.token = 0;
@@ -426,10 +430,11 @@ var todoist = {
 }
 </script>
 <style>
-body {font:9pt Helvetica,Arial; _font-weight:bold; margin:0; padding:0; background:#000; color:#fff; -webkit-text-size-adjust:none}
+body {font:9pt Helvetica,Arial; margin:0; padding:0; background:#000; color:#fff; -webkit-text-size-adjust:none}
 body.flash {background:#333}
 .proj {float:left; min-width:160px; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0 0 0.3em 0; padding:0}
+.token {color:#888; font-size:8pt}
 a {font-size:9pt; color:#fff}
 .proj h2 a {font:bold 11pt Helvetica,Arial; text-decoration:none}
 .emptyprojs {font-size:8pt} .emptyprojs a {color:#999; margin-right:1em; text-decoration:none}
@@ -444,10 +449,9 @@ li.imp4 {color:#faa}
 </head>
 <body style="overflow:auto">
 <form id="loginbox" style="margin:5px;padding:0;display:none" onsubmit="todoist.login();return false;">
-User:<br><input id="user" type="email">
-<br>Pass:<br><input id="pass" type="password">
+Email: <span class="token">or Private Token</span><br><input id="user" type="email">
+<br>Password:<br><input id="pass" type="password">
 <br><input type="submit" id="loginnow" value="Login"> <a href="http://todoist.com">Register</a>
-<br><input type=checkbox id="savelogin">Save login as cookie
 </form>
 <div style="float:left; width:1%"><a href="#" onclick="todoist.goOnline();" style="padding:3px">R</a></div>
 <div id="main"></div>

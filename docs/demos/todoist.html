@@ -217,7 +217,7 @@ var todoist = {
     var bullet;
     var now = new Date().getTime();
 
-    var ie6width = document.all ? ";_width:expression(document.body.clientWidth/("+this.projCount+'||1)<160?"160px":"'+width+'%")' : "";
+    var ie6width = document.all ? ";_width:expression(document.body.clientWidth/("+this.projCount+'||1)<160?"160px":"'+width+'%")' : "";  //~13em
 
     var projs = [];  //sort projs
     for(var i in this.data) projs.push(i);
@@ -432,7 +432,7 @@ var todoist = {
 <style>
 body {font:9pt Helvetica,Arial; margin:0; padding:0; background:#000; color:#fff; -webkit-text-size-adjust:none}
 body.flash {background:#333}
-.proj {float:left; min-width:160px; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
+.proj {float:left; min-width:13em; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0 0 0.3em 0; padding:0}
 .token {color:#888; font-size:8pt}
 a {font-size:9pt; color:#fff}
@@ -470,7 +470,8 @@ todoist.onload();
 var touchTimer = ["ontouchstart" in document.body, function(e) {clearTimeout(touchTimer);}];
 document.body[touchTimer[0] ? "ontouchstart" : "onmousedown"] = function(e) {
   clearTimeout(touchTimer);
-  e = e.target;
+  e = e || window.event;
+  e = e.target || e.srcElement;
   if(e && e.nodeType != 1) e = e.parentNode;
   if(e && e.id && todoist.data) {
     touchTimer = setTimeout("todoist.updateItem('"+e.id+"');", 1000);

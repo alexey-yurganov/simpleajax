@@ -270,8 +270,8 @@ var todoist = {
     html.push("<\/div>");
 
     $("main").innerHTML = html.join("");
-    document.body.className = "flash";
-    setTimeout(function() {document.body.className = "";}, 100);
+    document.body.className = wob ? "flash white" : "flash";
+    setTimeout(function() {document.body.className = wob ? "white" : "";}, 100);
   },
 
   addItem: function(id) {
@@ -336,7 +336,7 @@ var todoist = {
     }
 
     var dateStr = arr[i].due_date;
-    if(dateStr) dateStr = (dateStr.getMonth() + 1) + "/" + dateStr.getDate() + " " + dateStr.getFullYear();
+    if(dateStr) dateStr = dateStr.getDate() + "/" + (dateStr.getMonth() + 1) + "/" + dateStr.getFullYear();
 
     var s = prompt("Change to:", arr[i].content);
     var ds = s ? prompt("Due when?", dateStr) : "";
@@ -435,7 +435,7 @@ body {font:9pt Helvetica,Arial; margin:0; padding:0; background:#000; color:#fff
 body.flash {background:#333}
 .proj {float:left; min-width:13em; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0 0 0.3em 0; padding:0}
-.token {color:#888; font-size:8pt}
+.token {color:#888}
 a {font-size:9pt; color:#fff}
 .proj h2 a {font:bold 11pt Helvetica,Arial; text-decoration:none}
 .emptyprojs {font-size:8pt} .emptyprojs a {color:#999; margin-right:1em; text-decoration:none}
@@ -446,6 +446,13 @@ li.alt {color:#fff}
 li.imp4 {color:#faa}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa; margin-left:-0.5em} .bullweek {color:#aaa}
 @media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} .proj {float:none; display:table-cell}}
+.white {background:#fff; color:#000}
+.white .emptyprojs a {color:#bbb}
+.white li.imp4 {color:#f44}
+.white a {color:#555}
+.white .due {color:#33f}
+.white li {color:#888}
+.white li.alt {color:#000}
 </style>
 </head>
 <body style="overflow:auto">
@@ -468,6 +475,8 @@ Todoist Wall -
 </div></div><noscript style="color:#f55">Please enable JavaScript.</noscript>
 <script>
 todoist.onload();
+var wob = (location.hash == "#w");
+if(wob) document.body.className = "white";
 
 var touchTimer = ["ontouchstart" in document.body, function(e) {clearTimeout(touchTimer);}];
 document.body[touchTimer[0] ? "ontouchstart" : "onmousedown"] = function(e) {
@@ -483,6 +492,7 @@ document.body[touchTimer[0] ? "ontouchmove" : "onmousemove"] = touchTimer[1];
 document.body[touchTimer[0] ? "ontouchend" : "onmouseup"] = touchTimer[1];
 document.body.ongesturestart = touchTimer[1];
 touchTimer = 0;
+var ok = 200;
 </script>
 </body>
 </html>

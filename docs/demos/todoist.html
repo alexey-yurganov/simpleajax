@@ -267,7 +267,7 @@ var todoist = {
       var proj = this.data[projs[i]];
       if(!proj.data) html.push("<a href='javascript:todoist.addItem("+projs[i]+");'>"+proj.name+"</a> ");
     }
-    html.push("<\/div>");
+    html.push("<a href='javascript:todoist.addProject();'>[+]</a><\/div>");
 
     $("main").innerHTML = html.join("");
     document.body.className = wob ? "flash white" : "flash";
@@ -383,6 +383,39 @@ var todoist = {
     }
   },
 
+  addProject: function() {
+    if(!this.token) {
+      this.goOnline();
+      this.afterLogin.push(null);
+    }
+
+    var s = prompt("Project name?");
+
+    if(s) {
+      s = encodeURIComponent(s);
+      if(this.token) {
+        this.ajax("addProject", "&name="+s);
+      } else {
+        this.afterLogin.push(["addProject", "&name="+s]);
+      }
+    }
+  },
+
+  cbaddProject: function(r) {
+    if(typeof r == "string") {
+      alert("Error: "+r);
+      return;
+    }
+
+    var d = this.data[r.id] = {name: r.name, order: r.item_order||0};
+
+    this.transaction(function(t) {
+      t.executeSql("INSERT INTO projs (id, name, item_order) VALUES (?, ?, ?)", [r.id, d.name, d.order]);
+    });
+
+    this.updateView();
+  },
+
   logout: function() {
     this.transaction(function(t) {
       t.executeSql("DELETE FROM projs");
@@ -445,7 +478,7 @@ li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -w
 li.alt {color:#fff}
 li.imp4 {color:#faa}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa; margin-left:-0.5em} .bullweek {color:#aaa}
-@media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} .proj {float:none; display:table-cell}}
+@media screen and (max-device-width: 480px) {body {width:1000px; -webkit-text-size-adjust:none} #main {display:table-row} .proj {float:none; display:table-cell}}
 .white {background:#fff; color:#000}
 .white .emptyprojs a {color:#bbb}
 .white li.imp4 {color:#f44}

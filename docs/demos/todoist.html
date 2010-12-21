@@ -2,7 +2,8 @@
 <html manifest="todoist.manifest">
 <head><title>Todoist</title>
 <link rel="shortcut icon" href="http://todoist.com/favicon.ico">
-<link rel="apple-touch-icon" href="http://static.todoist.com/96444e78b51b8496f2817e2b59ef915d.png">
+<link rel="apple-touch-icon" href="todoist57.png">
+<link rel="apple-touch-icon" sizes="114x114" href="todoist114.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="format-detection" content="telephone=no">
@@ -31,7 +32,6 @@ var todoist = {
   },
 
   cookie: function(n, v, remove) {
-    var elm;
     try {
       if(window.localStorage) {
         if(remove) {
@@ -461,7 +461,7 @@ var todoist = {
       this.dbms.push([a, b, c]);
     }
   }
-}
+};
 </script>
 <style>
 body {font:9pt Helvetica,Arial; margin:0; padding:0; background:#000; color:#fff}

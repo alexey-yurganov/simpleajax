@@ -32,19 +32,6 @@ var todoist = {
   },
 
   cookie: function(n, v, remove) {
-    try {
-      if(window.localStorage) {
-        if(remove) {
-          localStorage.removeItem(n);
-        } else if(v) {
-          localStorage.setItem(n, encodeURIComponent(v));
-        } else {
-          return decodeURIComponent(localStorage.getItem(n) || "");
-        }
-        return;
-      }
-    } catch(e) {}
-
     if(remove) {
       document.cookie = encodeURIComponent(n) + "=; expires=Mon, 1 Jan 1980 01:01:01 GMT";
     } else if(v) {
@@ -248,14 +235,14 @@ var todoist = {
         }
       }
 
-      html.push("<div class='proj' style='width:"+width+"%"+ie6width+"'><h2><a href='javascript:todoist.addItem("+projs[i]+");'>"+proj.name+"</a></h2><ul>");
+      html.push("<div class='proj' style='width:"+width+"%"+ie6width+"'><h2><a href='javascript:if(todoist.copying)todoist.copyItem("+projs[i]+");else todoist.addItem("+projs[i]+");'>"+proj.name+"</a></h2><ul>");
       for(var j=0; j<proj.data.length; j++) {
         item = proj.data[j];
 
         bullet = item.due_now == 2 ? "bullnow'>&rArr;" : item.due_now == 1 ?  "bullweek'>&diams;" : "bullold'>&bull;";
         bullet = "<span class='" + bullet + "</span>";
 
-        html.push("<li class='imp"+item.priority+(j%2?" alt":"")+"' id='n"+item.id+"_"+projs[i]+"' onclick='todoist.completeItems(this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
+        html.push("<li class='imp"+item.priority+(j%2?" alt":"")+"' id='n"+item.id+"_"+projs[i]+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
       }
       html.push("</ul></div>");
     }
@@ -339,7 +326,7 @@ var todoist = {
     if(dateStr) dateStr = dateStr.getDate() + "/" + (dateStr.getMonth() + 1) + "/" + dateStr.getFullYear();
 
     var s = prompt("Change to:", arr[i].content);
-    var ds = s ? prompt("Due when?", dateStr) : "";
+    var ds = s ? prompt("Due when? d/m/yyyy", dateStr) : "";
     if(s) {
       arr[i].content = s;
       arr[i].date_string = ds;
@@ -416,6 +403,55 @@ var todoist = {
     this.updateView();
   },
 
+  makeCopyable: function() {
+    if(this.copying) {
+      this.copying = null;
+      $("main").className = "";
+    } else {
+      this.copying = {};
+      $("main").className = "copy1";
+    }
+  },
+
+  selectItem: function(n) {
+    if(this.copying.id) {
+      this.copying = null;
+      $("main").className = "";
+      return;
+    }
+
+    var id = n.id.split("_"), proj = id[1], arr = this.data[proj].data;
+    id = id[0].substr(1);
+
+    for(var i=0; i<arr.length; i++) {
+      if(arr[i].id == id) {
+        this.copying = arr[i];
+        $("main").className = "copy2";
+        break;
+      }
+    }
+  },
+
+  copyItem: function(proj) {
+    var m = this.copying;
+    this.copying = null;
+    $("main").className = "";
+
+    if(m.project_id == proj) return;
+
+    var params = ["js_date=1&project_id=" + proj];
+    for(var i in m) {
+      if(m[i] && i != "project_id" && i != "id") params.push(i + "=" + encodeURIComponent(m[i] || ""));
+    }
+
+    if(this.token) {
+      this.ajax("addItem", "&" + params.join("&"));
+    } else {
+      this.goOnline();
+      this.afterLogin.push(["addItem", "&" + params.join("&")]);
+    }
+  },
+
   logout: function() {
     this.transaction(function(t) {
       t.executeSql("DELETE FROM projs");
@@ -464,7 +500,7 @@ var todoist = {
 };
 </script>
 <style>
-body {font:9pt Helvetica,Arial; margin:0; padding:0; background:#000; color:#fff}
+body {font:9pt Helvetica,Arial; margin:3px; padding:0; background:#000; color:#fff}
 body.flash {background:#333}
 .proj {float:left; min-width:13em; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0 0 0.3em 0; padding:0}
@@ -474,7 +510,7 @@ a {font-size:9pt; color:#fff}
 .emptyprojs {font-size:8pt} .emptyprojs a {color:#999; margin-right:1em; text-decoration:none}
 .due {color:#bbe; font-size:8pt; margin-left:4%}
 ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle}
-li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -webkit-tap-highlight-color:rgba(255,255,255,0.2)}
+li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -webkit-tap-highlight-color:rgba(255,255,255,0.2); -webkit-transition:margin 0.3s}
 li.alt {color:#fff}
 li.imp4 {color:#faa}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa; margin-left:-0.5em} .bullweek {color:#aaa}
@@ -486,6 +522,13 @@ li.imp4 {color:#faa}
 .white .due {color:#33f}
 .white li {color:#888}
 .white li.alt {color:#000}
+.white .bullnow, .white .bullweek, .white .bullold {color:#bbb}
+.copy1 li, .copy2 li {margin-bottom:0.8em; border-radius:0.6em}
+.copy1 .proj h2 a, .copy2 .proj h2 a  {padding:0.3em; border-radius:0.3em; -webkit-transition:background-color 0.5s}
+.copy1 li {background:#555}
+.copy2 .proj h2 a {background:#555}
+.white .copy1 li {background:#ffa}
+.white .copy2 .proj h2 a {background:#ffa}
 </style>
 </head>
 <body style="overflow:auto">
@@ -494,17 +537,17 @@ Email: <span class="token">or Private Token</span><br><input id="user" type="ema
 <br>Password:<br><input id="pass" type="password">
 <br><input type="submit" id="loginnow" value="Login"> <a href="http://todoist.com">Register</a>
 </form>
-<div style="float:left; width:1%"><a href="#" onclick="todoist.goOnline();" style="padding:3px">R</a></div>
+<div style="float:left"><a href="#" onclick="todoist.goOnline();" style="padding:3px;text-decoration:none;font-weight:bold">&dArr;</a></div>
 <div id="main"></div>
 <div style="clear:both;padding-top:1em;font-size:8pt;color:#aaa">
-<a href="#" onclick="this.style.display='none';this.nextSibling.style.display='';return false;" style="margin:3px">?</a><div style="display:none">
+<a href="#" onclick="this.style.display='none';this.nextSibling.style.display='';return false;" style="padding:3px">?</a><div style="display:none">
 Todoist Wall -
 <br>(1) click on project title to add a task
 <br>(2) press and hold on task to edit
 <br>(3) tap on task to delete
 <br>(4) type !p4 while adding a task to mark it as important
 <br>(5) add website to home screen to remove Safari buttons
-<br><a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a>
+<br><a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a> - <a href="javascript:todoist.makeCopyable();window.scrollTo(0,0);">duplicate task</a>
 </div></div><noscript style="color:#f55">Please enable JavaScript.</noscript>
 <script>
 todoist.onload();

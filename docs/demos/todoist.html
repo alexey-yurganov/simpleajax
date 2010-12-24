@@ -256,9 +256,11 @@ var todoist = {
     }
     html.push("<a href='javascript:todoist.addProject();'>[+]</a><\/div>");
 
+    if($("main").childNodes.length > 1) {
+      document.body.className = wob ? "flash white" : "flash";
+      setTimeout(function() {document.body.className = wob ? "white" : "";}, 100);
+    }
     $("main").innerHTML = html.join("");
-    document.body.className = wob ? "flash white" : "flash";
-    setTimeout(function() {document.body.className = wob ? "white" : "";}, 100);
   },
 
   addItem: function(id) {
@@ -500,17 +502,17 @@ var todoist = {
 };
 </script>
 <style>
-body {font:9pt Helvetica,Arial; margin:3px; padding:0; background:#000; color:#fff}
+body {font:9pt Helvetica,Arial; margin:3px; padding:0; background:#000; color:#fff; -webkit-tap-highlight-color:rgba(255,255,255,0.2)}
 body.flash {background:#333}
 .proj {float:left; min-width:13em; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
-.proj h2 {margin:0 0 0.3em 0; padding:0}
+.proj h2 {margin:0; padding:0}
 .token {color:#888}
 a {font-size:9pt; color:#fff}
-.proj h2 a {font:bold 11pt Helvetica,Arial; text-decoration:none}
+.proj h2 a {font:bold 11pt Helvetica,Arial; text-decoration:none; padding:0 1em 0.3em 0}
 .emptyprojs {font-size:8pt} .emptyprojs a {color:#999; margin-right:1em; text-decoration:none}
 .due {color:#bbe; font-size:8pt; margin-left:4%}
 ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle}
-li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -webkit-tap-highlight-color:rgba(255,255,255,0.2); -webkit-transition:margin 0.3s}
+li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -webkit-transition:margin 0.3s}
 li.alt {color:#fff}
 li.imp4 {color:#faa}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa; margin-left:-0.5em} .bullweek {color:#aaa}
@@ -523,8 +525,9 @@ li.imp4 {color:#faa}
 .white li {color:#888}
 .white li.alt {color:#000}
 .white .bullnow, .white .bullweek, .white .bullold {color:#bbb}
-.copy1 li, .copy2 li {margin-bottom:0.8em; border-radius:0.6em}
+.copy1 li, .copy2 li {margin-bottom:0.8em; text-indent:0; border-radius:0.6em}
 .copy1 .proj h2 a, .copy2 .proj h2 a  {padding:0.3em; border-radius:0.3em; -webkit-transition:background-color 0.5s}
+.copy1 .bullnow, .copy1 .bullweek, .copy1 .bullold, .copy2 .bullnow, .copy2 .bullweek, .copy2 .bullold {display:none}
 .copy1 li {background:#555}
 .copy2 .proj h2 a {background:#555}
 .white .copy1 li {background:#ffa}
@@ -538,7 +541,7 @@ Email: <span class="token">or Private Token</span><br><input id="user" type="ema
 <br><input type="submit" id="loginnow" value="Login"> <a href="http://todoist.com">Register</a>
 </form>
 <div style="float:left"><a href="#" onclick="todoist.goOnline();" style="padding:3px;text-decoration:none;font-weight:bold">&dArr;</a></div>
-<div id="main"></div>
+<div id="main"><p style="margin-bottom:400px"></p></div>
 <div style="clear:both;padding-top:1em;font-size:8pt;color:#aaa">
 <a href="#" onclick="this.style.display='none';this.nextSibling.style.display='';return false;" style="padding:3px">?</a><div style="display:none">
 Todoist Wall -

@@ -170,6 +170,7 @@ var todoist = {
     if(r && r.length) {
       this.data[r[0].project_id].data = r;
       this.projCount++;
+      for(var i=0; i<r.length; i++) r[i].content = r[i].content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/&/g,"&amp;");
 
       this.transaction(function(t) {  //used by addItem
         t.executeSql("DELETE FROM tasks WHERE project_id = ?", [r[0].project_id]);
@@ -454,6 +455,39 @@ var todoist = {
     }
   },
 
+  search: function() {
+    var s = this.searchTerm = prompt("Search for?", this.searchTerm || "");
+
+    var arr = document.getElementsByTagName("i");
+    for(var i=arr.length-1; i>=0; i--) arr[i].parentNode.replaceChild(arr[i].firstChild, arr[i]);
+
+    if(s) {
+      s = s.toLowerCase().replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/&/g,"&amp;");
+      var n, n1, n2, d, count = 0;
+      for(var i in this.data) {
+        d = this.data[i].data;
+        if(!d) continue;
+        for(var j=0; j<d.length && count < 100; j++) {
+          if(d[j].content.toLowerCase().indexOf(s) >= 0) {
+            n = $("n" + d[j].id + "_" + d[j].project_id);
+            var n1 = n.removeChild(n.firstChild);
+            var n2 = n.removeChild(n.lastChild);
+            n.innerHTML = n.innerHTML.toLowerCase().split(s).join("<i>" + s + "</i>");
+            n.insertBefore(n1, n.firstChild);
+            n.appendChild(n2);
+
+            if(count == 0 && n.getBoundingClientRect) {
+              n = n.getBoundingClientRect();
+              window.scrollTo(document.body.scrollLeft + n.left - 40, document.body.scrollTop + n.top - 40);
+            }
+            count++;
+          }
+        }
+      }
+      if(count == 0) alert("No matches found");
+    }
+  },
+
   logout: function() {
     this.transaction(function(t) {
       t.executeSql("DELETE FROM projs");
@@ -517,6 +551,8 @@ li.alt {color:#fff}
 li.imp4 {color:#faa}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa; margin-left:-0.5em} .bullweek {color:#aaa}
 @media screen and (max-device-width: 480px) {body {width:1000px; -webkit-text-size-adjust:none} #main {display:table-row} .proj {float:none; display:table-cell}}
+li i {font-style:normal; background:#ff4; padding:0 0.1em; border-radius:0.3em; color:#000}
+.white li i {background:#cc0; color:#fff}
 .white {background:#fff; color:#000}
 .white .emptyprojs a {color:#bbb}
 .white li.imp4 {color:#f44}
@@ -540,7 +576,7 @@ Email: <span class="token">or Private Token</span><br><input id="user" type="ema
 <br>Password:<br><input id="pass" type="password">
 <br><input type="submit" id="loginnow" value="Login"> <a href="http://todoist.com">Register</a>
 </form>
-<div style="float:left"><a href="#" onclick="todoist.goOnline();" style="padding:3px;text-decoration:none;font-weight:bold">&dArr;</a></div>
+<div style="float:left"><a href="#" onclick="todoist.goOnline();return false;" style="padding:3px;text-decoration:none;font-weight:bold">&dArr;</a></div>
 <div id="main"><p style="margin-bottom:400px"></p></div>
 <div style="clear:both;padding-top:1em;font-size:8pt;color:#aaa">
 <a href="#" onclick="this.style.display='none';this.nextSibling.style.display='';return false;" style="padding:3px">?</a><div style="display:none">
@@ -550,7 +586,9 @@ Todoist Wall -
 <br>(3) tap on task to delete
 <br>(4) type !p4 while adding a task to mark it as important
 <br>(5) add website to home screen to remove Safari buttons
-<br><a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a> - <a href="javascript:todoist.makeCopyable();window.scrollTo(0,0);">duplicate task</a>
+<br><a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a> 
+- <a href="javascript:todoist.search();return false;">search</a>
+- <a href="javascript:todoist.makeCopyable();window.scrollTo(0,0);return false;">duplicate task</a>
 </div></div><noscript style="color:#f55">Please enable JavaScript.</noscript>
 <script>
 todoist.onload();

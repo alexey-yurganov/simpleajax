@@ -170,7 +170,7 @@ var todoist = {
     if(r && r.length) {
       this.data[r[0].project_id].data = r;
       this.projCount++;
-      for(var i=0; i<r.length; i++) r[i].content = r[i].content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/&/g,"&amp;");
+      for(var i=0; i<r.length; i++) r[i].content = r[i].content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
       this.transaction(function(t) {  //used by addItem
         t.executeSql("DELETE FROM tasks WHERE project_id = ?", [r[0].project_id]);
@@ -462,7 +462,7 @@ var todoist = {
     for(var i=arr.length-1; i>=0; i--) arr[i].parentNode.replaceChild(arr[i].firstChild, arr[i]);
 
     if(s) {
-      s = s.toLowerCase().replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/&/g,"&amp;");
+      s = s.toLowerCase().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
       var n, n1, n2, d, count = 0;
       for(var i in this.data) {
         d = this.data[i].data;
@@ -587,8 +587,8 @@ Todoist Wall -
 <br>(4) type !p4 while adding a task to mark it as important
 <br>(5) add website to home screen to remove Safari buttons
 <br><a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a> 
-- <a href="javascript:todoist.search();return false;">search</a>
-- <a href="javascript:todoist.makeCopyable();window.scrollTo(0,0);return false;">duplicate task</a>
+- <a href="javascript:todoist.search();">search</a>
+- <a href="javascript:todoist.makeCopyable();window.scrollTo(0,0);">duplicate task</a>
 </div></div><noscript style="color:#f55">Please enable JavaScript.</noscript>
 <script>
 todoist.onload();

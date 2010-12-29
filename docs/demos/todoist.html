@@ -539,6 +539,7 @@ var todoist = {
 <style>
 body {margin:3px; padding:0; background:#000; color:#fff; -webkit-tap-highlight-color:rgba(255,255,255,0.2)}
 body,form,#foot {font:9pt Helvetica,Arial}
+#foot {background:#000}
 body.flash {background:#333}
 .proj {float:left; min-width:13em; -webkit-transition:min-width 0.2s; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0; padding:0}
@@ -556,7 +557,7 @@ li.imp4 {color:#faa}
 li i {font-style:normal; background:#ff4; padding:0 0.1em; border-radius:0.3em; color:#000}
 #foot a {padding:0.3em 0.5em}
 .white li i {background:#cc0; color:#fff}
-.white {background:#fff; color:#000}
+.white, .white #foot {background:#fff; color:#000}
 .white .emptyprojs a {color:#bbb}
 .white li.imp4 {color:#f44}
 .white a {color:#555}
@@ -583,7 +584,7 @@ Email: <span class="token">or Private Token</span><br><input id="user" type="ema
 </form>
 <div style="float:left"><a href="#" onclick="todoist.goOnline();return false;" style="padding:3px;text-decoration:none;font-weight:bold">&dArr;</a></div>
 <div id="main"><p style="margin-bottom:400px"></p></div>
-<div id="foot" style="clear:both;padding-top:1em;font-size:8pt;color:#aaa">
+<div id="foot" style="clear:both;margin-top:1em;font-size:8pt;color:#aaa;position:fixed;bottom:0;left:0">
 <div id="man" style="display:none">
 Todoist Wall -
 <br>(1) click on project title to add a task

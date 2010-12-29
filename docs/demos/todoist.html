@@ -253,7 +253,7 @@ var todoist = {
 
     for(var i=0; i<projs.length; i++) {
       var proj = this.data[projs[i]];
-      if(!proj.data) html.push("<a href='javascript:todoist.addItem("+projs[i]+");'>"+proj.name+"</a> ");
+      if(!proj.data) html.push("<a href='javascript:if(todoist.copying)todoist.copyItem("+projs[i]+");else todoist.addItem("+projs[i]+");'>"+proj.name+"</a> ");
     }
     html.push("<a href='javascript:todoist.addProject();'>[+]</a><\/div>");
 
@@ -494,6 +494,7 @@ var todoist = {
       t.executeSql("DELETE FROM tasks");
     });
     this.cookie("tdtoken", 0, 1);
+    this.cookie("tdwidths", 0, 1);
     $("user").value = "";
     $("pass").value = "";
     this.projCount = this.token = 0;
@@ -536,9 +537,10 @@ var todoist = {
 };
 </script>
 <style>
-body {font:9pt Helvetica,Arial; margin:3px; padding:0; background:#000; color:#fff; -webkit-tap-highlight-color:rgba(255,255,255,0.2)}
+body {margin:3px; padding:0; background:#000; color:#fff; -webkit-tap-highlight-color:rgba(255,255,255,0.2)}
+body,form,#foot {font:9pt Helvetica,Arial}
 body.flash {background:#333}
-.proj {float:left; min-width:13em; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
+.proj {float:left; min-width:13em; -webkit-transition:min-width 0.2s; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0; padding:0}
 .token {color:#888}
 a {font-size:9pt; color:#fff}
@@ -550,8 +552,9 @@ li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -w
 li.alt {color:#fff}
 li.imp4 {color:#faa}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa; margin-left:-0.5em} .bullweek {color:#aaa}
-@media screen and (max-device-width: 480px) {body {width:1000px; -webkit-text-size-adjust:none} #main {display:table-row} .proj {float:none; display:table-cell}}
+@media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} .proj {float:none; display:table-cell}}
 li i {font-style:normal; background:#ff4; padding:0 0.1em; border-radius:0.3em; color:#000}
+#foot a {padding:0.3em 0.5em}
 .white li i {background:#cc0; color:#fff}
 .white {background:#fff; color:#000}
 .white .emptyprojs a {color:#bbb}
@@ -568,6 +571,8 @@ li i {font-style:normal; background:#ff4; padding:0 0.1em; border-radius:0.3em; 
 .copy2 .proj h2 a {background:#555}
 .white .copy1 li {background:#ffa}
 .white .copy2 .proj h2 a {background:#ffa}
+.resizeme {display:none}
+#resizeShim {position:absolute; left:0; top:0; right:0; bottom:0; min-width:1000px; background:#f00; opacity:0.3}
 </style>
 </head>
 <body style="overflow:auto">
@@ -578,8 +583,8 @@ Email: <span class="token">or Private Token</span><br><input id="user" type="ema
 </form>
 <div style="float:left"><a href="#" onclick="todoist.goOnline();return false;" style="padding:3px;text-decoration:none;font-weight:bold">&dArr;</a></div>
 <div id="main"><p style="margin-bottom:400px"></p></div>
-<div style="clear:both;padding-top:1em;font-size:8pt;color:#aaa">
-<a href="#" onclick="this.style.display='none';this.nextSibling.style.display='';return false;" style="padding:3px">?</a><div style="display:none">
+<div id="foot" style="clear:both;padding-top:1em;font-size:8pt;color:#aaa">
+<div id="man" style="display:none">
 Todoist Wall -
 <br>(1) click on project title to add a task
 <br>(2) press and hold on task to edit
@@ -587,15 +592,20 @@ Todoist Wall -
 <br>(4) type !p4 while adding a task to mark it as important
 <br>(5) add website to home screen to remove Safari buttons
 <br><a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a> 
-- <a href="javascript:todoist.search();">search</a>
-- <a href="javascript:todoist.makeCopyable();window.scrollTo(0,0);">duplicate task</a>
-</div></div><noscript style="color:#f55">Please enable JavaScript.</noscript>
+<a href="javascript:todoist.makeCopyable();window.scrollTo(0,0);">duplicate task</a>
+<a href="javascript:resizeMe(0);" class="resizeme">resize columns</a>
+<a href="javascript:resizeMe(1);" class="resizeme">resize text</a>
+</div>
+<a href="#" onclick="with($('man').style){display=display?'':'none';};return false;" style="padding:3px">?</a>
+<a href="javascript:todoist.search();">search</a>
+</div><noscript style="color:#f55">Please enable JavaScript.</noscript>
+<span id="projwidth"></span>
 <script>
 todoist.onload();
 var wob = (location.hash == "#w");
 if(wob) document.body.className = "white";
 
-var touchTimer = ["ontouchstart" in document.body, function(e) {clearTimeout(touchTimer);}];
+var touchTimer = ["ontouchend" in document.body, function(e) {clearTimeout(touchTimer);}];
 document.body[touchTimer[0] ? "ontouchstart" : "onmousedown"] = function(e) {
   clearTimeout(touchTimer);
   e = e || window.event;
@@ -610,6 +620,62 @@ document.body[touchTimer[0] ? "ontouchend" : "onmouseup"] = touchTimer[1];
 document.body.ongesturestart = touchTimer[1];
 touchTimer = 0;
 var ok = 200;
+
+var allWidths = (todoist.cookie("tdwidths") || "13,100").split(",");
+var oldAllWidths;
+function updateSize() {
+  $("projwidth").innerHTML = "<style>.resizeme{display:inline} .proj{min-width:"+allWidths[0]+"em} body{-webkit-text-size-adjust:"+allWidths[1]+"%}</style>";
+}
+updateSize();
+function resizeMe(col, again) {
+  if(!again) oldAllWidths = allWidths.join(",");
+  if("ontouchend" in document.body) {
+    if(!confirm("Pinch the screen with 2 fingers to resize. Tap the screen once when done. Tap OK to begin.")) return;
+    var n = $("resizeShim") || document.body.appendChild(document.createElement("div"));
+    n.id = "resizeShim";
+    var lastScale;
+    n.ongesturestart = function(e) {e.preventDefault();};
+    n.ongesturechange = function(e) {
+      e.preventDefault();
+      if(lastScale == Math.round(e.scale*100)) return;
+      lastScale = Math.round(e.scale*100);
+      allWidths[col] = parseInt(allWidths[col]*Math.pow(e.scale,0.25)*100)/100;
+      updateSize();
+    };
+    n.onclick = function(e) {
+      e.preventDefault();
+      if(confirm("Use this size?")) {
+        todoist.cookie("tdwidths", allWidths.join(","));
+      } else {
+        allWidths = oldAllWidths.split(",");
+        updateSize();
+      }
+      n.ongesturestart = null;
+      n.ongesturechange = null;
+      n.onclick = null;
+      n.parentNode.removeChild(n);
+      n = null;
+    };
+  } else {
+    var old = oldAllWidths.split(",")[col]*1;
+    var s = parseInt(allWidths[col]/old*100) + "%";
+    s = prompt(!again ? "Resize to what percent?" : "Press cancel if no further changes, or enter another percent.", s);
+    if(s) s = s.replace("%", "");
+    if(s && s != "100") {
+      if(s*s > 0) allWidths[col] = parseInt(old*s)/100;
+      updateSize();
+      setTimeout("resizeMe("+col+",1);", 100);
+    } else {
+      if(again && confirm("Save size as "+parseInt(allWidths[col]/old*100)+"%?")) {
+        todoist.cookie("tdwidths", allWidths.join(","));
+      } else {
+        allWidths = oldAllWidths.split(",");
+        updateSize();
+      }
+    }
+  }
+  scrollTo(0, 0);
+}
 </script>
 </body>
 </html>

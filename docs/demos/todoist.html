@@ -226,13 +226,20 @@ var todoist = {
       var proj = this.data[projs[i]];
       if(!proj.data) continue;
 
-      for(var j=0; j<proj.data.length; j++) {
+      for(var j=0, x=0; j<proj.data.length; j++) {
         item = proj.data[j];
-        bullet = item.due_date ? item.due_date.getTime() - now : -1;
-        item.due_now = !item.due_date ? 0 : bullet < 60000*60*24 ? 2 : bullet < 60000*60*24*7 ? 1 : 0;
-        if(item.due_now == 2) {
-          proj.data.splice(j, 1);
-          proj.data.unshift(item);
+        item.due_now = 0;
+        if(item.due_date) {
+          bullet = item.due_date.getTime() - now;
+          item.due_now = bullet < 60000*60*24 ? 2 : bullet < 60000*60*24*7 ? 1 : 0;
+          if(item.due_now == 2) {
+            proj.data.splice(j, 1);
+            proj.data.unshift(item);
+          } else if(j != x) {
+            proj.data.splice(j, 1);
+            proj.data.splice(x, 0, item);
+          }
+          x++;
         }
       }
 

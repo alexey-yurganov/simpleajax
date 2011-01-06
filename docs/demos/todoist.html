@@ -83,6 +83,7 @@ var todoist = {
           for(var i in dis.data) {
             if(dis.data[i].data) dis.projCount++;
           }
+          dis.sortView();
           dis.updateView();
         }
       );
@@ -171,6 +172,7 @@ var todoist = {
       this.data[r[0].project_id].data = r;
       this.projCount++;
       for(var i=0; i<r.length; i++) r[i].content = r[i].content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      this.sortView(r[0].project_id);
 
       this.transaction(function(t) {  //used by addItem
         t.executeSql("DELETE FROM tasks WHERE project_id = ?", [r[0].project_id]);
@@ -199,12 +201,40 @@ var todoist = {
     }
   },
 
+  sortView: function(proj) {
+    var d = this.data, item, bullet;
+    var now = new Date().getTime();
+    if(!proj) {
+      d = {};
+      d[proj] = this.data[proj];
+    }
+
+    for(var i in d) {
+      if(!d[i].data) continue;
+      for(var j=0, x=0; j<d[i].data.length; j++) {
+        item = d[i].data[j];
+        item.due_now = 0;
+        if(item.due_date) {
+          bullet = item.due_date.getTime() - now;
+          item.due_now = bullet < 60000*60*24 ? 2 : bullet < 60000*60*24*7 ? 1 : 0;
+          if(item.due_now == 2) {
+            d[i].data.splice(j, 1);
+            d[i].data.unshift(item);
+          } else if(j != x) {
+            d[i].data.splice(j, 1);
+            d[i].data.splice(x, 0, item);
+          }
+          x++;
+        }
+      }
+    }
+  },
+
   updateView: function() {
     var html = [];
     var width = Math.floor(97/(this.projCount||1));
     var item;
     var bullet;
-    var now = new Date().getTime();
 
     var ie6width = document.all ? ";_width:expression(document.body.clientWidth/("+this.projCount+'||1)<160?"160px":"'+width+'%")' : "";  //~13em
 
@@ -225,23 +255,6 @@ var todoist = {
     for(var i=0; i<projs.length; i++) {
       var proj = this.data[projs[i]];
       if(!proj.data) continue;
-
-      for(var j=0, x=0; j<proj.data.length; j++) {
-        item = proj.data[j];
-        item.due_now = 0;
-        if(item.due_date) {
-          bullet = item.due_date.getTime() - now;
-          item.due_now = bullet < 60000*60*24 ? 2 : bullet < 60000*60*24*7 ? 1 : 0;
-          if(item.due_now == 2) {
-            proj.data.splice(j, 1);
-            proj.data.unshift(item);
-          } else if(j != x) {
-            proj.data.splice(j, 1);
-            proj.data.splice(x, 0, item);
-          }
-          x++;
-        }
-      }
 
       html.push("<div class='proj' style='width:"+width+"%"+ie6width+"'><h2><a href='javascript:if(todoist.copying)todoist.copyItem("+projs[i]+");else todoist.addItem("+projs[i]+");'>"+proj.name+"</a></h2><ul>");
       for(var j=0; j<proj.data.length; j++) {
@@ -277,7 +290,7 @@ var todoist = {
       this.afterLogin.push(null);
     }
 
-    var s = prompt("What to add to '"+this.data[id].name+"'?", "");
+    var s = prompt("What to add to '"+this.data[id].name+"'?", this.lastInput || "");
     var ds = s ? prompt("Due when? d/m/yyyy", (new Date().getHours() < 18 ? "today" : "tomorrow")) : null;
     if(s) {
       if(this.token) {
@@ -285,6 +298,7 @@ var todoist = {
       } else {
         this.afterLogin.push(["addItem", "&project_id="+id+"&priority=1&js_date=1&content="+encodeURIComponent(s)+(ds?"&date_string="+encodeURIComponent(ds):"")]);
       }
+      this.lastInput = s;
     }
   },
 
@@ -294,19 +308,21 @@ var todoist = {
     } else {
       r.content = r.content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
       this.data[r.project_id].data.push(r);
+      this.sortView(r.project_id);
       this.updateView();
 
       this.transaction(function(t) {
         var pad = function(i) {return i < 10 ? "0" + i : i};
 
         //new Date("Sun Apr 29 23:59:59 2007")
-        if(r.due_date) r.due_date = r.due_date.getFullYear() + "-" + pad(r.due_date.getMonth() + 1) + "-" + pad(r.due_date.getDate());
+        var tmp = !r.due_date ? null : r.due_date.getFullYear() + "-" + pad(r.due_date.getMonth() + 1) + "-" + pad(r.due_date.getDate());
 
         t.executeSql(
           "INSERT INTO tasks (id, project_id, content, due_date, priority) VALUES (?, ?, ?, ?, ?)", 
-          [r.id, r.project_id, r.content, r.due_date, r.priority]
+          [r.id, r.project_id, r.content, tmp, r.priority]
         );
       });
+      this.lastInput = "";
     }
   },
 
@@ -316,12 +332,6 @@ var todoist = {
     if(confirm("Item done?")) {
       if(this.token) {
         this.ajax("completeItems", "&ids=%5B" + id + "%5D");
-
-        var arr = this.data[proj].data;
-        setTimeout(function() {  //do it here because we know there is network avail
-          for(var i=0; i<arr.length; i++) if(arr[i].id == id) return arr.splice(i, 1);
-        }, 7000);
-
       } else {
         this.afterLogin.push(["completeItems", "&ids=%5B" + id + "%5D"]);
         this.goOnline();
@@ -330,6 +340,8 @@ var todoist = {
       this.transaction(function(t) {
         t.executeSql("DELETE FROM tasks WHERE id = ?", [id]);
       });
+      var arr = this.data[proj].data;
+      for(var i=0; i<arr.length; i++) if(arr[i].id == id) return arr.splice(i, 1);
     }
   },
 
@@ -394,6 +406,7 @@ var todoist = {
         );
       });
 
+      this.sortView(r.project_id);
       this.updateView();
     }
   },
@@ -579,6 +592,7 @@ ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle
 li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -webkit-transition:margin 0.3s}
 li.alt {color:#fff}
 li.imp4 {color:#faa}
+li.imp4.eta2 {background:#733}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa} .bullweek {color:#aaa}
 @media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} .proj {float:none; display:table-cell}}
 li i {font-style:normal; background:#ff4; padding:0 0.1em; border-radius:0.3em; color:#000}
@@ -592,6 +606,7 @@ li i {font-style:normal; background:#ff4; padding:0 0.1em; border-radius:0.3em; 
 .white li {color:#888}
 .white li.alt {color:#000}
 .white li.imp4 {color:#f77}
+.white li.imp4.eta2 {background:#fcc; color:#333}
 .white .bullnow, .white .bullweek, .white .bullold {color:#bbb}
 .copy1 li, .copy2 li {margin-bottom:0.8em; text-indent:0; border-radius:0.6em}
 .copy1 .proj h2 a, .copy2 .proj h2 a  {padding:0.3em; border-radius:0.3em; -webkit-transition:background-color 0.5s}

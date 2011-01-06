@@ -204,7 +204,7 @@ var todoist = {
   sortView: function(proj) {
     var d = this.data, item, bullet;
     var now = new Date().getTime();
-    if(!proj) {
+    if(proj) {
       d = {};
       d[proj] = this.data[proj];
     }

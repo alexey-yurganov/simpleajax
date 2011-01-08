@@ -231,8 +231,8 @@ var todoist = {
   },
 
   updateView: function() {
-    var html = [];
-    var width = Math.floor(97/(this.projCount||1));
+    var html = [], summary = [];
+    var width = Math.floor(97/(this.projCount > 1 ? this.projCount+1 : this.projCount||1));
     var item;
     var bullet;
 
@@ -263,10 +263,13 @@ var todoist = {
         bullet = item.due_now == 2 ? "bullnow'>&loz;" : item.due_now == 1 ?  "bullweek'>&diams;" : "bullold'>&bull;";
         bullet = "<span class='" + bullet + "</span>";
 
-        html.push("<li class='imp"+item.priority+(j%2?" alt eta":" eta")+item.due_now+"' id='n"+item.id+"_"+projs[i]+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
+        bullet = item.id+"_"+projs[i]+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>";
+        html.push("<li class='imp"+item.priority+(j%2?" alt eta":" eta")+item.due_now+"' id='n" + bullet);
+        if(item.due_now == 2) summary.push("<li class='imp"+item.priority+(" alt eta")+item.due_now+"' id='s" + bullet);
       }
       html.push("</ul></div>");
     }
+    if(this.projCount > 1) html.unshift("<div class='proj sum' style='width:"+width+"%"+ie6width+"'><ul>" + summary.join("") + "</ul></div>");
     if(this.projCount == 0) html.push("<p>List is empty.</p>");
 
     html.push("<div class='emptyprojs'>");
@@ -291,7 +294,7 @@ var todoist = {
     }
 
     var s = prompt("What to add to '"+this.data[id].name+"'?", this.lastInput || "");
-    var ds = s ? prompt("Due when? d/m/yyyy", (new Date().getHours() < 18 ? "today" : "tomorrow")) : null;
+    var ds = s ? prompt("Due when? d/m/yyyy", (new Date().getHours() < 18 ? "today" : "tom")) : null;
     if(s) {
       if(this.token) {
         this.ajax("addItem", "&project_id="+id+"&priority=1&js_date=1&content="+encodeURIComponent(s)+(ds?"&date_string="+encodeURIComponent(ds):""));
@@ -336,7 +339,8 @@ var todoist = {
         this.afterLogin.push(["completeItems", "&ids=%5B" + id + "%5D"]);
         this.goOnline();
       }
-      n.parentNode.removeChild(n);
+      if((n = $("n"+id+"_"+proj))) n.parentNode.removeChild(n);
+      if((n = $("s"+id+"_"+proj))) n.parentNode.removeChild(n);
       this.transaction(function(t) {
         t.executeSql("DELETE FROM tasks WHERE id = ?", [id]);
       });
@@ -588,6 +592,7 @@ a {font-size:100%; color:#fff}
 .due {color:#bbe; font-size:90%; margin-left:4%}
 .eta2 {background:#333; margin-top:0.3em; border-radius:0.6em}
 .white .eta2 {background:#eee}
+.sum .eta2 {background:none}
 ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle}
 li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -webkit-transition:margin 0.3s}
 li.alt {color:#fff}

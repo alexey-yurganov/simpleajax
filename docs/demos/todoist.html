@@ -232,11 +232,8 @@ var todoist = {
 
   updateView: function() {
     var html = [], summary = [];
-    var width = Math.floor(97/(this.projCount > 1 ? this.projCount+1 : this.projCount||1));
     var item;
     var bullet;
-
-    var ie6width = document.all ? ";_width:expression(document.body.clientWidth/("+this.projCount+'||1)<160?"160px":"'+width+'%")' : "";  //~13em
 
     var projs = [];  //sort projs
     for(var i in this.data) projs.push(i);
@@ -256,20 +253,35 @@ var todoist = {
       var proj = this.data[projs[i]];
       if(!proj.data) continue;
 
-      html.push("<div class='proj' style='width:"+width+"%"+ie6width+"'><h2><a href='javascript:if(todoist.copying)todoist.copyItem("+projs[i]+");else todoist.addItem("+projs[i]+");'>"+proj.name+"</a></h2><ul>");
+      html.push("<div class='proj'><h2><a href='javascript:if(todoist.copying)todoist.copyItem("+projs[i]+");else todoist.addItem("+projs[i]+");'>"+proj.name+"</a></h2><ul>");
       for(var j=0; j<proj.data.length; j++) {
         item = proj.data[j];
 
         bullet = item.due_now == 2 ? "bullnow'>&loz;" : item.due_now == 1 ?  "bullweek'>&diams;" : "bullold'>&bull;";
         bullet = "<span class='" + bullet + "</span>";
+        html.push("<li class='imp"+item.priority+(j%2?" alt eta":" eta")+item.due_now+"' id='n" + item.id+"_"+projs[i]+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
 
-        bullet = item.id+"_"+projs[i]+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>";
-        html.push("<li class='imp"+item.priority+(j%2?" alt eta":" eta")+item.due_now+"' id='n" + bullet);
-        if(item.due_now == 2) summary.push("<li class='imp"+item.priority+(" alt eta")+item.due_now+"' id='s" + bullet);
+        if(item.due_now == 2) summary.push(item);
       }
       html.push("</ul></div>");
     }
-    if(this.projCount > 1) html.unshift("<div class='proj sum' style='width:"+width+"%"+ie6width+"'><ul>" + summary.join("") + "</ul></div>");
+
+    var width = this.projCount || 1;
+
+    if(this.projCount > 1 && summary.length) {
+      width++;
+      for(var i=0; i<summary.length; i++) {
+        item = summary[i];
+        summary[i] = "<li class='imp"+item.priority+(i%2?" alt":"")+" eta2' id='s" + item.id+"_"+item.project_id+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);'><span class='bullnow'>&loz;</span>"+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>";
+      }
+      html.unshift("<div class='proj sum'><ul>" + summary.join("") + "</ul></div>");
+    }
+
+    var ie6width = width;
+    width = Math.floor(97/width);
+    var ie6width = document.all ? ";_width:expression(document.body.clientWidth/"+ie6width+"<160?'160px':'"+width+"%')" : "";  //~13em
+    html.push("<style>.proj{width:"+width+"%"+ie6width+"}</style>");
+
     if(this.projCount == 0) html.push("<p>List is empty.</p>");
 
     html.push("<div class='emptyprojs'>");
@@ -278,7 +290,7 @@ var todoist = {
       var proj = this.data[projs[i]];
       if(!proj.data) html.push("<a href='javascript:if(todoist.copying)todoist.copyItem("+projs[i]+");else todoist.addItem("+projs[i]+");'>"+proj.name+"</a> ");
     }
-    html.push("<a href='javascript:todoist.addProject();'>[+]</a><\/div>");
+    html.push("<a href='javascript:todoist.addProject();'>[+]</a></div>");
 
     if($("main").childNodes.length > 1) {
       document.body.className = wob ? "flash white" : "flash";
@@ -310,7 +322,12 @@ var todoist = {
       alert(r);
     } else {
       r.content = r.content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-      this.data[r.project_id].data.push(r);
+      var p = this.data[r.project_id];
+      if(!p.data) {
+        p.data = [];
+        this.projCount++;
+      }
+      p.data.push(r);
       this.sortView(r.project_id);
       this.updateView();
 
@@ -599,7 +616,7 @@ li.alt {color:#fff}
 li.imp4 {color:#faa}
 li.imp4.eta2 {background:#733}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa} .bullweek {color:#aaa}
-@media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} .proj {float:none; display:table-cell}}
+@media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} .proj {float:none; display:table-cell; width:13em}}
 li i {font-style:normal; background:#ff4; padding:0 0.1em; border-radius:0.3em; color:#000}
 #foot a {padding:0.3em 0.5em}
 .white li i {background:#cc0; color:#fff}
@@ -630,7 +647,7 @@ Email: <span class="token">or Private Token</span><br><input id="user" type="ema
 <br>Password:<br><input id="pass" type="password">
 <br><input type="submit" id="loginnow" value="Login"> <a href="http://todoist.com">Register</a>
 </form>
-<div style="float:left"><a href="#" onclick="todoist.goOnline();return false;" style="padding:3px;text-decoration:none;font-weight:bold">&dArr;</a></div>
+<div style="float:left"><a href="#" onclick="todoist.goOnline();return false;" style="padding:2px;text-decoration:none;font-weight:bold">&dArr;</a></div>
 <noscript style="color:#f55">Please enable JavaScript.</noscript>
 <div id="main"><p style="margin-bottom:400px"></p></div>
 <div id="foot" style="clear:both;margin-top:1em;font-size:8pt;color:#aaa;position:fixed;bottom:0;left:0">

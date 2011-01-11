@@ -600,7 +600,7 @@ body {margin:3px; padding:0; background:#000; color:#fff; -webkit-tap-highlight-
 body,form,#foot {font:9pt Helvetica,Arial}
 #foot {background:#000}
 body.flash {background:#333}
-.proj {float:left; min-width:13em; -webkit-transition:min-width 0.2s; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
+.proj {float:left; min-width:15em; -webkit-transition:min-width 0.2s; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0; padding:0; font-size:inherit}
 .token {color:#888}
 a {font-size:100%; color:#fff}
@@ -616,7 +616,7 @@ li.alt {color:#fff}
 li.imp4 {color:#faa}
 li.imp4.eta2 {background:#733}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa} .bullweek {color:#aaa}
-@media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} .proj {float:none; display:table-cell; width:13em}}
+@media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} #main .proj {float:none; display:table-cell; width:15em}}
 li i {font-style:normal; background:#ff4; padding:0 0.1em; border-radius:0.3em; color:#000}
 #foot a {padding:0.3em 0.5em}
 .white li i {background:#cc0; color:#fff}
@@ -689,10 +689,10 @@ document.body.ongesturestart = touchTimer[1];
 touchTimer = 0;
 var ok = 200;
 
-var allWidths = (todoist.cookie("tdwidths") || "13,100").split(",");
+var allWidths = (todoist.cookie("tdwidths") || "15,100").split(",");
 var oldAllWidths;
 function updateSize() {
-  $("projwidth").innerHTML = "<style>.resizeme{display:inline} .proj{min-width:"+allWidths[0]+"em} #main{font-size:"+allWidths[1]+"%}</style>";
+  $("projwidth").innerHTML = "<style>.resizeme{display:inline} #main .proj{min-width:"+allWidths[0]+"em} #main{font-size:"+allWidths[1]+"%}</style>";
 }
 updateSize();
 function resizeMe(col, again) {

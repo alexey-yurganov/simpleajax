@@ -149,6 +149,7 @@ var todoist = {
       this.goOnline();
     }
 
+    this.data = {};
     for(var i=0; i<r.length; i++) {
       this.data[r[i].id] = {name: r[i].name, order: r[i].item_order||0};
       this.countdown++;

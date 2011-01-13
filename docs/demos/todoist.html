@@ -113,13 +113,17 @@ var todoist = {
       } else {
         $("loginnow").value = "Loading...";
         $("loginnow").disabled = true;
-        this.ajax("login", "&email="+encodeURIComponent(u)+"&password="+encodeURIComponent(p));
+        //this.ajax("login", "&email="+encodeURIComponent(u)+"&password="+encodeURIComponent(p));
+        this.loginTimeout = setTimeout(function() {
+          $("loginbox").insertBefore(document.createElement("em"), $("user").nextSibling).innerHTML = "&nbsp;- Not working? Try logging in with your API Token under found on the todoist.com website.";
+        }, 8000);
       }
   },
 
   cblogin: function(r) {
     $("loginnow").value = "Login";
     $("loginnow").disabled = false;
+    clearTimeout(this.loginTimeout);
     if(typeof r == "string") {
       $("loginbox").style.display = "";
       alert("Error: "+r);

@@ -113,9 +113,9 @@ var todoist = {
       } else {
         $("loginnow").value = "Loading...";
         $("loginnow").disabled = true;
-        //this.ajax("login", "&email="+encodeURIComponent(u)+"&password="+encodeURIComponent(p));
+        this.ajax("login", "&email="+encodeURIComponent(u)+"&password="+encodeURIComponent(p));
         this.loginTimeout = setTimeout(function() {
-          $("loginbox").insertBefore(document.createElement("em"), $("user").nextSibling).innerHTML = "&nbsp;- Not working? Try logging in with your API Token under found on the todoist.com website.";
+          $("loginbox").insertBefore(document.createElement("em"), $("user").nextSibling).innerHTML = "&nbsp;- Not working? Try logging in with your API Token found on the todoist.com website.";
         }, 8000);
       }
   },

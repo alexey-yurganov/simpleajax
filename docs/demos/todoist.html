@@ -100,6 +100,13 @@ var todoist = {
       $("loginnow").value = "Login";
       $("loginnow").disabled = false;
       window.scrollTo(0, 0);
+      var h = ["<div class=proj style='width:32%'><h2><a href='#'>", "</a></h2><ul>", "</ul></div>","<li class=alt><span class=bullold>&bull;</span>","<li><span class=bullold>&bull;</span>"];
+      $("main").innerHTML = h[0]+"what is todoist wall?"+h[1]+h[4]+"an iPhone web app that syncs with your Todoist"+h[3]+"works offline"+h[4]+"large readable text"+
+      h[3]+"designed for the iPhone screen"+h[4]+"works just as good on your computer's browser"+h[3]+"view all your todos on one large wall"+h[4]+"get to all your todos just by sliding your finger"+h[2]+
+      h[0]+"instructions"+h[1]+h[4]+"login with your todoist account"+h[3]+"tap on an item to mark as done"+h[4]+"tap on item and hold to edit"+h[3]+"tap on project title to add a task"+
+      h[4]+"pinch to zoom"+h[3]+"slide across to view other projects"+h[4]+"add it to your iPhone home screen"+h[3]+"using Firefox? login with your private API token"+h[2]+
+      h[0]+"todo karma"+h[1]+h[4]+"add a date only if a task has a deadline"+h[3]+"items with deadlines appear at the top"+h[4]+"due and overdue items appear shaded"+
+      h[3]+"use all lowercase to save time"+h[4]+"create Projects according to your life. e.g., grocery, yacht, wedding"+h[3]+"add things asap lest you forget"+h[2];
     }
   },
 
@@ -107,8 +114,8 @@ var todoist = {
       var u = $("user").value;
       var p = $("pass").value;
 
-      if(u && /^[0-9a-f]+$/.test(u) && !p) {
-        if(confirm("Login with private token?")) this.cblogin({api_token: encodeURIComponent(u)});
+      if(u && /^[0-9a-f]+$/.test(u) && confirm("Login with private token?")) {
+        this.cblogin({api_token: encodeURIComponent(u)});
 
       } else {
         $("loginnow").value = "Loading...";
@@ -607,7 +614,7 @@ body,form,#foot {font:9pt Helvetica,Arial}
 body.flash {background:#333}
 .proj {float:left; min-width:15em; -webkit-transition:min-width 0.2s; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0; padding:0; font-size:100%}
-.token {color:#888}
+.token {color:#aaa}
 a {font-size:100%; color:#fff}
 .proj h2 a {font:bold 125% Helvetica,Arial; text-decoration:none; padding:0 1em 0.3em 0}
 .emptyprojs {font-size:100%} .emptyprojs a {color:#999; margin-right:1em; text-decoration:none}

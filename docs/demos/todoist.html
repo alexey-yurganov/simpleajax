@@ -273,7 +273,9 @@ var todoist = {
         bullet = "<span class='" + bullet + "</span>";
         html.push("<li class='imp"+item.priority+(j%2?" alt eta":" eta")+item.due_now+"' id='n" + item.id+"_"+projs[i]+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
 
-        if(item.due_now == 2) summary.push(item);
+        if(item.due_now == 2) {
+          if(item.priority == 4) summary.unshift(item); else summary.push(item);
+        }
       }
       html.push("</ul></div>");
     }
@@ -623,6 +625,7 @@ a {font-size:100%; color:#fff}
 .eta2 {background:#333; margin-top:0.3em; border-radius:0.6em}
 .white .eta2 {background:#eee}
 .sum .eta2 {background:none; margin-top:0}
+.sum .imp4 {margin-top:0.3em}
 ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle}
 li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -webkit-transition:margin 0.3s}
 li.alt {color:#fff}
@@ -643,7 +646,7 @@ li i {font-style:normal; background:#ff4; padding:0 0.1em; border-radius:0.3em; 
 .white li.imp4 {color:#f77}
 .white ul>li.imp4.eta2 {background:#fcc; color:#333}
 .white .bullnow, .white .bullweek, .white .bullold {color:#bbb}
-.copy1 li, .copy2 li {margin-bottom:0.8em; text-indent:0; border-radius:0.6em}
+.copy1 li, .copy2 li {margin-bottom:0.6em; text-indent:0; border-radius:0.6em}
 .copy1 .proj h2 a, .copy2 .proj h2 a  {padding:0.3em; border-radius:0.3em; -webkit-transition:background-color 0.5s}
 .copy1 .bullnow, .copy1 .bullweek, .copy1 .bullold, .copy2 .bullnow, .copy2 .bullweek, .copy2 .bullold {display:none}
 .copy1 li {background:#555}

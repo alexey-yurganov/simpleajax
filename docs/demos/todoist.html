@@ -100,8 +100,8 @@ var todoist = {
       $("loginnow").value = "Login";
       $("loginnow").disabled = false;
       window.scrollTo(0, 0);
-      var h = ["<div class=proj style='width:32%'><h2><a href='#'>", "</a></h2><ul>", "</ul></div>","<li class=alt><span class=bullold>&bull;</span>","<li><span class=bullold>&bull;</span>"];
-      $("main").innerHTML = h[0]+"what is todoist wall?"+h[1]+h[4]+"an iPhone web app that syncs with your Todoist"+h[3]+"works offline"+h[4]+"large readable text"+
+      var h = ["<div class=proj style='width:32%'><h2><a href=#>", "</a></h2><ul>", "</ul></div>","<li class=alt><span class=bullold>&bull;</span>","<li><span class=bullold>&bull;</span>"];
+      $("main").innerHTML = h[0]+"what is todoist wall?"+h[1]+h[4]+"an <a href='http:\/\/simpleajax.googlecode.com/svn/docs/demos/todoist.html' style='text-decoration:none'>iPhone web app that syncs with your Todoist</a>"+h[3]+"works offline"+h[4]+"large readable text"+
       h[3]+"designed for the iPhone screen"+h[4]+"works just as good on your computer's browser"+h[3]+"view all your todos on one large wall"+h[4]+"get to all your todos just by sliding your finger"+h[2]+
       h[0]+"instructions"+h[1]+h[4]+"login with your todoist account"+h[3]+"tap on an item to mark as done"+h[4]+"tap on item and hold to edit"+h[3]+"tap on project title to add a task"+
       h[4]+"pinch to zoom"+h[3]+"slide across to view other projects"+h[4]+"add it to your iPhone home screen"+h[3]+"using Firefox? login with your private API token"+h[2]+
@@ -513,9 +513,10 @@ var todoist = {
 
     if(m.project_id == proj) return;
 
-    var params = ["js_date=1&project_id=" + proj];
+    var d = m.due_date;  //new Date("Sun Apr 29 23:59:59 2007")
+    var params = ["js_date=1&project_id=" + proj + "&due_date=" + (!d ? d : d.getDate() + "/" + d.getMonth() + "/" + d.getFullYear())];
     for(var i in m) {
-      if(m[i] && i != "project_id" && i != "id") params.push(i + "=" + encodeURIComponent(m[i] || ""));
+      if(m[i] && i != "project_id" && i != "id" && i != "due_date") params.push(i + "=" + encodeURIComponent(m[i] || ""));
     }
 
     if(this.token) {
@@ -621,7 +622,7 @@ a {font-size:100%; color:#fff}
 .due {color:#bbe; font-size:90%; margin-left:4%}
 .eta2 {background:#333; margin-top:0.3em; border-radius:0.6em}
 .white .eta2 {background:#eee}
-.sum .eta2 {background:none}
+.sum .eta2 {background:none; margin-top:0}
 ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle}
 li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -webkit-transition:margin 0.3s}
 li.alt {color:#fff}

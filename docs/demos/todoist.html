@@ -95,7 +95,7 @@ var todoist = {
   goOnline: function() {
     if(this.token) {
       this.ajax("getProjects");
-      $("upd").className = "uping";
+      $("upd").style.WebkitTransform = "rotate(-180deg)";
     } else {
       $("loginbox").style.display = "block";
       $("loginnow").value = "Login";
@@ -148,14 +148,13 @@ var todoist = {
         }
       } else {
         this.ajax("getProjects");
-        $("upd").className = "uping";
+        $("upd").style.WebkitTransform = "rotate(-180deg)";
       }
     }
   },
 
   cbgetProjects: function(r) {
     this.projCount = 0;
-    $("upd").className = "";
 
     if(typeof r == "string") {
       alert("Error: "+r);
@@ -182,6 +181,7 @@ var todoist = {
 
   cbgetUncompletedItems: function(r) {
     this.countdown--;
+    $("upd").style.WebkitTransform = "rotate(-"+(this.countdown*10)+"deg)";
 
     if(r && r.length) {
       this.data[r[0].project_id].data = r;
@@ -638,7 +638,7 @@ ul>li.imp4.eta2 {background:#733}
 @media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} #main .proj {float:none; display:table-cell; width:15em}}
 li i {font-style:normal; background:#ff4; padding:0 0.1em; border-radius:0.3em; color:#000}
 #foot a {padding:0.3em 0.5em}
-#upd {-webkit-transition:-webkit-transform 0.5s} #upd.uping {-webkit-transform:rotate(-180deg)}
+#upd {-webkit-transition:-webkit-transform 0.5s}
 .white li i {background:#cc0; color:#fff}
 .white, .white #foot {background:#fff; color:#000}
 .white .emptyprojs a {color:#bbb}

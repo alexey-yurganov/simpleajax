@@ -268,13 +268,13 @@ var todoist = {
       var proj = this.data[projs[i]];
       if(!proj.data) continue;
 
-      html.push("<div class='proj'><h2><a href='javascript:if(todoist.copying)todoist.copyItem("+projs[i]+");else todoist.addItem("+projs[i]+");'>"+proj.name+"</a></h2><ul>");
+      html.push("<div class='proj'><h2><a href='javascript:if(todoist.copying)todoist.copyItem("+projs[i]+");else todoist.addItem("+projs[i]+");' ondragover='if(todoist.copying&&event.preventDefault)event.preventDefault();' ondrop='todoist.copyItem("+projs[i]+");'>"+proj.name+"</a></h2><ul>");
       for(var j=0; j<proj.data.length; j++) {
         item = proj.data[j];
 
         bullet = item.due_now == 2 ? "bullnow'>&loz;" : item.due_now == 1 ?  "bullweek'>&diams;" : "bullold'>&bull;";
         bullet = "<span class='" + bullet + "</span>";
-        html.push("<li class='imp"+item.priority+(j%2?" alt eta":" eta")+item.due_now+"' id='n" + item.id+"_"+projs[i]+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
+        html.push("<li class='imp"+item.priority+(j%2?" alt eta":" eta")+item.due_now+"' id='n" + item.id+"_"+projs[i]+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);' ondragstart='todoist.copying={};todoist.selectItem(this);' ondragend='todoist.copyItem(null);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
 
         if(item.due_now == 2) {
           if(item.priority == 4) summary.unshift(item); else summary.push(item);
@@ -516,7 +516,7 @@ var todoist = {
     this.copying = null;
     $("main").className = "";
 
-    if(m.project_id == proj) return;
+    if(!proj || m.project_id == proj) return;
 
     var d = m.due_date;  //new Date("Sun Apr 29 23:59:59 2007")
     var params = ["js_date=1&project_id=" + proj + "&due_date=" + (!d ? d : d.getDate() + "/" + d.getMonth() + "/" + d.getFullYear())];
@@ -630,7 +630,7 @@ a {font-size:100%; color:#fff}
 .sum .eta2 {background:none; margin-top:0}
 .sum .imp4 {margin-top:0.3em}
 ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle}
-li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -webkit-transition:margin 0.3s}
+li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; cursor:pointer; -webkit-transition:margin 0.3s; -webkit-user-select:none; -webkit-user-drag:element}
 li.alt {color:#fff}
 li.imp4 {color:#faa}
 ul>li.imp4.eta2 {background:#733}

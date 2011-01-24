@@ -101,13 +101,8 @@ var todoist = {
       $("loginnow").value = "Login";
       $("loginnow").disabled = false;
       window.scrollTo(0, 0);
-      var h = ["<div class=proj style='width:32%'><h2><a href=#>", "</a></h2><ul>", "</ul></div>","<li class=alt><span class=bullold>&bull;</span>","<li><span class=bullold>&bull;</span>"];
-      $("main").innerHTML = h[0]+"what is todoist wall?"+h[1]+h[4]+"an <a href='http:\/\/simpleajax.googlecode.com/svn/docs/demos/todoist.html' style='text-decoration:none'>iPhone web app that syncs with your Todoist</a>"+h[3]+"works offline"+h[4]+"large readable text"+
-      h[3]+"designed for the iPhone screen"+h[4]+"works just as good on your computer's browser"+h[3]+"view all your todos on one large wall"+h[4]+"get to all your todos just by sliding your finger"+h[2]+
-      h[0]+"instructions"+h[1]+h[4]+"login with your todoist account"+h[3]+"tap on an item to mark as done"+h[4]+"tap on item and hold to edit"+h[3]+"tap on project title to add a task"+
-      h[4]+"pinch to zoom"+h[3]+"slide across to view other projects"+h[4]+"add it to your iPhone home screen"+h[3]+"using Firefox? login with your private API token"+h[2]+
-      h[0]+"todo karma"+h[1]+h[4]+"add a date only if a task has a deadline"+h[3]+"items with deadlines appear at the top"+h[4]+"due and overdue items appear shaded"+
-      h[3]+"use all lowercase to save time"+h[4]+"create Projects according to your life. e.g., grocery, yacht, wedding"+h[3]+"add things asap lest you forget"+h[2];
+
+      if($("intro")) $("intro").style.display = "";
     }
   },
 
@@ -132,9 +127,11 @@ var todoist = {
     $("loginnow").value = "Login";
     $("loginnow").disabled = false;
     clearTimeout(this.loginTimeout);
+
     if(typeof r == "string") {
       $("loginbox").style.display = "";
       alert("Error: "+r);
+
     } else {
       $("loginbox").style.display = "none";
 
@@ -309,11 +306,9 @@ var todoist = {
     }
     html.push("<a href='javascript:todoist.addProject();'>[+]</a></div>");
 
-    if($("main").childNodes.length > 1) {
-      document.body.className = wob ? "flash white" : "flash";
-      setTimeout(function() {document.body.className = wob ? "white" : "";}, 100);
-    }
     $("main").innerHTML = html.join("");
+    document.body.className = wob ? "flash white" : "flash";
+    setTimeout(function() {document.body.className = wob ? "white" : "";}, 100);
   },
 
   addItem: function(id) {
@@ -347,6 +342,8 @@ var todoist = {
       p.data.push(r);
       this.sortView(r.project_id);
       this.updateView();
+
+      $("n"+r.id+"_"+r.project_id).className += " fresh";
 
       this.transaction(function(t) {
         var pad = function(i) {return i < 10 ? "0" + i : i};
@@ -614,7 +611,7 @@ var todoist = {
 };
 </script>
 <style>
-body {margin:3px; padding:0; background:#000; color:#fff; -webkit-tap-highlight-color:rgba(255,255,255,0.2); -webkit-text-size-adjust:100%}
+body {margin:3px; padding:1px; background:#000; color:#fff; -webkit-tap-highlight-color:rgba(255,255,255,0.2); -webkit-text-size-adjust:100%}
 body,form,#foot {font:9pt Helvetica,Arial}
 #foot {background:#000}
 body.flash {background:#333}
@@ -641,6 +638,8 @@ ul>li.imp4.eta2 {background:#733}
 li i {font-style:normal; background:#ff4; padding:0 0.1em; border-radius:0.3em; color:#000}
 #foot a {padding:0.3em 0.5em}
 #upd {-webkit-transition:-webkit-transform 0.5s}
+.fresh {-webkit-animation:darkflash 3s 1 ease-in}
+.white .fresh {-webkit-animation:lightflash 3s 1 ease-in}
 .white #main li:-webkit-drag {background:#fff; color:#000}
 .white li i {background:#cc0; color:#fff}
 .white, .white #foot {background:#fff; color:#000}
@@ -662,6 +661,8 @@ li i {font-style:normal; background:#ff4; padding:0 0.1em; border-radius:0.3em; 
 .white .copy2 .proj h2 a {background:#ffa}
 .resizeme {display:none}
 #resizeShim {position:absolute; left:0; top:0; right:0; bottom:0; min-width:1000px; background:#f00; opacity:0.3}
+@-webkit-keyframes darkflash {from {background:#aa0}}
+@-webkit-keyframes lightflash {from {background:#ffb}}
 </style>
 </head>
 <body style="overflow:auto">
@@ -672,8 +673,14 @@ Email: <span class="token">or Private Token</span><br><input id="user" type="ema
 </form>
 <div id="upd" style="float:left"><a href="#" onclick="todoist.goOnline();return false;" style="padding:2px;text-decoration:none;font-weight:bold">&dArr;</a></div>
 <noscript style="color:#f55">Please enable JavaScript.</noscript>
-<div id="main"><p style="margin-bottom:400px"></p></div>
-<div id="foot" style="clear:both;margin-top:1em;font-size:8pt;color:#aaa;position:fixed;bottom:0;left:0">
+<div id="main"><div id="intro" style="display:none">
+<div class="proj" style="width:32%"><h2><a href="#">what is todoist wall?</a></h2><ul><li><b class="bullold">&bull;</b>an <a href="http://simpleajax.googlecode.com/svn/docs/demos/todoist.html" style="text-decoration: none;">iPhone web app that syncs with your Todoist</a></li><li class="alt"><b class="bullold">&bull;</b>works offline</li><li><b class="bullold">&bull;</b>large readable text</li><li class="alt"><b class="bullold">&bull;</b>designed for the iPhone screen</li><li><b class="bullold">&bull;</b>works just as good on your computer's browser</li><li class="alt"><b class="bullold">&bull;</b>view all your todos on one large wall</li><li><b class="bullold">&bull;</b>get to all your todos just by sliding your finger</li></ul></div>
+<div class="proj" style="width:32%"><h2><a href="#">instructions</a></h2><ul><li><b class="bullold">&bull;</b>login with your todoist account</li><li class="alt"><b class="bullold">&bull;</b>tap on an item to mark as done</li><li><b class="bullold">&bull;</b>tap on item and hold to edit</li><li class="alt"><b class="bullold">&bull;</b>tap on project title to add a task</li><li><b class="bullold">&bull;</b>pinch to zoom</li><li class="alt"><b class="bullold">&bull;</b>slide across to view other projects</li><li><b class="bullold">&bull;</b>add it to your iPhone home screen</li><li class="alt"><b class="bullold">&bull;</b>using Firefox? login with your private API token</li></ul></div>
+<div class="proj" style="width:32%"><h2><a href="#">todo karma</a></h2><ul><li><b class="bullold">&bull;</b>add a date only if a task has a deadline</li><li class="alt"><b class="bullold">&bull;</b>items with deadlines appear at the top</li><li><b class="bullold">&bull;</b>due and overdue items appear shaded</li><li class="alt"><b class="bullold">&bull;</b>use all lowercase to save time</li><li><b class="bullold">&bull;</b>create Projects according to your life. e.g., grocery, yacht, wedding</li><li class="alt"><b class="bullold">&bull;</b>add things asap lest you forget</li></ul></div>
+</div>
+<div style="margin-bottom:400px;clear:both"></div>
+</div>
+<div id="foot" style="clear:both;margin-top:1em;color:#aaa;position:fixed;bottom:0;left:0">
 <div id="man" style="display:none">
 Todoist for iPhone -
 <br>(1) click on project title to add a task

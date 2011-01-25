@@ -84,7 +84,7 @@ var todoist = {
             if(dis.data[i].data) dis.projCount++;
           }
           dis.sortView();
-          dis.updateView();
+          dis.updateView(1);
         }
       );
     }, function(e) {
@@ -242,7 +242,7 @@ var todoist = {
     }
   },
 
-  updateView: function() {
+  updateView: function(silent) {
     var html = [], summary = [];
     var item;
     var bullet;
@@ -307,8 +307,10 @@ var todoist = {
     html.push("<a href='javascript:todoist.addProject();'>[+]</a></div>");
 
     $("main").innerHTML = html.join("");
-    document.body.className = wob ? "flash white" : "flash";
-    setTimeout(function() {document.body.className = wob ? "white" : "";}, 100);
+    if(!silent) {
+      document.body.className = wob ? "flash white" : "flash";
+      setTimeout(function() {document.body.className = wob ? "white" : "";}, 100);
+    }
   },
 
   addItem: function(id) {
@@ -577,7 +579,7 @@ var todoist = {
     $("pass").value = "";
     this.projCount = this.token = 0;
     this.data = {};
-    this.updateView();
+    this.updateView(1);
     this.goOnline();
   },
 
@@ -686,7 +688,7 @@ Email: <span class="token">or Private Token</span><br><input id="user" type="ema
 </div>
 <div style="margin-bottom:400px;clear:both"></div>
 </div>
-<div id="foot" style="clear:both;margin-top:1em;color:#aaa;position:fixed;bottom:0;left:0">
+<div id="foot" style="clear:both;margin-top:1em;color:#aaa;position:fixed;bottom:3px;left:3px">
 <div id="man" style="display:none">
 Todoist for iPhone -
 <br>(1) click on project title to add a task

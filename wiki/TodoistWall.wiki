@@ -1,17 +1,15 @@
 #summary Todoist Wall is a todo list web app that works offline and syncs with your Todoist account.
 
 = Introduction =
-
 Todoist Wall is a todo list web app that works offline and syncs with your Todoist account. It is designed for the iPhone's small screen and touch interface and starts up fast. It uses a number of HTML5 technologies and touch events to achieve a robust yet fast application.
 
-Todoist Wall presents all your projects and tasks on a huge wall and you can pan left and right to view them. You can tap to add more tasks or to mark tasks as completed. Due and overdue items are distinctly highlighted for clarity.
+Todoist Wall presents all your projects and tasks on a huge wall and you can pan left and right to view them. You can tap to add more tasks or to mark tasks as completed. You can tap and hold to edit a task. Due and overdue items are distinctly highlighted for clarity.
 
-If you have a Todoist account, [http://simpleajax.googlecode.com/svn/docs/demos/todoist.html try Todoist Wall now].
+If you have a Todoist account, try [http://simpleajax.googlecode.com/svn/docs/demos/todoist.html Todoist Wall] now.
 
 [http://img834.imageshack.us/i/todoistwallmain.jpg/ http://img834.imageshack.us/img834/6735/todoistwallmain.jpg]
-
+----
 = HTML5 =
-
 Todoist Wall uses HTML5 Application Cache so that the web app can be accessed offline. Todos are stored in the HTML5 Web SQL Database so that they are available offline.
 
 {{{
@@ -27,11 +25,18 @@ li {-webkit-transition:margin 0.3s}
 Being a web app means Todoist Wall inherits some benefits from the Safari browser. Firstly, it starts up faster than native apps. Secondly, you can pinch anywhere on the interface to zoom in or out. You can also double-tap and hold to activate the copy/paste function, which allows you to copy any part of your todo list to the clipboard.
 
 [http://img268.imageshack.us/i/todoistwallhoriz.jpg/ http://img268.imageshack.us/img268/935/todoistwallhoriz.jpg]
-
+----
 = Usability =
-
-Todoist Wall has been optimized for the iPhone. Buttons have large activation areas to make them easier to tap with a finger. Instead of tapping back and forth on the menu to change to another project, simply swipe left and right to fly to other projects. Work flow has been optimized to reduce the number of taps needed to add a task. Switch between portrait and landscape keyboards midway to speed up typing and accuracy. The Wall's white on black background allows for better visibility under sunlight and better eye comfort when reading it at night. An iPhone home screen icon is also available when you add the web app to your iPhone's home screen.
+Todoist Wall has been optimized for the iPhone:
+  * Buttons have large activation areas to make them easier to tap with a finger.
+  * Instead of tapping back and forth on the menu to change to another project, simply swipe left and right to fly to other projects.
+  * Work flow has been realigned to reduce the number of taps needed to add a task.
+  * Switch between portrait and landscape keyboards midway to speed up typing and accuracy.
+  * The Wall's white on black background allows for better visibility under sunlight and better eye comfort when reading it at night.
+  * An iPhone home screen icon is also available when you add the web app to your iPhone's home screen.
 
 [http://img440.imageshack.us/i/todoistwallicon.jpg/ http://img440.imageshack.us/img440/9899/todoistwallicon.jpg]
 
 [http://img691.imageshack.us/i/todoistwalldue.jpg/ http://img691.imageshack.us/img691/9189/todoistwalldue.jpg]
+----
+If you have a Todoist account, try [http://simpleajax.googlecode.com/svn/docs/demos/todoist.html Todoist Wall].

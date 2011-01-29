@@ -5,7 +5,7 @@ Todoist Wall is a todo list web app that works offline and syncs with your Todoi
 
 Todoist Wall presents all your projects and tasks on a huge wall and you can pan left and right to view them. You can tap to add more tasks or to mark tasks as completed. You can tap and hold to edit a task. Due and overdue items are distinctly highlighted for clarity.
 
-If you have a Todoist account, try [http://simpleajax.googlecode.com/svn/docs/demos/todoist.html Todoist Wall] now.
+If you have a Todoist account, try *[http://simpleajax.googlecode.com/svn/docs/demos/todoist.html Todoist Wall]* now.
 
 [http://img834.imageshack.us/i/todoistwallmain.jpg/ http://img834.imageshack.us/img834/6735/todoistwallmain.jpg]
 ----
@@ -39,4 +39,4 @@ Todoist Wall has been optimized for the iPhone:
 
 [http://img691.imageshack.us/i/todoistwalldue.jpg/ http://img691.imageshack.us/img691/9189/todoistwalldue.jpg]
 ----
-If you have a Todoist account, try [http://simpleajax.googlecode.com/svn/docs/demos/todoist.html Todoist Wall].
+If you have a Todoist account, try *[http://simpleajax.googlecode.com/svn/docs/demos/todoist.html Todoist Wall]* .

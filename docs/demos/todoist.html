@@ -638,9 +638,10 @@ li:hover {-webkit-user-select:none}
 #main li:-webkit-drag {border-radius:0; background:#000; color:#fff}
 li.alt {color:#fff}
 li.imp4 {color:#f00}
-ul>li.imp4.eta2 {background:#733}
+ul>li.imp4.eta2 {background:#733; color:#fff}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa} .bullweek {color:#aaa}
-@media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} #main .proj {float:none; display:table-cell; width:15.5em}}
+#foot {display:fixed}
+@media screen and (max-device-width: 480px) {body {width:1000px} #main {display:table-row} #main .proj {float:none; display:table-cell; width:15.5em} #foot {display:static}}
 li i {font-style:normal; background:#ff4; padding:0 0.1em; -moz-border-radius:0.3em; border-radius:0.3em; color:#000}
 #foot a {padding:0.3em 0.5em}
 #upd {-webkit-transition:-webkit-transform 0.5s}
@@ -655,7 +656,7 @@ li i {font-style:normal; background:#ff4; padding:0 0.1em; -moz-border-radius:0.
 .white .due {color:#33f}
 .white li {color:#888}
 .white li.alt {color:#000}
-.white ul>li.imp4.eta2 {background:#fcc; color:#333}
+.white ul>li.imp4.eta2 {background:#fcc; color:#000}
 .white .bullnow, .white .bullweek, .white .bullold {color:#bbb}
 .copy1 li, .copy2 li {margin-bottom:0.6em; text-indent:0}
 .copy1 .proj h2 a, .copy2 .proj h2 a  {padding:0.3em; border-radius:0.3em; -webkit-transition:background-color 0.5s ease 0.3s}
@@ -687,7 +688,7 @@ Email: <span class="token">or Private Token</span><br><input id="user" type="ema
 </div>
 <div style="margin-bottom:400px;clear:both"></div>
 </div>
-<div id="foot" style="clear:both;margin-top:1em;color:#aaa;position:fixed;bottom:3px;left:3px">
+<div id="foot" style="clear:both;margin-top:1em;color:#aaa;bottom:3px;left:3px">
 <div id="man" style="display:none">
 Todoist for iPhone -
 <br>(1) click on project title to add a task

@@ -7,7 +7,8 @@ Todoist Wall presents all your projects and tasks on a huge wall and you can pan
 
 If you have a Todoist account, try *[http://simpleajax.googlecode.com/svn/docs/demos/todoist.html Todoist Wall]* now.
 
-[http://img834.imageshack.us/i/todoistwallmain.jpg/ http://img834.imageshack.us/img834/6735/todoistwallmain.jpg]
+[http://img545.imageshack.us/i/todoistwallmain.jpg/ http://img545.imageshack.us/img545/6735/todoistwallmain.jpg]
+
 ----
 = HTML5 =
 Todoist Wall uses HTML5 Application Cache so that the web app can be accessed offline. Todos are stored in the HTML5 Web SQL Database so that they are available offline.

@@ -249,6 +249,7 @@ var todoist = {
 
     var projs = [];  //sort projs
     for(var i in this.data) projs.push(i);
+
     var i = projs.length - 1;
     while(i >= 0) {
       var j = this.data[projs[i]].order;
@@ -265,7 +266,7 @@ var todoist = {
       var proj = this.data[projs[i]];
       if(!proj.data) continue;
 
-      html.push("<div class='proj'><h2><a href='javascript:if(todoist.copying)todoist.copyItem("+projs[i]+");else todoist.addItem("+projs[i]+");' ondragover='if(todoist.copying&&event.preventDefault)event.preventDefault();' ondrop='todoist.copyItem("+projs[i]+");'>"+proj.name+"</a></h2><ul>");
+      html.push("<div class='proj'><h2><a href='javascript:if(todoist.copying){todoist.copyItem("+projs[i]+");}else{todoist.addItem("+projs[i]+");}' ondragover='if(todoist.copying&&event.preventDefault)event.preventDefault();' ondrop='todoist.copyItem("+projs[i]+");' ontouchstart='touchIsClick(this);'>"+proj.name+"</a></h2><ul>");
       for(var j=0; j<proj.data.length; j++) {
         item = proj.data[j];
 
@@ -625,7 +626,7 @@ body.flash {background:#333}
 .proj h2 {margin:0; padding:0; font-size:100%}
 .token {color:#aaa}
 a {font-size:100%; color:#fff}
-.proj h2 a {font:bold 125% Helvetica,Arial; text-decoration:none; padding:0 1em 0.3em 0}
+.proj h2 a {font:bold 125% Helvetica,Arial; text-decoration:none; padding:0 1em 0.3em 0.7em}
 .emptyprojs {font-size:100%} .emptyprojs a {color:#999; margin-right:1em; text-decoration:none}
 .due {color:#bbe; font-size:90%; margin-left:4%}
 .eta2 {background:#333; margin-top:0.3em}
@@ -678,7 +679,7 @@ Email: <span class="token">or Private Token</span><br><input id="user" type="ema
 <br>Password:<br><input id="pass" type="password">
 <br><input type="submit" id="loginnow" value="Login"> <a href="http://todoist.com">Register</a>
 </form>
-<div id="upd" style="float:left"><a href="#" onclick="todoist.goOnline();return false;" style="padding:2px;text-decoration:none;font-weight:bold" accesskey="u">&dArr;</a></div>
+<div id="upd" style="float:left"><a href="#" onclick="todoist.goOnline();return false;" style="padding:2px 2px 2px 0;text-decoration:none;font-weight:bold" accesskey="u">&dArr;</a></div>
 <noscript style="color:#f55">Please enable JavaScript.</noscript>
 <div id="main"><div id="intro" style="display:none">
 <div class="proj"><h2><a href="#">what is Todoist Wall?</a></h2><ul><li><b class="bullold">&bull;</b>an <a href="http://simpleajax.googlecode.com/svn/docs/demos/todoist.html" style="text-decoration:none">iPhone web app that syncs with your Todoist</a></li><li class="alt"><b class="bullold">&bull;</b>works offline</li><li><b class="bullold">&bull;</b>large readable text</li><li class="alt"><b class="bullold">&bull;</b>designed for the iPhone screen</li><li><b class="bullold">&bull;</b>works just as good on your computer's browser</li><li class="alt"><b class="bullold">&bull;</b>view all your todos on one large wall</li><li><b class="bullold">&bull;</b>get to all your todos just by sliding your finger</li></ul></div>
@@ -725,6 +726,12 @@ document.body[touchTimer[0] ? "ontouchend" : "onmouseup"] = touchTimer[1];
 document.body.ongesturestart = touchTimer[1];
 touchTimer = 0;
 var ok = 200;
+
+function touchIsClick(n, s) {
+  n.setAttribute("ontouchstart", (s = n.href));
+  n.href = "javascript:void(0);";
+  eval(s);
+}
 
 var allWidths = (todoist.cookie("tdwidths") || "15.5,100").split(",");
 var oldAllWidths;

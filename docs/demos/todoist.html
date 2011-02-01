@@ -748,12 +748,12 @@ function scrollPos(e, restore) {
       b.scrollLeft = o.scr_x;
       b.scrollTop = o.scr_y;
     }
+    document.onscroll = scrollPos;
   } else {
     o = {scr_x:b.scrollLeft, scr_y:b.scrollTop, scr_t:Date.now()};
-    if(o.scr_x || o.scr_y) for(i in o) localStorage.setItem(i, o[i]);
+    for(i in o) localStorage.setItem(i, o[i]);
   }
 }
-if(isTouch && window.localStorage) document.onscroll = scrollPos;
 
 function touchIsClick(n, s) {
   n.setAttribute("ontouchstart", (s = n.href));

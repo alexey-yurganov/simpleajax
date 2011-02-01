@@ -744,10 +744,7 @@ function scrollPos(e, restore) {
     if(!isTouch || !window.localStorage) return;
     o = {scr_x:0, scr_y:0, scr_t:0};
     for(i in o) o[i] = localStorage.getItem(i);
-    if(Date.now() - o.scr_t < 300000) {
-      b.scrollLeft = o.scr_x;
-      b.scrollTop = o.scr_y;
-    }
+    if(Date.now() - o.scr_t < 300000) window.scrollTo(o.scr_x, o.scr_y);
     document.onscroll = scrollPos;
   } else {
     o = {scr_x:b.scrollLeft, scr_y:b.scrollTop, scr_t:Date.now()};

@@ -750,7 +750,7 @@ function scrollPos(e, restore) {
     }
   } else {
     o = {scr_x:b.scrollLeft, scr_y:b.scrollTop, scr_t:Date.now()};
-    for(i in o) localStorage.setItem(i, o[i]);
+    if(o.scr_x || o.scr_y) for(i in o) localStorage.setItem(i, o[i]);
   }
 }
 if(isTouch && window.localStorage) document.onscroll = scrollPos;

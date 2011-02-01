@@ -85,6 +85,8 @@ var todoist = {
           }
           dis.sortView();
           dis.updateView(1);
+
+          scrollPos(0, true);
         }
       );
     }, function(e) {
@@ -626,7 +628,7 @@ var todoist = {
 <style>
 body {margin:3px; padding:1px; background:#000; color:#fff; -webkit-tap-highlight-color:rgba(255,255,255,0.2); -webkit-text-size-adjust:100%}
 body,form,#foot {font:9pt Helvetica,Arial}
-#foot {background:#000; color:#aaa; position:fixed; bottom:3px; left:3px}
+#foot {background:#000; color:#aaa; position:fixed; clear:both; bottom:3px; left:3px}
 body.flash {background:#333}
 .proj {float:left; min-width:15.5em; -webkit-transition:min-width 0.2s; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0; padding:0; font:bold 125% Helvetica,Arial}
@@ -649,7 +651,7 @@ li.alt {color:#fff}
 li.imp4 {color:#f00}
 ul>li.imp4.eta2 {background:#733; color:#fff}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa} .bullweek {color:#aaa}
-@media screen and (max-device-width: 480px) {#main {display:table-row} #main .proj {float:none; display:table-cell; width:15.5em} #foot {position:static; clear:both; margin-top:1em}}
+@media screen and (max-device-width: 480px) {#main {display:table-row} #main .proj {float:none; display:table-cell; width:15.5em} #foot {position:static; margin-top:1em}}
 li i {font-style:normal; background:#ff4; padding:0 0.1em; -moz-border-radius:0.3em; border-radius:0.3em; color:#000}
 #foot a {padding:0.3em 0.5em}
 #upd {-webkit-transition:-webkit-transform 0.5s}
@@ -720,21 +722,38 @@ var wob = (location.hash == "#w");
 if(wob) document.body.className = "white";
 </script>
 <script defer="defer">
-var touchTimer = ["ontouchend" in document.body, function(e) {clearTimeout(touchTimer);}];
-document.body[touchTimer[0] ? "ontouchstart" : "onmousedown"] = function(e) {
+var isTouch = ("ontouchend" in document.body);
+var ok = 200;
+
+var touchTimer = function(e) {clearTimeout(touchTimer);};
+document.body[isTouch ? "ontouchstart" : "onmousedown"] = function(e) {
   clearTimeout(touchTimer);
-  e = e || window.event;
-  e = e.target || e.srcElement;
+  e = !e ? event.srcElement : e.target || e.srcElement;
   if(e && e.nodeType != 1) e = e.parentNode;
   if(e && e.id && todoist.data) {
     touchTimer = setTimeout("todoist.updateItem('"+e.id+"');", 1000);
   }
 };
-document.body[touchTimer[0] ? "ontouchmove" : "onmousemove"] = touchTimer[1];
-document.body[touchTimer[0] ? "ontouchend" : "onmouseup"] = touchTimer[1];
-document.body.ongesturestart = touchTimer[1];
-touchTimer = 0;
-var ok = 200;
+document.body[isTouch ? "ontouchmove" : "onmousemove"] = touchTimer;
+document.body[isTouch ? "ontouchend" : "onmouseup"] = touchTimer;
+document.body.ongesturestart = touchTimer;
+
+function scrollPos(e, restore) {
+  var o, i, b = document.body;
+  if(restore) {
+    if(!isTouch || !window.localStorage) return;
+    o = {scr_x:0, scr_y:0, scr_t:0};
+    for(i in o) o[i] = localStorage.getItem(i);
+    if(Date.now() - o.scr_t < 300000) {
+      b.scrollLeft = o.scr_x;
+      b.scrollTop = o.scr_y;
+    }
+  } else {
+    o = {scr_x:b.scrollLeft, scr_y:b.scrollTop, scr_t:Date.now()};
+    for(i in o) localStorage.setItem(i, o[i]);
+  }
+}
+if(isTouch && window.localStorage) document.onscroll = scrollPos;
 
 function touchIsClick(n, s) {
   n.setAttribute("ontouchstart", (s = n.href));

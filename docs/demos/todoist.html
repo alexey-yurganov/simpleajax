@@ -102,7 +102,7 @@ var todoist = {
       $("loginbox").style.display = "block";
       $("loginnow").value = "Login";
       $("loginnow").disabled = false;
-      window.scrollTo(0, 0);
+      scrollTo(0, 0);
 
       if($("intro")) $("intro").style.display = "";
     }
@@ -567,7 +567,7 @@ var todoist = {
 
             if(count == 0 && n.getBoundingClientRect) {
               n = n.getBoundingClientRect();
-              window.scrollTo(document.body.scrollLeft + n.left - 40, document.body.scrollTop + n.top - 40);
+              scrollTo(document.body.scrollLeft + n.left - 40, document.body.scrollTop + n.top - 40);
             }
             count++;
           }
@@ -707,8 +707,8 @@ Todoist for iPhone -
 <br>(3) tap on task to delete
 <br>(4) type !p4 while adding a task to mark it as important
 <br>(5) add website to home screen to remove Safari buttons
-<br><a href="javascript:todoist.logout();window.scrollTo(0,0);">logout</a> 
-<a href="javascript:todoist.makeCopyable();window.scrollTo(0,0);">duplicate task</a>
+<br><a href="javascript:todoist.logout();scrollTo(0,0);">logout</a> 
+<a href="javascript:todoist.makeCopyable();scrollTo(0,0);">duplicate task</a>
 <a href="javascript:resizeMe(0);" class="resizeme">resize columns</a>
 <a href="javascript:resizeMe(1);" class="resizeme">resize text</a>
 </div>
@@ -744,7 +744,10 @@ function scrollPos(e, restore) {
     if(!isTouch || !window.localStorage) return;
     o = {scr_x:0, scr_y:0, scr_t:0};
     for(i in o) o[i] = localStorage.getItem(i);
-    if(Date.now() - o.scr_t < 300000) window.scrollTo(o.scr_x, o.scr_y);
+    if(Date.now() - o.scr_t < 300000) {
+      scrollTo(o.scr_x, o.scr_y);
+      setTimeout("scrollTo("+o.scr_x+","+o.scr_y+");", 100);
+    }
     document.onscroll = scrollPos;
   } else {
     o = {scr_x:b.scrollLeft, scr_y:b.scrollTop, scr_t:Date.now()};

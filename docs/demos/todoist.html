@@ -92,8 +92,6 @@ var todoist = {
     }, function(e) {
       dis.goOnline();
     });
-
-    scrollPos(0, true);  //prime it
   },
 
   goOnline: function() {
@@ -699,7 +697,7 @@ Email: <span class="token">or Private Token</span><br><input id="user" type="ema
 <div class="proj"><h2><a href="#">instructions</a></h2><ul><li><b class="bullold">&bull;</b>login with your todoist account</li><li class="alt"><b class="bullold">&bull;</b>tap on an item to mark as done</li><li><b class="bullold">&bull;</b>tap on item and hold to edit</li><li class="alt"><b class="bullold">&bull;</b>tap on project title to add a task</li><li><b class="bullold">&bull;</b>pinch to zoom</li><li class="alt"><b class="bullold">&bull;</b>slide across to view other projects</li><li><b class="bullold">&bull;</b>add it to your iPhone home screen</li><li class="alt"><b class="bullold">&bull;</b>using Firefox? login with your private API token</li></ul></div>
 <div class="proj"><h2><a href="#">todo karma</a></h2><ul><li><b class="bullold">&bull;</b>add a date only if a task has a deadline</li><li class="alt"><b class="bullold">&bull;</b>items with deadlines appear at the top</li><li><b class="bullold">&bull;</b>due and overdue items appear shaded</li><li class="alt"><b class="bullold">&bull;</b>use all lowercase to save time</li><li><b class="bullold">&bull;</b>create Projects according to your life. e.g., grocery, yacht, wedding</li><li class="alt"><b class="bullold">&bull;</b>add things asap lest you forget</li></ul></div>
 </div>
-<div id="filler" style="margin-bottom:400px;clear:both"></div>
+<div id="filler" style="margin-bottom:400px;width:3000px;clear:both"></div>
 </div>
 <div id="foot">
 <div id="man" style="display:none">
@@ -722,6 +720,7 @@ Todoist for iPhone -
 todoist.onload();
 var wob = (location.hash == "#w");
 if(wob) document.body.className = "white";
+$("filler").style.width = "auto";
 </script>
 <script defer="defer">
 var isTouch = ("ontouchend" in document.body);
@@ -746,10 +745,7 @@ function scrollPos(e, restore) {
     if(!isTouch || !window.localStorage) return;
     o = {scr_x:0, scr_y:0, scr_t:0};
     for(i in o) o[i] = localStorage.getItem(i)*1;
-    if(Date.now() - o.scr_t < 300000) {
-      if(b = $("filler")) b.style.cssText = "width:"+(o.scr_x+screen.width)+"px;height:"+(o.scr_y+screen.height)+"px";  //prime it
-      scrollTo(o.scr_x, o.scr_y);
-    }
+    if(Date.now() - o.scr_t < 300000) scrollTo(o.scr_x, o.scr_y);
     document.onscroll = scrollPos;
   } else {
     o = {scr_x:b.scrollLeft, scr_y:b.scrollTop, scr_t:Date.now()};

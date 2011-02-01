@@ -104,7 +104,9 @@ var todoist = {
       $("loginnow").disabled = false;
       scrollTo(0, 0);
 
-      if($("intro")) $("intro").style.display = "";
+      var n;
+      if(n = $("intro")) n.style.display = "";
+      if(n = $("filler")) n.style.display = "none";
     }
   },
 
@@ -720,7 +722,6 @@ Todoist for iPhone -
 todoist.onload();
 var wob = (location.hash == "#w");
 if(wob) document.body.className = "white";
-$("filler").style.width = "auto";
 </script>
 <script defer="defer">
 var isTouch = ("ontouchend" in document.body);

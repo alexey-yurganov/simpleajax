@@ -766,12 +766,12 @@ function resizeMe(col, again) {
   if(!again) oldAllWidths = allWidths.join(",");
   var old = oldAllWidths.split(",")[col]*1;
   var s = parseInt(allWidths[col]/old*100) + "%";
-  s = prompt(!again ? "Resize to what percent?" : "Press cancel if no further changes, or enter another percent.", s);
+  s = prompt(!again ? "Resize to what percent?" : "Enter another percent if not satisfied:", s);
   if(s) s = s.replace("%", "");
   if(s) {
     if(s*s > 0) allWidths[col] = parseInt(old*s)/100;
     updateSize();
-    setTimeout("resizeMe("+col+",1);", 100);
+    setTimeout("resizeMe("+col+",1);", 250);
   } else {
     if(again && confirm("Save size? ("+parseInt(allWidths[col]/old*100)+"%)")) {
       todoist.cookie("tdwidths", allWidths.join(","));

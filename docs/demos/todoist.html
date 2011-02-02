@@ -85,8 +85,6 @@ var todoist = {
           }
           dis.sortView();
           dis.updateView(1);
-
-          scrollPos(0, true);
         }
       );
     }, function(e) {
@@ -95,6 +93,7 @@ var todoist = {
   },
 
   goOnline: function() {
+    scrollTo(0, 0);
     if(this.token) {
       this.ajax("getProjects");
       $("upd").style.WebkitTransform = "rotate(-180deg)";
@@ -102,8 +101,6 @@ var todoist = {
       $("loginbox").style.display = "block";
       $("loginnow").value = "Login";
       $("loginnow").disabled = false;
-      scrollTo(0, 0);
-
       var n;
       if(n = $("intro")) n.style.display = "";
       if(n = $("filler")) n.style.display = "none";
@@ -679,7 +676,6 @@ li i {font-style:normal; background:#ff4; padding:0 0.1em; -moz-border-radius:0.
 .white .copy1 li {background:#ffa}
 .white .copy2 .proj h2 a {background:#ffa}
 .resizeme {display:none}
-#resizeShim {position:absolute; left:0; top:0; right:0; bottom:0; min-width:1000px; background:#f00; opacity:0.3}
 #intro .proj {width:32%}
 @media print {#main .proj{float:none;width:auto;-webkit-column-count:4;-webkit-column-gap:1em;-moz-column-count:4;-moz-column-gap:1em;border-bottom:1px dashed #888} #foot{display:none}}
 @-webkit-keyframes darkflash {from {background:#880}}
@@ -699,7 +695,7 @@ Email: <span class="token">or Private Token</span><br><input id="user" type="ema
 <div class="proj"><h2><a href="#">instructions</a></h2><ul><li><b class="bullold">&bull;</b>login with your todoist account</li><li class="alt"><b class="bullold">&bull;</b>tap on an item to mark as done</li><li><b class="bullold">&bull;</b>tap on item and hold to edit</li><li class="alt"><b class="bullold">&bull;</b>tap on project title to add a task</li><li><b class="bullold">&bull;</b>pinch to zoom</li><li class="alt"><b class="bullold">&bull;</b>slide across to view other projects</li><li><b class="bullold">&bull;</b>add it to your iPhone home screen</li><li class="alt"><b class="bullold">&bull;</b>using Firefox? login with your private API token</li></ul></div>
 <div class="proj"><h2><a href="#">todo karma</a></h2><ul><li><b class="bullold">&bull;</b>add a date only if a task has a deadline</li><li class="alt"><b class="bullold">&bull;</b>items with deadlines appear at the top</li><li><b class="bullold">&bull;</b>due and overdue items appear shaded</li><li class="alt"><b class="bullold">&bull;</b>use all lowercase to save time</li><li><b class="bullold">&bull;</b>create Projects according to your life. e.g., grocery, yacht, wedding</li><li class="alt"><b class="bullold">&bull;</b>add things asap lest you forget</li></ul></div>
 </div>
-<div id="filler" style="margin-bottom:2000px;width:3000px;clear:both"></div>
+<div id="filler" style="margin-bottom:1000px;width:3000px;clear:both"></div>
 </div>
 <div id="foot">
 <div id="man" style="display:none">
@@ -713,46 +709,46 @@ Todoist for iPhone -
 <a href="javascript:todoist.makeCopyable();scrollTo(0,0);">duplicate task</a>
 <a href="javascript:resizeMe(0);" class="resizeme">resize columns</a>
 <a href="javascript:resizeMe(1);" class="resizeme">resize text</a>
+<a href="http://code.google.com/p/simpleajax/wiki/TodoistWall">wiki</a>
 </div>
 <a href="#" onclick="with($('man').style){display=display?'':'none';};return false;" style="padding:3px">?</a>
 <a href="javascript:todoist.search();" accesskey="s" title="shortcut key: Alt+S">search</a>
 </div>
 <span id="projwidth"></span>
 <script>
+var isTouch = ("ontouchend" in document.body);
+function scrollPos(o, restore, i) {
+  if(restore) {
+    o = {scr_x:0, scr_y:0, scr_t:0};
+    for(i in o) o[i] = localStorage.getItem(i);
+    if(Date.now() - o.scr_t < 300000) scrollTo(o.scr_x, o.scr_y);
+    document.onscroll = scrollPos;
+  } else {
+    var b = document.body;
+    o = {scr_x:b.scrollLeft, scr_y:b.scrollTop, scr_t:Date.now()};
+    for(i in o) localStorage.setItem(i, o[i]);
+  }
+}
+if(isTouch && window.localStorage) scrollPos(0, 1);
+
 todoist.onload();
 var wob = (location.hash == "#w");
 if(wob) document.body.className = "white";
+var ok = 200;
 </script>
 <script defer="defer">
-var isTouch = ("ontouchend" in document.body);
-var ok = 200;
-
 var touchTimer = function(e) {clearTimeout(touchTimer);};
 document.body[isTouch ? "ontouchstart" : "onmousedown"] = function(e) {
   clearTimeout(touchTimer);
   e = !e ? event.srcElement : e.target || e.srcElement;
   if(e && e.nodeType != 1) e = e.parentNode;
   if(e && e.id && todoist.data) {
-    touchTimer = setTimeout("todoist.updateItem('"+e.id+"');", 1000);
+    touchTimer = setTimeout("todoist.updateItem('"+e.id+"');", 900);
   }
 };
 document.body[isTouch ? "ontouchmove" : "onmousemove"] = touchTimer;
 document.body[isTouch ? "ontouchend" : "onmouseup"] = touchTimer;
 document.body.ongesturestart = touchTimer;
-
-function scrollPos(e, restore) {
-  var o, i, b = document.body;
-  if(restore) {
-    if(!isTouch || !window.localStorage) return;
-    o = {scr_x:0, scr_y:0, scr_t:0};
-    for(i in o) o[i] = localStorage.getItem(i)*1;
-    if(Date.now() - o.scr_t < 300000) scrollTo(o.scr_x, o.scr_y);
-    document.onscroll = scrollPos;
-  } else {
-    o = {scr_x:b.scrollLeft, scr_y:b.scrollTop, scr_t:Date.now()};
-    for(i in o) localStorage.setItem(i, o[i]);
-  }
-}
 
 function touchIsClick(n, s) {
   n.setAttribute("ontouchstart", (s = n.href));
@@ -768,49 +764,20 @@ function updateSize() {
 updateSize();
 function resizeMe(col, again) {
   if(!again) oldAllWidths = allWidths.join(",");
-  if("ontouchend" in document.body) {
-    if(!confirm("Pinch the screen with 2 fingers to resize. Tap the screen once when done. Tap OK to begin.")) return;
-    var n = $("resizeShim") || document.body.appendChild(document.createElement("div"));
-    n.id = "resizeShim";
-    var lastScale;
-    n.ongesturestart = function(e) {e.preventDefault();};
-    n.ongesturechange = function(e) {
-      e.preventDefault();
-      if(lastScale == Math.round(e.scale*100)) return;
-      lastScale = Math.round(e.scale*100);
-      allWidths[col] = parseInt(allWidths[col]*Math.pow(e.scale,0.25)*100)/100;
-      updateSize();
-    };
-    n.onclick = function(e) {
-      e.preventDefault();
-      if(confirm("Use this size?")) {
-        todoist.cookie("tdwidths", allWidths.join(","));
-      } else {
-        allWidths = oldAllWidths.split(",");
-        updateSize();
-      }
-      n.ongesturestart = null;
-      n.ongesturechange = null;
-      n.onclick = null;
-      n.parentNode.removeChild(n);
-      n = null;
-    };
+  var old = oldAllWidths.split(",")[col]*1;
+  var s = parseInt(allWidths[col]/old*100) + "%";
+  s = prompt(!again ? "Resize to what percent?" : "Press cancel if no further changes, or enter another percent.", s);
+  if(s) s = s.replace("%", "");
+  if(s) {
+    if(s*s > 0) allWidths[col] = parseInt(old*s)/100;
+    updateSize();
+    setTimeout("resizeMe("+col+",1);", 100);
   } else {
-    var old = oldAllWidths.split(",")[col]*1;
-    var s = parseInt(allWidths[col]/old*100) + "%";
-    s = prompt(!again ? "Resize to what percent?" : "Press cancel if no further changes, or enter another percent.", s);
-    if(s) s = s.replace("%", "");
-    if(s) {
-      if(s*s > 0) allWidths[col] = parseInt(old*s)/100;
-      updateSize();
-      setTimeout("resizeMe("+col+",1);", 100);
+    if(again && confirm("Save size? ("+parseInt(allWidths[col]/old*100)+"%)")) {
+      todoist.cookie("tdwidths", allWidths.join(","));
     } else {
-      if(again && confirm("Save size as "+parseInt(allWidths[col]/old*100)+"%?")) {
-        todoist.cookie("tdwidths", allWidths.join(","));
-      } else {
-        allWidths = oldAllWidths.split(",");
-        updateSize();
-      }
+      allWidths = oldAllWidths.split(",");
+      updateSize();
     }
   }
   scrollTo(0, 0);

@@ -766,7 +766,7 @@ function resizeMe(col, again) {
   if(!again) oldAllWidths = allWidths.join(",");
   var old = oldAllWidths.split(",")[col]*1;
   var s = parseInt(allWidths[col]/old*100) + "%";
-  s = prompt(!again ? "Resize to what percent?" : "Enter another percent if not satisfied:", s);
+  s = prompt(!again ? "Resize to what percent?" : "Press cancel when done", s);
   if(s) s = s.replace("%", "");
   if(s) {
     if(s*s > 0) allWidths[col] = parseInt(old*s)/100;

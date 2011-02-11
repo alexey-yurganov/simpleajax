@@ -276,7 +276,7 @@ var todoist = {
         if(item.due_now == 2) {
           bullet = item.due_date.getTime();
           for(var k=0; k<summary.length; k++) {
-            if(bullet <= summary[k].due_date.getTime()) {
+            if(bullet >= summary[k].due_date.getTime()) {
               summary.splice(k, 0, item);
               bullet = 0;
               break;

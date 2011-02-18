@@ -551,7 +551,7 @@ var todoist = {
 
     if(s) {
       s = s.toLowerCase().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-      var n, n1, n2, d, proj=[], count = 0;
+      var n, n1, n2, d, proj={}, count = 0;
       for(var i in this.data) {
         d = this.data[i].data;
         if(!d) continue;
@@ -564,7 +564,7 @@ var todoist = {
             n.insertBefore(n1, n.firstChild);
             n.appendChild(n2);
 
-            proj.push(d[j].project_id);
+            proj[d[j].project_id] = 1;
 
             if(count == 0 && n.getBoundingClientRect) {
               n = n.getBoundingClientRect();
@@ -574,10 +574,9 @@ var todoist = {
           }
         }
       }
-      for(var j=0; j<proj.length; j++) {
-        n = $("p"+proj[j]);
-        n.innerHTML = "<i>" + n.innerHTML + "</i>";
-      }
+
+      for(var j in proj) if(n = $("p" + j)) n.innerHTML = "<i>" + n.innerHTML + "</i>";
+
       if(count == 0) alert("No matches found");
     }
   },

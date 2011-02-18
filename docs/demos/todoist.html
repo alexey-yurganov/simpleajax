@@ -265,7 +265,7 @@ var todoist = {
       var proj = this.data[projs[i]];
       if(!proj.data) continue;
 
-      html.push("<div class='proj'><h2><a href='javascript:if(todoist.copying){todoist.copyItem("+projs[i]+");}else{todoist.addItem("+projs[i]+");}' ondragover='if(todoist.copying&&event.preventDefault)event.preventDefault();' ondrop='todoist.copyItem("+projs[i]+");' ontouchstart='touchIsClick(this);'>"+proj.name+"</a></h2><ul>");
+      html.push("<div class='proj'><h2><a href='javascript:if(todoist.copying){todoist.copyItem("+projs[i]+");}else{todoist.addItem("+projs[i]+");}' ondragover='if(todoist.copying&&event.preventDefault)event.preventDefault();' ondrop='todoist.copyItem("+projs[i]+");' ontouchstart='touchIsClick(this);' id='p"+projs[i]+"'>"+proj.name+"</a></h2><ul>");
       for(var j=0; j<proj.data.length; j++) {
         item = proj.data[j];
 
@@ -530,7 +530,7 @@ var todoist = {
     if(!proj || m.project_id == proj) return;
 
     var d = m.due_date || "";  //new Date("Sun Apr 29 23:59:59 2007")
-    var params = ["js_date=1&project_id=" + proj + "&date_string=" + (!d ? d : d.getDate() + "%2F" + (d.getMonth()+1) + "%2F" + d.getFullYear())];
+    var params = ["js_date=1&project_id=" + proj + (!d ? "" : "&date_string=" + d.getDate() + "%2F" + (d.getMonth()+1) + "%2F" + d.getFullYear())];
     for(var i in m) {
       if(m[i] && i != "project_id" && i != "id" && i != "due_date") params.push(i + "=" + encodeURIComponent(m[i] || ""));
     }
@@ -551,7 +551,7 @@ var todoist = {
 
     if(s) {
       s = s.toLowerCase().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-      var n, n1, n2, d, count = 0;
+      var n, n1, n2, d, proj=[], count = 0;
       for(var i in this.data) {
         d = this.data[i].data;
         if(!d) continue;
@@ -564,6 +564,8 @@ var todoist = {
             n.insertBefore(n1, n.firstChild);
             n.appendChild(n2);
 
+            proj.push(d[j].project_id);
+
             if(count == 0 && n.getBoundingClientRect) {
               n = n.getBoundingClientRect();
               scrollTo(document.body.scrollLeft + n.left - 40, document.body.scrollTop + n.top - 40);
@@ -571,6 +573,10 @@ var todoist = {
             count++;
           }
         }
+      }
+      for(var j=0; j<proj.length; j++) {
+        n = $("p"+proj[j]);
+        n.innerHTML = "<i>" + n.innerHTML + "</i>";
       }
       if(count == 0) alert("No matches found");
     }
@@ -641,7 +647,7 @@ a {font-size:100%; color:#fff}
 .sum h2 {padding:0 0.7em; color:#444}
 .sum h2 b {font-size:70%}
 .sum .eta2 {background:none; margin-top:0}
-.sum .imp4 {margin-top:0.1em; margin-bottom:0.1em}
+.sum .imp4 {margin-top:0.15em; margin-bottom:0.15em}
 ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle}
 li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; -moz-border-radius:0.6em; border-radius:0.6em; cursor:pointer; -webkit-transition:margin 0.3s; -webkit-user-drag:element}
 li:hover {-webkit-user-select:none}
@@ -651,13 +657,13 @@ li.imp2 {color:#0c0} li.imp3 {color:#88f} li.imp4 {color:#f00}
 ul>li.imp4.eta2 {background:#733; color:#fff}
 .bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa} .bullweek {color:#aaa}
 @media screen and (max-device-width: 480px) {#main {display:table-row} #main .proj {float:none; display:table-cell; width:15.5em} #foot {position:static; margin-top:1em}}
-li i {font-style:normal; background:#ff4; padding:0 0.1em; -moz-border-radius:0.3em; border-radius:0.3em; color:#000}
+.proj i {font-style:normal; background:#ff4; padding:0 0.1em; -moz-border-radius:0.3em; border-radius:0.3em; color:#000}
 #foot a {padding:0.3em 0.5em}
 #upd {-webkit-transition:-webkit-transform 0.5s}
 .fresh {-webkit-animation:darkflash 3s 1 ease-in}
 .white .fresh {-webkit-animation:lightflash 3s 1 ease-in}
 .white #main li:-webkit-drag {background:#fff; color:#000}
-.white li i {background:#cc0; color:#fff}
+.white .proj i {background:#cc0; color:#fff}
 .white, .white #foot {background:#fff; color:#000}
 .white .emptyprojs a {color:#bbb}
 .white a {color:#555}
@@ -668,8 +674,8 @@ li i {font-style:normal; background:#ff4; padding:0 0.1em; -moz-border-radius:0.
 .white li.imp2 {color:#1d1} .white li.imp3 {color:#44f} .white li.imp4 {color:#f44}
 .white ul>li.imp4.eta2 {background:#fcc; color:#000}
 .white .bullnow, .white .bullweek, .white .bullold {color:#bbb}
-.copy1 li, .copy2 li {margin-bottom:0.6em; text-indent:0}
-.copy1 .proj h2 a, .copy2 .proj h2 a  {border-radius:0.3em; -webkit-transition:background-color 0.5s ease 0.3s}
+.copy1 li, .copy2 li {margin-top:0.3em; text-indent:0}
+.copy1 .proj h2 a, .copy2 .proj h2 a  {border-radius:0.3em; -webkit-transition:background-color 0.5s ease 0.1s}
 .copy1 .bullnow, .copy1 .bullweek, .copy1 .bullold, .copy2 .bullnow, .copy2 .bullweek, .copy2 .bullold {display:none}
 .copy1 li {background:#555}
 .copy2 .proj h2 a {background:#555}

@@ -2,7 +2,7 @@
 #labels Featured
 
 = Introduction =
-Todoist Wall is a todo list web app that works offline and syncs with your Todoist account. It is designed for the iPhone's small screen and touch interface and starts up fast. It uses a number of HTML5 technologies and touch events to achieve a robust yet fast application.
+Todoist Wall is a free todo list web app that works offline and syncs with your Todoist account. (You will need a [http://todoist.com todoist.com] account which is also free.) Add the web app to your iPhone home screen to activate fullscreen view. It is designed for the iPhone's small screen and touch interface and starts up fast. It uses a number of HTML5 technologies and touch events to achieve a robust yet fast application.
 
 Todoist Wall presents all your projects and tasks on a huge wall and you can pan left and right to view them. You can tap to add more tasks or to mark tasks as completed. You can tap and hold to edit a task. Due and overdue items are distinctly highlighted for clarity.
 

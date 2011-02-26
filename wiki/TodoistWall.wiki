@@ -30,6 +30,10 @@ Being a web app means Todoist Wall inherits some benefits from the Safari browse
 [http://img440.imageshack.us/i/todoistwallicon.jpg/ http://img440.imageshack.us/img440/9899/todoistwallicon.jpg]
 
 ----
+= Cloud-based =
+Your todo list is stored in the cloud, therefore any changes you make on your iPhone is immediately available on your desktop or at an Internet cafe.
+
+----
 = Usability =
 Todoist Wall has been optimized for the iPhone:
   * Buttons have large activation areas to make them easier to tap with a finger.

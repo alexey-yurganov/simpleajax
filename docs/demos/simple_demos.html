@@ -8,9 +8,15 @@ a:link, a:visited {color:#00d}
 a:hover {color:#66f}
 td.section {text-align:center; vertical-align:top; padding:0 0 20px 0; border:1px solid #bbb}
 td h3 {margin:1px 1px 20px 1px; padding:3px; background:#eee; color:#777; border:0}
+
 .flip-0-3 {background:red}
 .flip-1-3 {background:yellow}
 .flip-2-3 {background:green}
+
+#starbox .stars {font-size:1.4em; font-weight:bold; letter-spacing:0.1em}
+#starbox a.stars {position:absolute; color:#ccc; z-index:0; text-decoration:none}
+#starbox a.stars:hover {_display:block; color:#dd0; z-index:1}
+
 </style>
 
 <div class="section simple">
@@ -38,6 +44,8 @@ td h3 {margin:1px 1px 20px 1px; padding:3px; background:#eee; color:#777; border
                     <br><small>Enter the text you see above:</small>
                     <br><input type="text" rel="get captcha.txt captcha">
                 </div>
+                <input type="radio"> Next question
+                <br><input type="radio"> Next question
             </td>
 
             <td class="section" style="width:50%">
@@ -67,12 +75,34 @@ td h3 {margin:1px 1px 20px 1px; padding:3px; background:#eee; color:#777; border
                 </table>
             </td>
         </tr>
+
+        <tr>
+            <td class="section" style="width:50%">
+                <h3><a name="one_button_example"></a>Star ratings example</h3>
+                <span id="starbox">Rate me:
+                    <a href="star.txt?s=5" rel="post starbox" class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</a
+                    ><a href="star.txt?s=4" rel="post starbox" class="stars">&#9733;&#9733;&#9733;&#9733;</a
+                    ><a href="star.txt?s=3" rel="post starbox" class="stars">&#9733;&#9733;&#9733;</a
+                    ><a href="star.txt?s=2" rel="post starbox" class="stars">&#9733;&#9733;</a
+                    ><a href="star.txt?s=1" rel="post starbox" class="stars">&#9733;</a
+                    ><u class="stars" style="visibility:hidden">&#9733;&#9733;&#9733;&#9733;&#9733;</u>
+                </span>
+            </td>
+
+            <td class="section" style="width:50%">
+            </td>
+        </tr>
     </table>
 
-
 </div>
-
 <hr>
-More later
+<div id="output">More later...</div>
+<script>
+SimpleAjax._getURL = SimpleAjax.getURL;
+SimpleAjax.getURL = function() {
+  document.getElementById("output").innerHTML = "<tt>Debug: HTTP " + arguments[0] + ", " + arguments[1] + "</tt>";
+  SimpleAjax._getURL.apply(SimpleAjax, arguments);
+};
+</script>
 
 </html>

@@ -44,5 +44,10 @@ Todoist Wall has been optimized for the iPhone:
   * An iPhone home screen icon is also available when you add the web app to your iPhone's home screen.
 
 [http://img691.imageshack.us/i/todoistwalldue.jpg/ http://img691.imageshack.us/img691/9189/todoistwalldue.jpg]
+
+----
+= Open Source =
+Todoist Wall is released under the MIT Open Source license.
+
 ----
 If you have a Todoist account, try *[http://simpleajax.googlecode.com/svn/docs/demos/todoist.html Todoist Wall]* .

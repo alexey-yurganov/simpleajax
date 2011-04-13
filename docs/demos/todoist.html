@@ -316,8 +316,10 @@ var todoist = {
 
     $("main").innerHTML = html.join("");
     if(!silent) {
-      document.body.className = wob ? "flash white" : "flash";
-      setTimeout(function() {document.body.className = wob ? "white" : "";}, 100);
+      setTimeout(function() {
+        document.body.className = wob ? "flash white" : "flash";
+        setTimeout(function() {document.body.className = wob ? "white" : "";}, 100);
+      }, 100);
     }
   },
 

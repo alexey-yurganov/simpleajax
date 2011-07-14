@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html manifest="converter.manifest">
+<head><title>Converter</title>
+<link rel="apple-touch-icon" href="fastconverter57.png">
+<link rel="apple-touch-icon" sizes="114x114" href="fastconverter114.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<style>
+body,input,a {margin:0; padding:0; background:#000; color:#fff; font:normal 20pt helvetica,arial; text-decoration:none}
+input {border:none; background:#000; color:#fff; -webkit-appearance:none}
+td {padding:0.1em 0.2em}
+td:first-child {text-align:right}
+td:first-child + td {color:#888}
+td:first-child + td + td {text-align:left}
+td:first-child + td + td + td b {font-weight:normal; color:#999}
+</style>
+<body>
+<input id="q" type="tel" placeholder="Converter" 
+  onkeydown="switch(event.keyIdentifier){case'U+0023':case'U+002A':case'U+002B':case'U+002C':case'U+003B':event.preventDefault();this.value+='.';};calc();"
+  style="width:90%; margin:1em 5%; padding:2px; text-align:center">
+<div id="output" onclick="if(!$('q').value)$('q').focus();"></div>
+<script defer="defer">
+function $(s) {return document.getElementById(s);}
+var html=["<table cellspacing=0 border=0>"];
+var arr=[
+  ["m", "yds", function(x){return x/0.9144}],
+  ["yds", "m", function(x){return x*0.9144}],
+  ["m", "ft", function(x){return x*254/12}],
+  ["ft", "m", function(x){return x*12/254}],
+  ["cm", "in.", function(x){return x*2.54}],
+  ["in.", "cm", function(x){return x/2.54}],
+  ["kg", "lbs", function(x){return x*2.204622622}],
+  ["lbs", "kg", function(x){return x/2.204622622}],
+  ["&#8451;", "&#8457;", function(x){return x*9/5 + 32;}],
+  ["&#8457;", "&#8451;", function(x){return (x - 32)*5/9}]
+];
+for(var i=0; i<arr.length; i++) {
+  html.push("<tr><td>"+arr[i][0]+"</td><td>&rArr;</td><td>"+arr[i][1]+"</td><td id='n"+i+"'><b>0</b></td></tr>");
+}
+$("output").innerHTML = html.join("") + "</table>";
+
+function calc() {
+  var n, val, str = $("q").value.replace(/[^\d\-\.]/g, "")*1;
+  for(var i=0; i<arr.length; i++) {
+    val = str ? arr[i][2](str) : 0;
+    n = val.toFixed(val>500?3:5).toString().replace(/\.?0+$/,"").replace(/(\.\d+)$/,"<b>$1</b>");
+    $("n"+i).innerHTML = "<a href='copy:"+val+"'>"+n+"</a>";
+  }
+}
+</script>
+</body>
+</html>

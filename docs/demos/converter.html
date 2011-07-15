@@ -27,7 +27,7 @@ function $(s) {return document.getElementById(s);}
 var html=["<table cellspacing=0 border=0>"];
 var arr=[
   ["m", "yds", function(x){return x/0.9144}],
-  ["m", "ft", function(x){return x/12*0.0254}],
+  ["m", "ft", function(x){return x/(12*0.0254)}],
   ["yds", "m", function(x){return x*0.9144}],
   ["ft", "m", function(x){return x*12*0.0254}],
   ["cm", "in.", function(x){return x/2.54}],

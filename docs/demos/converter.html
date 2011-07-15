@@ -14,6 +14,7 @@ td:first-child {text-align:right}
 td:first-child + td {color:#888}
 td:first-child + td + td {text-align:left}
 td:first-child + td + td + td b {font-weight:normal; color:#999}
+em {font-style:normal; font-size:8pt; vertical-align:middle}
 </style>
 <body>
 <input id="q" type="tel" placeholder="Converter" 
@@ -25,13 +26,17 @@ function $(s) {return document.getElementById(s);}
 var html=["<table cellspacing=0 border=0>"];
 var arr=[
   ["m", "yds", function(x){return x/0.9144}],
-  ["m", "ft", function(x){return x*254/12}],
+  ["m", "ft", function(x){return x/12*0.0254}],
   ["yds", "m", function(x){return x*0.9144}],
-  ["ft", "m", function(x){return x*12/254}],
+  ["ft", "m", function(x){return x*12*0.0254}],
   ["cm", "in.", function(x){return x/2.54}],
   ["in.", "cm", function(x){return x*2.54}],
   ["kg", "lbs", function(x){return x*2.204622622}],
   ["lbs", "kg", function(x){return x/2.204622622}],
+  ["litre", "gal <em>(US)</em>", function(x){return x*0.264172052}],
+  ["gal", "litre", function(x){return x/0.264172052}],
+  ["ft&sup2;", "m&sup2;", function(x){return x*144*0.0254*0.0254}],
+  ["m&sup2;", "ft&sup2;", function(x){return x/(144*0.0254*0.0254)}],
   ["&#8451;", "&#8457;", function(x){return x*9/5 + 32;}],
   ["&#8457;", "&#8451;", function(x){return (x - 32)*5/9}]
 ];

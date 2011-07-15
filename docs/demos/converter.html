@@ -25,11 +25,11 @@ function $(s) {return document.getElementById(s);}
 var html=["<table cellspacing=0 border=0>"];
 var arr=[
   ["m", "yds", function(x){return x/0.9144}],
-  ["yds", "m", function(x){return x*0.9144}],
   ["m", "ft", function(x){return x*254/12}],
+  ["yds", "m", function(x){return x*0.9144}],
   ["ft", "m", function(x){return x*12/254}],
-  ["cm", "in.", function(x){return x*2.54}],
-  ["in.", "cm", function(x){return x/2.54}],
+  ["cm", "in.", function(x){return x/2.54}],
+  ["in.", "cm", function(x){return x*2.54}],
   ["kg", "lbs", function(x){return x*2.204622622}],
   ["lbs", "kg", function(x){return x/2.204622622}],
   ["&#8451;", "&#8457;", function(x){return x*9/5 + 32;}],

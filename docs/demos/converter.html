@@ -11,9 +11,9 @@ body,input,a {margin:0; padding:0; background:#000; color:#fff; font:normal 20pt
 input {border:none; background:#000; color:#fff; -webkit-appearance:none}
 td {padding:0.1em 0.2em}
 td:first-child {text-align:right}
-td:first-child + td {color:#888}
-td:first-child + td + td {text-align:left}
-td:first-child + td + td + td b {font-weight:normal; color:#999}
+td:first-child+td {color:#888}
+td:first-child+td+td {text-align:left}
+td:first-child+td+td+td b {font-weight:normal; color:#999}
 em {font-style:normal; font-size:8pt; vertical-align:middle}
 </style>
 <body>
@@ -22,16 +22,19 @@ em {font-style:normal; font-size:8pt; vertical-align:middle}
   onkeyup="calc();"
   style="width:90%; margin:10px 5%; padding:2px; text-align:center">
 <div id="output" onclick="if(!$('q').value)$('q').focus();"></div>
+<div style="display:none;font-size:9pt">Offline Unit Converter for iPhone/iPod. Add to iPhone Home Screen for quick access.</div>
 <script defer="defer">
 function $(s) {return document.getElementById(s);}
 var html=["<table cellspacing=0 border=0>"];
 var arr=[
-  ["m", "yds", function(x){return x/0.9144}],
+  ["cm", "inch", function(x){return x/2.54}],
   ["m", "ft", function(x){return x/(12*0.0254)}],
-  ["yds", "m", function(x){return x*0.9144}],
+  ["m", "yds", function(x){return x/0.9144}],
+  ["km", "mile", function(x){return x/0.0009144/1760}],
+  ["inch", "cm", function(x){return x*2.54}],
   ["ft", "m", function(x){return x*12*0.0254}],
-  ["cm", "in.", function(x){return x/2.54}],
-  ["in.", "cm", function(x){return x*2.54}],
+  ["yds", "m", function(x){return x*0.9144}],
+  ["mile", "km", function(x){return x*0.0009144*1760}],
   ["kg", "lbs", function(x){return x*2.204622622}],
   ["lbs", "kg", function(x){return x/2.204622622}],
   ["litre", "gal<em>US</em>", function(x){return x*0.264172052}],

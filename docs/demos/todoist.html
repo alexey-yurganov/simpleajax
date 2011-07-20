@@ -19,9 +19,9 @@ var todoist = {
   projCount: 0,
   afterLogin: [],
 
-  ajax: function(m, p) {
+  ajax: function(m, p, ssl) {
     var s = document.createElement("script");
-    s.src = (m == "login" ? "https:/" : "http:/") 
+    s.src = (ssl ? "https:/" : "http:/") 
       + "/todoist.com/API/" 
       + m 
       + "?&callback=todoist.cb" + m 
@@ -117,8 +117,10 @@ var todoist = {
       } else {
         $("loginnow").value = "Loading...";
         $("loginnow").disabled = true;
-        this.ajax("login", "&email="+encodeURIComponent(u)+"&password="+encodeURIComponent(p));
-        this.loginTimeout = setTimeout(function() {$("apitkn").style.display = "";}, 8000);
+        this.ajax("login", "&email="+encodeURIComponent(u)+"&password="+encodeURIComponent(p), true);
+        this.loginTimeout = setTimeout(function() {
+          this.ajax("login", "&email="+encodeURIComponent(u)+"&password="+encodeURIComponent(p));
+        }, 7000);
       }
   },
 
@@ -639,7 +641,7 @@ body.flash {background:#333}
 .proj {float:left; min-width:15.5em; -webkit-transition:min-width 0.2s; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0; padding:0; font:bold 125% Helvetica,Arial}
 .proj h2 a {text-decoration:none; padding:0 1em 0.3em 0.7em}
-.token {color:#aaa}
+.token, .token a {color:#aaa}
 a {font-size:100%; color:#fff}
 .emptyprojs {font-size:100%} .emptyprojs a {color:#999; margin-right:1em; text-decoration:none}
 .due {color:#bbe; font-size:90%; margin-left:4%}
@@ -691,14 +693,14 @@ ul>li.imp4.eta2 {background:#733; color:#fff}
 <body style="overflow:auto">
 <form id="loginbox" style="margin:5px;padding:0;display:none" onsubmit="todoist.login();return false;">
 Email:<br><input id="user" type="email" autocorrect="off" autocapitalize="off">
-<br>Password: <span class="token">or Private Token</span><br><input id="pass" type="password"><em id="apitkn" style="display:none"> - Not working? Try logging in with your <a href='http://getsatisfaction.com/todoist/topics/how_do_i_get_an_api_token'>API Token</a> found on the todoist.com website.</em>
+<br>Password: <span class="token">or <a href="http://getsatisfaction.com/todoist/topics/how_do_i_get_an_api_token" tabindex="-1">Private Token</a></span><br><input id="pass" type="password">
 <br><input type="submit" id="loginnow" value="Login"> <a href="http://todoist.com">Register</a>
 </form>
 <div id="upd" style="float:left;margin-left:-5px"><a href="#" onclick="todoist.goOnline();return false;" style="padding:2px;text-decoration:none;font-weight:bold" accesskey="u">&dArr;</a></div>
 <noscript style="color:#f55">Please enable JavaScript.</noscript>
 <div id="main"><div id="intro" style="display:none">
-<div class="proj"><h2><a href="#">what is Todoist Wall?</a></h2><ul><li><b class="bullold">&bull;</b>an <a href="http://simpleajax.googlecode.com/svn/docs/demos/todoist.html" style="text-decoration:none">iPhone web app that syncs with your Todoist</a></li><li class="alt"><b class="bullold">&bull;</b>works offline</li><li><b class="bullold">&bull;</b>large readable text</li><li class="alt"><b class="bullold">&bull;</b>designed for the iPhone screen</li><li><b class="bullold">&bull;</b>works just as good on your computer's browser</li><li class="alt"><b class="bullold">&bull;</b>view all your todos on one large wall</li><li><b class="bullold">&bull;</b>get to all your todos just by sliding your finger</li></ul></div>
-<div class="proj"><h2><a href="#">instructions</a></h2><ul><li><b class="bullold">&bull;</b>login with your todoist account</li><li class="alt"><b class="bullold">&bull;</b>tap on an item to mark as done</li><li><b class="bullold">&bull;</b>tap on item and hold to edit</li><li class="alt"><b class="bullold">&bull;</b>tap on project title to add a task</li><li><b class="bullold">&bull;</b>pinch to zoom</li><li class="alt"><b class="bullold">&bull;</b>slide across to view other projects</li><li><b class="bullold">&bull;</b>add it to your iPhone home screen</li><li class="alt"><b class="bullold">&bull;</b>using Firefox? login with your private API token</li></ul></div>
+<div class="proj"><h2><a href="#">what is Todoist Wall?</a></h2><ul><li><b class="bullold">&bull;</b>an <a href="http://simpleajax.googlecode.com/svn/docs/demos/todoist.html" style="text-decoration:none">iPhone web app that syncs with your Todoist</a></li><li class="alt"><b class="bullold">&bull;</b>can be read offline. needs connection to add</li><li><b class="bullold">&bull;</b>large readable text</li><li class="alt"><b class="bullold">&bull;</b>designed for the iPhone screen</li><li><b class="bullold">&bull;</b>works just as good on your computer's browser</li><li class="alt"><b class="bullold">&bull;</b>view all your todos on one large wall</li><li><b class="bullold">&bull;</b>get to all your todos just by sliding your finger</li></ul></div>
+<div class="proj"><h2><a href="#">instructions</a></h2><ul><li><b class="bullold">&bull;</b>login with your todoist account</li><li class="alt"><b class="bullold">&bull;</b>tap on an item to mark as done</li><li><b class="bullold">&bull;</b>tap on item and hold to edit</li><li class="alt"><b class="bullold">&bull;</b>tap on project title to add a task</li><li><b class="bullold">&bull;</b>pinch to zoom</li><li class="alt"><b class="bullold">&bull;</b>slide across to view other projects</li><li><b class="bullold">&bull;</b>add it to your iPhone home screen</li></ul></div>
 <div class="proj"><h2><a href="#">todo karma</a></h2><ul><li><b class="bullold">&bull;</b>add a date only if a task has a deadline</li><li class="alt"><b class="bullold">&bull;</b>items with deadlines appear at the top</li><li><b class="bullold">&bull;</b>due and overdue items appear shaded</li><li class="alt"><b class="bullold">&bull;</b>use all lowercase to save time</li><li><b class="bullold">&bull;</b>create Projects according to your life. e.g., grocery, yacht, wedding</li><li class="alt"><b class="bullold">&bull;</b>add things asap lest you forget</li></ul></div>
 </div>
 <div id="filler" style="margin-bottom:1000px;width:3000px;clear:both"></div>

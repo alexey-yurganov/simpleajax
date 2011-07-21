@@ -117,10 +117,10 @@ var todoist = {
       } else {
         $("loginnow").value = "Loading...";
         $("loginnow").disabled = true;
-        this.ajax("login", "&email="+encodeURIComponent(u)+"&password="+encodeURIComponent(p), true);
-        this.loginTimeout = setTimeout(function() {
-          this.ajax("login", "&email="+encodeURIComponent(u)+"&password="+encodeURIComponent(p));
-        }, 7000);
+        u = "&email="+encodeURIComponent(u)+"&password="+encodeURIComponent(p);
+        this.ajax("login", u, true);
+        p = this;
+        this.loginTimeout = setTimeout(function() {p.ajax("login", u);}, 7000);
       }
   },
 

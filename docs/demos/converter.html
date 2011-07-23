@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html manifest="converter.manifest">
-<head><title>Converter</title>
+<head><title>Unit Converter</title>
 <link rel="apple-touch-icon" href="converter57.png">
 <link rel="apple-touch-icon" sizes="114x114" href="converter114.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,10 +20,10 @@ em {font-style:normal; font-size:8pt; vertical-align:middle}
 <body>
 <input id="q" type="tel" placeholder="Converter" 
   onkeydown="switch(event.keyIdentifier){case'U+0023':case'U+002A':case'U+002B':case'U+002C':case'U+003B':event.preventDefault();this.value=this.value.substring(0,this.selectionStart)+'.'+this.value.substring(this.selectionEnd);};"
-  onkeyup="calc();"
+  onkeyup="calc();" onfocus="sel(this);"
   style="width:90%; margin:10px 5%; padding:2px; text-align:center">
-<div id="output" onclick="if(!$('q').value)$('q').focus();"></div>
-<div style="display:none;font-size:9pt">Offline Unit Converter for iPhone/iPod. Add to iPhone Home Screen for quick access.</div>
+<div id="output" onclick="$('q').focus();this.removeAttribute('onclick');"></div>
+<div style="display:none">Offline Unit Converter for iPhone/iPod. Add to iPhone Home Screen for quick access.</div>
 <script defer="defer">
 function $(s) {return document.getElementById(s);}
 var html=["<table cellspacing=0 border=0>"];
@@ -57,8 +57,16 @@ function calc() {
   for(var i=0; i<arr.length; i++) {
     val = isNaN(str) ? 0 : arr[i][2](str);
     n = val.toFixed(val>500?3:5).toString().replace(/\.?0+$/,"").replace(/(\.\d+)$/,"<b>$1</b>");
-    $("n"+i).innerHTML = "<a href='copy:"+val+"'>"+n+"</a>";
+    $("n"+i).innerHTML = "<a href='copy:"+val+"' onclick='return!!0;'>"+n+"</a>";
   }
+  if(window.localStorage) localStorage.lastInput = str;
+}
+
+function sel(d) {setTimeout(function() {d.selectionStart=0; d.selectionEnd=d.value.length;}, 0);}
+
+if(window.localStorage && localStorage.lastInput) {
+  $("q").value = localStorage.lastInput;
+  calc();
 }
 </script>
 </body>

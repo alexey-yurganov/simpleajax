@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head><title>Task Wall for iPhone - See all your Google Tasks in one place</title>
+<link rel="shortcut icon" href="http://mail.google.com/tasks/res/favicon.ico">
+<link rel="apple-touch-icon" href="todoist57.png">
+<link rel="apple-touch-icon" sizes="114x114" href="todoist114.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script>
+document.title = "Tasks";
+
+function $(s) {
+  return document.getElementById(s);
+}
+
+var ajax = {
+  counter: 0,
+  f: function(o) {
+    ajax["n" + this.i] = null;
+    this.cb(o);
+  }
+};
+
+var taskwall = {
+  oauth: "",
+
+  onload: function() {
+    var token = /#access_token=([^&]+)(&|$)/.exec(location.href);
+    if(token) {
+      this.oauth = token[1];
+      this.cookie("googletasktoken", this.oauth);
+      location.hash = "";
+      this.getProjs();
+    } else {
+      this.oauth = this.oauth || this.cookie("googletasktoken") || null;
+    }
+
+    var x = this.cookie("soon");
+    if(x) $("q").value = "@" + x;
+
+    x = this.cookie("twbg");
+    if(x) document.body.className = x;
+
+    this.updateView();
+  },
+
+  cookie: function(n, v) {
+    if(v == {}.v) return window.localStorage[n];
+    window.localStorage[n] = v;
+  },
+
+  ajax: function(url, param, cb) {
+    var i = ajax.counter++;
+    ajax["n" + i] = {cb:cb, i:i, f:ajax.f};
+
+    url = "https://www.googleapis.com/tasks/v1" + url + "?callback=ajax.n" + i + ".f&prettyPrint=false&access_token="+this.oauth + "&" + param;
+    document.getElementsByTagName("head")[0].appendChild(document.createElement("script")).src = url;
+  },
+
+  handleErr: function(r) {
+    if(r.error.code == 401) {
+      alert("Session expired. Please login.");
+      this.login();
+    } else alert(r.error.code + " " + r.error.message);
+  },
+
+  login: function() {
+var redirect = "http://simpleajax.googlecode.com/svn/docs/demos/taskwall.html";
+    location.href = "https://accounts.google.com/o/oauth2/auth?client_id=145596226637.apps.googleusercontent.com&redirect_uri="+encodeURIComponent(redirect)+"&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ftasks.readonly&response_type=token";
+  },
+
+  getProjs: function() {
+    var dis = this;
+
+    if(!this.oauth) return this.login();
+
+    this.ajax("/users/@me/lists", "fields=items(id,title),nextPageToken", function(r) {
+      if(r.error) return dis.handleErr(r);
+
+      r = r.items;
+      dis.countdown = r.length;
+      for(var i=0; i<r.length; i++) dis.getTasks(r[i].id);
+
+      dis.db.transaction(function(t) {
+        t.executeSql("DELETE FROM projs", []);
+
+        for(var i=0; i<r.length; i++) {
+          t.executeSql("INSERT INTO projs (id, title) VALUES (?, ?)", [r[i].id, r[i].title]);
+        }
+      });
+    });
+
+    $("upd").style.WebkitTransform = "rotate(-180deg)";
+  },
+
+  getTasks: function(proj) {
+    var dis = this;
+
+    if(!this.oauth) return this.login();
+
+    this.ajax("/lists/" + proj + "/tasks", "showCompleted=false&fields=items(due%2Cid%2Cparent%2Cposition%2Cstatus%2Ctitle)%2CnextPageToken", function(r) {
+      dis.countdown--;
+      if(r.error) return dis.handleErr(r);
+
+      r = r.items;
+
+      var arr, subtree = {};
+
+      for(var i=0, len=r.length; i<len; i++) {
+
+        arr = subtree[r[i].parent || "root"];
+        if(!arr) arr = subtree[r[i].parent || "root"] = [];
+
+        if(!r[i].due) {
+          arr.push(r[i]);
+
+        } else {
+          var j = 0;
+          while(j < arr.length && r[i].due > arr[j].due) j++;
+          arr.splice(j, 0, r[i]);
+        }
+      }
+
+      r = subtree["root"];
+
+      var i = -1;
+      while(++i < r.length) {
+        r[i].date_order = i;
+
+        arr = subtree[r[i].id];
+        if(arr) {
+          arr.unshift(i + 1, 0);
+          r.splice.apply(r, arr);
+        }
+      }
+
+      dis.db.transaction(function(t) {
+        t.executeSql("UPDATE tasks SET proj=NULL WHERE proj=?", [proj]);
+
+        for(var i=0, len=r.length; i<len; i++) {
+          if(r[i].title) t.executeSql(
+            "INSERT OR REPLACE INTO tasks (id, title, parent, due, position, date_order, proj, flag) VALUES (?, ?, ?, ?, ?, ?, ?, (SELECT flag FROM tasks WHERE id=?))", 
+            [r[i].id, r[i].title.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"), r[i].parent, r[i].due, r[i].position, r[i].date_order, proj, r[i].id]
+          );
+        }
+
+        t.executeSql("DELETE FROM tasks WHERE proj=NULL", []);
+      });
+
+      if(dis.countdown == 0) dis.updateView();
+      $("upd").style.WebkitTransform = "rotate(-" + dis.countdown + "0deg)";
+
+    });
+  },
+
+  updateView: function() {
+    var dis = this;
+    var pad = function(n) {return n < 10 ? "0" + n : n;};
+
+    var filter = $("q").value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    var filterSql = "";
+
+    this.cookie("soon", "");
+
+    if(filter == "@*") {
+      filterSql = "AND (flag == 2 OR flag == 4) ";
+      filter = null;
+
+    } else if(filter == "@#") {
+      filterSql = "AND (flag == 3 OR flag == 4) ";
+      filter = null;
+
+    } else if(/^@(\d+)$/.test(filter)) {
+      filter = /^@(\d+)$/.exec(filter)[1];
+      this.cookie("soon", filter);
+      var d = new Date();
+      d.setTime(d.getTime() + filter*24*60*60000);
+      filterSql = "AND due <= '" + d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + "T00:00:00.000Z' ";
+      filter = null;
+
+    } else if(filter) {
+      filter = filter.toLowerCase();
+      filterSql = "AND tasks.title LIKE ? ";
+    }
+
+    this.db.readTransaction(function(t) {
+
+      t.executeSql("SELECT id, title FROM projs ORDER BY title", [], function(t, r) {
+        r = r.rows;
+        var n, html = [];
+        for(var i=0, len=r.length; i<len; i++) {
+          n = r.item(i);
+          html.push("<span class='group'><a href='javascript:taskwall.showProj(\"" + n.id + "\");' ontouchend='touchToClick(this);'>" + n.title + "</a></span> ");
+        }
+        if(html.length) html.push("<span class='group'><a href='javascript:taskwall.showProj(null);' ontouchend='touchToClick(this);'>All</a></span>");
+        $("projects").innerHTML = html.join("");
+      });
+
+      t.executeSql("SELECT *, tasks.id AS id, tasks.title AS h2, projs.title AS h1 FROM tasks, projs WHERE tasks.proj=projs.id " + filterSql + "ORDER BY projs.title, date_order", (filter?["%"+filter+"%"]:[]), function(t, r) {
+        r = r.rows;
+
+        var i = 0, lastProj = this, n, stack, indent, h2, id, due, overdue, flag, lastn = {id:this};
+
+        var tod = new Date();
+        var year = tod.getFullYear();
+        var tom = new Date(tod.getTime() + 24*60*60000);
+        tod = year + "-" + pad(tod.getMonth() + 1) + "-" + pad(tod.getDate());
+        tom = tom.getFullYear() + "-" + pad(tom.getMonth() + 1) + "-" + pad(tom.getDate());
+
+        var html = [];
+        try {
+          while((n = r.item(i++))) {
+            if(n.proj != lastProj) html.push("</table><table cellspacing=0 border=0 id='" + n.proj + "'><tr><th colspan=3>" + n.h1 + "</th></tr>");
+            lastProj = n.proj;
+
+            if(n.parent == "undefined") {
+              stack = [];
+              indent = 0;
+
+            } else if(n.parent == lastn.id) {
+              stack.unshift(n.parent);
+              indent++;
+
+            } else if(indent > 0 && n.parent != stack[0]) {
+              while(stack.shift() != n.parent && --indent > 0);
+            }
+
+            lastn = n;
+
+            h2 = n.h2;
+            if(filter) h2 = h2.toLowerCase().replace(filter, "<u>" + filter + "</u>");
+
+            id = n.id;
+            due = n.due.substr(0, 10);
+
+            overdue = due < tod ? "overdue" : "";
+            due = (due == "undefined") ? "" : due == tod ? "today" : due == tom ? "tom" : (due.substr(0, 4) == year ? "" : due.substr(0, 4) + "/") + due.substr(5, 2)*1 + "<span>/</span>" + due.substr(8, 2)*1;
+            flag = n.flag;
+            html.push(
+              "<tr><td ontouchend='touchToClick(this);' onclick='taskwall.check(this,0,\"" + id + "\");' class='f" + flag + "'><b class='fl'>&#9733;</b><b>&sdot;</b>" +
+              "</td><td id='" + id + "' class='ind" + indent + "'><span class='" + overdue + "'>" + due + "</span>" + h2 +
+              "</td><td ontouchend='touchToClick(this);' onclick='taskwall.check(this,1,\"" + id + "\");' class='f" + flag + 
+              "'><b class='fr'>&hearts;</b><b>&sdot;</b></td></tr>"
+            );
+          }
+        } catch(e) {}
+
+        html.push(!html.length ? "<h3 style='text-align:center'>No Tasks</h3>" : "</table><div id='incss'></div>");
+
+        $("main").innerHTML = html.join("");
+      },function(t,e){alert(e.message);});
+
+    });
+  },
+
+  showProj: function(id) {
+    if(id) {
+      $("incss").innerHTML = '<style>#main>table:not([id="'+id+'"]){display:none}</style>';
+    } else {
+      $("q").value = "";
+      this.updateView();
+    }
+  },
+
+  check: function(node, dir, id) {
+    //flag: 1=empty, 2=left, 3=right, 4=left+right
+    var options = [[null, 2, 1, 4, 3], [null, 3, 4, 1, 2]];
+
+    var flag = options[dir][node.className.charAt(1)*1];
+    node.className = "f" + flag;
+
+    this.db.transaction(function(t) {
+      t.executeSql("UPDATE tasks SET flag=? WHERE id=?", [flag, id]);
+    });
+  },
+
+  logout: function() {
+    this.db.transaction(function(t) {
+      t.executeSql('DROP TABLE tasks', []);
+      t.executeSql('DROP TABLE projs', []);
+    });
+    location.reload();
+  },
+
+  db: {
+    readTransaction: function(a, b, c) {
+      this.transaction(a, b, c);
+    },
+
+    transaction: function(sql, err, ok) {
+      var queue = [[sql, err, ok]];
+      var dis = taskwall;
+      var noop = new Function("");
+
+      this.transaction = function(a, b, c) {
+        queue.push([a, b, c]);
+      };
+
+      var fail = function(e) {
+        dis.db.transaction = noop;
+        for(var i=0; i<queue.length; i++) {
+          queue[i][1](e);
+        }
+      };
+
+      try {
+        var db = window.openDatabase("google-tasks-r", "1.0", "Google Tasks", 5*1024*1024);
+        db.transaction(
+          function(t) {
+            t.executeSql("CREATE TABLE IF NOT EXISTS tasks (id TEXT UNIQUE NOT NULL, title TEXT, parent TEXT, due DATE, position TEXT, date_order INTEGER, flag TINYINT NOT NULL DEFAULT 1, proj TEXT)");
+            t.executeSql("CREATE TABLE IF NOT EXISTS projs (id TEXT UNIQUE NOT NULL, title TEXT)");
+
+          }, fail, function() {//ok
+            for(var i=0; i<queue.length; i++) {
+              db.transaction(queue[i][0], queue[i][1] || noop, queue[i][2] || noop);
+            }
+            dis.db = db;
+          }
+        );
+      } catch(e) {
+        fail(e);
+      }
+    }
+  }
+};
+</script>
+<style>
+body {margin:0; padding:0; background:#fff; color:#000; -webkit-tap-highlight-color:rgba(0,0,0,0); -webkit-text-size-adjust:100%; overflow-y:scroll}
+body.blk {background:#000; color:#fff}
+body, input {font:13pt Helvetica,Calibri,Tahoma}
+#upd {-webkit-transition:-webkit-transform 0.5s; display:inline-block}
+.menu {margin:3px 0}
+.group {background:#ddd; border-radius:1em; padding:0.4em; margin:0 0.3em; line-height:2.5em; font-size:80%; font-weight:bold; white-space:nowrap}
+.group a {padding:0.7em; text-decoration:none; color:#000; text-shadow:-1px 1px 0 #eee; -webkit-touch-callout:none}
+.blk .group {background:#666}
+.blk .group a {color:#fff; text-shadow:-1px 1px 0 #999}
+table {width:100%; border-collapse:collapse}
+#main {border-bottom:1px solid #ddd}
+.blk #main {border-bottom-color:#555}
+th {font-size:120%; font-weight:bold; padding:0.5em}
+td {vertical-align:top; padding:0.4em 0.2em}
+th, td {text-align:left; border-top:1px solid #ddd}
+.blk th, .blk td {border-top-color:#555}
+tr:nth-child(even) {color:#888}
+td:first-child, td:last-child {width:1.5em; padding:0; font-size:150%; text-align:center; font-weight:bold; cursor:pointer; color:#ccc}
+.blk td:first-child, .blk td:last-child {color:#999}
+
+td > span {float:right; border-radius:10px; padding:0 0.5em; background:#eee; color:#000; font-size:90%}
+.blk td > span {background:#333; color:#fff}
+td > span.overdue {background:#fcc}
+.blk td > span.overdue {background:#500}
+td > span > span {padding:0 0.2em}
+.ind1 {padding-left:20px}
+.ind2 {padding-left:40px}
+.ind3 {padding-left:60px}
+.ind4 {padding-left:80px}
+.ind5 {padding-left:100px}
+.fl, .fr {display:none}
+.f4 .fl+b, .f4 .fr+b, .f2 .fl+b, .f3 .fr+b {display:none}
+.f4 .fl, .f4 .fr, .f2 .fl, .f3 .fr {display:inline; color:#888}
+td > u {text-decoration:none; background:#cc0; color:#fff; padding:0 0.1em; -moz-border-radius:0.3em; border-radius:0.3em}
+</style>
+</head>
+<body onload="taskwall.onload();">
+<form class="menu" method="get" onsubmit="taskwall.updateView();return false;">
+<span class="group">
+<a href="javascript:taskwall.getProjs();"><span id="upd">&dArr;</span>&nbsp;Get</a>
+</span>
+<span class="group">
+<input type="text" id="q" placeholder="Search" size=12 autocapitalize="off" autocorrect="off" style="-webkit-appearance:none; border-radius:10px; border:0; padding:0 0.5em; margin:0; position:relative; top:1px">
+<a href="javascript:taskwall.updateView();">Go</a>
+</span>
+<span class="group">
+<a href="javascript:$('q').value='@0';taskwall.updateView();">Today</a>
+<a href="javascript:$('q').value='@3';taskwall.updateView();">Soon</a>
+<a href="javascript:$('q').value='';taskwall.updateView();">All</a>
+</span>
+<span class="group">
+<a href="javascript:$('q').value='@*';taskwall.updateView();">&#9733;</a>
+<a href="javascript:$('q').value='@#';taskwall.updateView();">&hearts;</a>
+</span>
+<span id="projects"></span>
+</form>
+<div id="main"></div>
+<div class="menu">
+<span class="group"><a href="javascript:$('morelinks').style.display='';">More...</a></span>
+<span id="morelinks" style="display:none">
+<span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
+<!--span class="group"><a href="javascript:taskwall.cookie('twbg','blk');document.body.className='blk';return false;">Black</a><a href="javascript:taskwall.cookie('twbg','');document.body.className='';return false;">White</a></span>
+<span class="group"><a href="taskwall_offline.html">Offline</a></span-->
+</span>
+</div>
+<script defer="defer">
+var isTouch = document.body;
+if("ontouchend" in document.body) {
+  isTouch.ontouchstart = function() {isTouch=1;};
+  isTouch.ontouchmove = isTouch.ongesturestart = function() {isTouch=0;};
+  isTouch = document.querySelectorAll("a[href^='javascript:']");
+  for(var i=isTouch.length-1; i>=0; i--) isTouch[i].setAttribute("ontouchend", "touchToClick(this);");
+
+  function touchToClick(n) {
+    var c = n.getAttribute("onclick") || n.getAttribute("href");
+    n.setAttribute("ontouchend", "if(!isTouch)return;isTouch=0;" + c.replace("javascript:",""));
+    n.setAttribute("onclick", "");
+    n.href = "javascript:return false;";
+    if(isTouch) new Function(c).call(n);
+  }
+}
+</script>
+</body>
+</html>

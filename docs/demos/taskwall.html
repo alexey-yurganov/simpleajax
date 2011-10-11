@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html manifest="taskwall.manifest">
 <head><title>Task Wall for iPhone - See all your Google Tasks in one place</title>
 <link rel="shortcut icon" href="http://mail.google.com/tasks/res/favicon.ico">
 <link rel="apple-touch-icon" href="todoist57.png">
@@ -67,7 +67,7 @@ var taskwall = {
   },
 
   login: function() {
-    location.href = "https://accounts.google.com/o/oauth2/auth?client_id=145596226637.apps.googleusercontent.com&redirect_uri="+encodeURIComponent(redirect)+"&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ftasks.readonly&response_type=token";
+    location.href = "https://accounts.google.com/o/oauth2/auth?client_id=145596226637.apps.googleusercontent.com&redirect_uri="+encodeURIComponent(location.href)+"&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ftasks.readonly&response_type=token";
   },
 
   getProjs: function() {
@@ -333,23 +333,25 @@ body, input {font:13pt Helvetica,Calibri,Tahoma}
 .menu {margin:3px 0}
 .group {background:#ddd; border-radius:1em; padding:0.4em; margin:0 0.3em; line-height:2.5em; font-size:80%; font-weight:bold; white-space:nowrap}
 .group a {padding:0.7em; text-decoration:none; color:#000; text-shadow:-1px 1px 0 #eee; -webkit-touch-callout:none}
-.blk .group {background:#666}
-.blk .group a {color:#fff; text-shadow:-1px 1px 0 #999}
+.blk .group {background:#333}
+.blk .group a {color:#ddd; text-shadow:1px 1px 0 #333}
+.blk input[type="text"] {background:#000; color:#fff}
 table {width:100%; border-collapse:collapse}
-#main {border-bottom:1px solid #ddd}
-.blk #main {border-bottom-color:#555}
+#main {border-bottom:1px solid #e2e2e2}
+.blk #main {border-bottom-color:#333}
 th {font-size:120%; font-weight:bold; padding:0.5em}
 td {vertical-align:top; padding:0.4em 0.2em}
-th, td {text-align:left; border-top:1px solid #ddd}
-.blk th, .blk td {border-top-color:#555}
-tr:nth-child(even) {color:#888}
-td:first-child, td:last-child {width:1.5em; padding:0; font-size:150%; text-align:center; font-weight:bold; cursor:pointer; color:#ccc}
+th, td {text-align:left; border-top:1px solid #e2e2e2}
+.blk th, .blk td {border-top-color:#333}
+tr:nth-child(even) {color:#777}
+.blk tr:nth-child(even) {color:#999}
+td:first-child, td:last-child {width:1.3em; padding:0; font-size:150%; text-align:center; font-weight:bold; cursor:pointer; color:#ccc}
 .blk td:first-child, .blk td:last-child {color:#999}
 
 td > span {float:right; border-radius:10px; padding:0 0.5em; background:#eee; color:#000; font-size:90%}
 .blk td > span {background:#333; color:#fff}
 td > span.overdue {background:#fcc}
-.blk td > span.overdue {background:#500}
+.blk td > span.overdue {background:#800}
 td > span > span {padding:0 0.2em}
 .ind1 {padding-left:20px}
 .ind2 {padding-left:40px}
@@ -360,15 +362,16 @@ td > span > span {padding:0 0.2em}
 .f4 .fl+b, .f4 .fr+b, .f2 .fl+b, .f3 .fr+b {display:none}
 .f4 .fl, .f4 .fr, .f2 .fl, .f3 .fr {display:inline; color:#888}
 td > u {text-decoration:none; background:#cc0; color:#fff; padding:0 0.1em; -moz-border-radius:0.3em; border-radius:0.3em}
+.blk td > u {background:#ff4; color:#000}
 </style>
 </head>
 <body onload="taskwall.onload();">
-<form class="menu" method="get" onsubmit="taskwall.updateView();return false;">
+<form class="menu" method="get" onsubmit="taskwall.updateView();$('q').blur();return false;">
 <span class="group">
 <a href="javascript:taskwall.getProjs();"><span id="upd">&dArr;</span>&nbsp;Get</a>
 </span>
 <span class="group">
-<input type="text" id="q" placeholder="Search" size=12 autocapitalize="off" autocorrect="off" style="-webkit-appearance:none; border-radius:10px; border:0; padding:0 0.5em; margin:0; position:relative; top:1px">
+<input type="text" id="q" placeholder="Search" size=12 autocapitalize="off" autocorrect="off" style="-webkit-appearance:none; border-radius:10px; border:0; padding:0 0.5em; margin:0; position:relative; top:2px">
 <a href="javascript:taskwall.updateView();">Go</a>
 </span>
 <span class="group">
@@ -387,8 +390,7 @@ td > u {text-decoration:none; background:#cc0; color:#fff; padding:0 0.1em; -moz
 <span class="group"><a href="javascript:$('morelinks').style.display='';">More...</a></span>
 <span id="morelinks" style="display:none">
 <span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
-<!--span class="group"><a href="javascript:taskwall.cookie('twbg','blk');document.body.className='blk';return false;">Black</a><a href="javascript:taskwall.cookie('twbg','');document.body.className='';return false;">White</a></span>
-<span class="group"><a href="taskwall_offline.html">Offline</a></span-->
+<span class="group"><a href="javascript:taskwall.cookie('twbg','blk');document.body.className='blk';return false;">Black</a><a href="javascript:taskwall.cookie('twbg','');document.body.className='';return false;">White</a></span>
 </span>
 </div>
 <script defer="defer">

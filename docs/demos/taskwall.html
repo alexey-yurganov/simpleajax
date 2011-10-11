@@ -105,9 +105,9 @@ var taskwall = {
 
       r = r.items;
 
-      var arr, subtree = {};
+      var arr, subtree = {root:[]};
 
-      for(var i=0, len=r.length; i<len; i++) {
+      if(r) for(var i=0, len=r.length; i<len; i++) {
 
         arr = subtree[r[i].parent || "root"];
         if(!arr) arr = subtree[r[i].parent || "root"] = [];
@@ -249,7 +249,7 @@ var taskwall = {
         html.push(!html.length ? "<h3 style='text-align:center'>No Tasks</h3>" : "</table><div id='incss'></div>");
 
         $("main").innerHTML = html.join("");
-      },function(t,e){alert(e.message);});
+      });
 
     });
   },
@@ -276,11 +276,11 @@ var taskwall = {
   },
 
   logout: function() {
+    this.cookie("googletasktoken", "");
     this.db.transaction(function(t) {
       t.executeSql('DROP TABLE tasks', []);
       t.executeSql('DROP TABLE projs', []);
     });
-    this.cookie("googletasktoken", "");
     location.reload();
   },
 
@@ -290,9 +290,9 @@ var taskwall = {
     },
 
     transaction: function(sql, err, ok) {
+      var noop = new Function("");
       var queue = [[sql, err, ok]];
       var dis = taskwall;
-      var noop = new Function("");
 
       this.transaction = function(a, b, c) {
         queue.push([a, b, c]);
@@ -301,7 +301,7 @@ var taskwall = {
       var fail = function(e) {
         dis.db.transaction = noop;
         for(var i=0; i<queue.length; i++) {
-          queue[i][1](e);
+          (queue[i][1]||noop)(e);
         }
       };
 
@@ -392,13 +392,14 @@ th {-webkit-animation:flash_wht 0.4s ease-out}
 </span>
 <span id="projects"></span>
 </form>
-<div id="main"></div>
+<div id="main"><noscript>Please enable JavaScript to view this site.</noscript></div>
 <div class="menu">
 <span class="group"><a href="javascript:$('morelinks').style.display='';">More...</a></span>
 <span id="morelinks" style="display:none">
 <span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
 <span class="group"><a href="javascript:taskwall.cookie('twbg','blk');document.body.className='blk';return false;">Black</a><a href="javascript:taskwall.cookie('twbg','');document.body.className='';return false;">White</a></span>
 <span class="group"><a href="http://mail.google.com/tasks/iphone">Google &raquo;</a></span>
+<span style="color:#aaa">Best viewed on iPhone</span>
 </span>
 </div>
 <script defer="defer">

@@ -350,7 +350,7 @@ td:first-child, td:last-child {width:1.3em; padding:0; font-size:150%; text-alig
 .blk td:first-child, .blk td:last-child {color:#999}
 td > span {float:right; border-radius:10px; padding:0 0.4em; background:#eee; color:#000; font-size:90%}
 .blk td > span {background:#333; color:#fff}
-td > span.overdue {background:#fcc}
+td > span.overdue {background:#fbb}
 .blk td > span.overdue {background:#800}
 td > span > span {padding:0 0.2em}
 .ind1 {padding-left:20px}
@@ -363,6 +363,13 @@ td > span > span {padding:0 0.2em}
 .f4 .fl, .f4 .fr, .f2 .fl, .f3 .fr {display:inline; color:#888}
 td > u {text-decoration:none; background:#cc0; color:#fff; padding:0 0.1em; -moz-border-radius:0.3em; border-radius:0.3em}
 .blk td > u {background:#ff4; color:#000}
+#q {-webkit-appearance:none; border-radius:10px; border:0; padding:0 0.5em; margin:0}
+#q, #q input {font-family:arial}
+#q a {font-family:Helvetica,Calibri,Arial}
+th {-webkit-animation:flash_wht 0.4s ease-out}
+.blk th {-webkit-animation:flash_blk 0.4s ease-out}
+@-webkit-keyframes flash_wht {10%{background:#eee}}
+@-webkit-keyframes flash_blk {10%{background:#333}}
 </style>
 </head>
 <body onload="taskwall.onload();">
@@ -371,7 +378,7 @@ td > u {text-decoration:none; background:#cc0; color:#fff; padding:0 0.1em; -moz
 <a href="javascript:taskwall.getProjs();"><span id="upd">&dArr;</span>&nbsp;Get</a>
 </span>
 <span class="group">
-<input type="text" id="q" placeholder="Search" size=12 autocapitalize="off" autocorrect="off" style="-webkit-appearance:none; border-radius:10px; border:0; padding:0 0.5em; margin:0; position:relative; top:2px">
+<input type="text" id="q" placeholder="Search" size=12 autocapitalize="off" autocorrect="off">
 <a href="javascript:taskwall.updateView();">Go</a>
 </span>
 <span class="group">

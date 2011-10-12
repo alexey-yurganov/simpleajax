@@ -31,8 +31,7 @@ var taskwall = {
     if(token) {
       this.oauth = token[1];
       this.cookie("googletasktoken", this.oauth);
-      location.href = location.href.match(/^[^#]+/);
-      this.getProjs();
+      location.replace(location.href.match(/^[^#]+/));
     } else {
       this.oauth = this.oauth || this.cookie("googletasktoken") || null;
     }
@@ -44,6 +43,8 @@ var taskwall = {
     if(x) document.body.className = x;
 
     this.updateView();
+
+    if(!this.oauth) $("intro").style.display = "";
   },
 
   cookie: function(n, v) {
@@ -158,7 +159,7 @@ var taskwall = {
     var dis = this;
     var pad = function(n) {return n < 10 ? "0" + n : n;};
 
-    var filter = $("q").value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    var filter = $("q").value;
     var filterSql = "";
 
     this.cookie("soon", "");
@@ -180,8 +181,8 @@ var taskwall = {
       filter = null;
 
     } else if(filter) {
-      filter = filter.toLowerCase();
-      filterSql = "AND tasks.title LIKE ? ";
+      filter = filter.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      filterSql = "AND tasks.title LIKE ? ESCAPE \"!\" ";
     }
 
     this.db.readTransaction(function(t) {
@@ -197,7 +198,9 @@ var taskwall = {
         $("projects").innerHTML = html.join("");
       });
 
-      t.executeSql("SELECT *, tasks.id AS id, tasks.title AS h2, projs.title AS h1 FROM tasks, projs WHERE tasks.proj=projs.id " + filterSql + "ORDER BY projs.title, date_order", (filter?["%"+filter+"%"]:[]), function(t, r) {
+      t.executeSql("SELECT *, tasks.id AS id, tasks.title AS h2, projs.title AS h1 FROM tasks, projs WHERE tasks.proj=projs.id " + filterSql + "ORDER BY projs.title, date_order",
+        (filter ? ["%"+filter.replace(/%/g,"!%").replace(/_/g,"!_")+"%"] : []),
+        function(t, r) {
         r = r.rows;
 
         var i = 0, lastProj = this, n, stack, indent, h2, id, due, overdue, flag, lastn = {id:this};
@@ -399,8 +402,8 @@ th {-webkit-animation:flash_wht 0.4s ease-out}
 <span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
 <span class="group"><a href="javascript:taskwall.cookie('twbg','blk');document.body.className='blk';return false;">Black</a><a href="javascript:taskwall.cookie('twbg','');document.body.className='';return false;">White</a></span>
 <span class="group"><a href="http://mail.google.com/tasks/iphone">Google &raquo;</a></span>
-<span style="color:#aaa">Best viewed on iPhone</span>
 </span>
+<div id="intro" style="color:#aaa; margin:1em 10%; text-align:center; display:none">All your Google Tasks right on your iPhone available offline. Filter by project or date. Instant search. Google ID required.</div>
 </div>
 <script defer="defer">
 var isTouch = document.body;

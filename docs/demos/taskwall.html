@@ -181,7 +181,7 @@ var taskwall = {
       filter = null;
 
     } else if(filter) {
-      filter = filter.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      filter = filter.toLowerCase().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
       filterSql = "AND tasks.title LIKE ? ESCAPE \"!\" ";
     }
 

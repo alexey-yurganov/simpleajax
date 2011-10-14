@@ -32,6 +32,8 @@ var taskwall = {
       this.oauth = token[1];
       this.cookie("googletasktoken", this.oauth);
       location.replace(location.href.match(/^[^#]+/));
+    } else if(location.href.indexOf("?error=access_denied") > 0) {
+      alert("Error: Could not get your tasks because access was denied.");
     } else {
       this.oauth = this.oauth || this.cookie("googletasktoken") || null;
     }
@@ -62,7 +64,6 @@ var taskwall = {
 
   handleErr: function(r) {
     if(r.error.code == 401) {
-      alert("Session expired. Please login.");
       this.login();
     } else alert(r.error.code + " " + r.error.message);
   },
@@ -155,12 +156,14 @@ var taskwall = {
     });
   },
 
-  updateView: function() {
+  updateView: function(s) {
     var dis = this;
     var pad = function(n) {return n < 10 ? "0" + n : n;};
 
+    if(typeof s == "string" || typeof s == "number") $("q").value = s;
+
     var filter = $("q").value;
-    var filterSql = "";
+    var filterSql = "", highlight = false;
 
     this.cookie("soon", "");
 
@@ -171,6 +174,10 @@ var taskwall = {
     } else if(filter == "@#") {
       filterSql = "AND (flag == 3 OR flag == 4) ";
       filter = null;
+
+    } else if(filter.substr(0, 2) == "@~") {
+      filterSql = "AND projs.title LIKE ? ESCAPE \"!\" ";
+      filter = filter.substr(2).toLowerCase().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
     } else if(/^@(\d+)$/.test(filter)) {
       filter = /^@(\d+)$/.exec(filter)[1];
@@ -183,6 +190,7 @@ var taskwall = {
     } else if(filter) {
       filter = filter.toLowerCase().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
       filterSql = "AND tasks.title LIKE ? ESCAPE \"!\" ";
+      highlight = true;
     }
 
     this.db.readTransaction(function(t) {
@@ -192,9 +200,9 @@ var taskwall = {
         var n, html = [];
         for(var i=0, len=r.length; i<len; i++) {
           n = r.item(i);
-          html.push("<span class='group'><a href='javascript:taskwall.showProj(\"" + n.id + "\");' ontouchend='touchToClick(this);'>" + n.title + "</a></span> ");
+          html.push("<span class='group'><a href='javascript:taskwall.updateView(\"@~"+n.title+"\");' ontouchend='touchToClick(this);'>" + n.title + "</a></span> ");
         }
-        if(html.length) html.push("<span class='group'><a href='javascript:taskwall.showProj(null);' ontouchend='touchToClick(this);'>All</a></span>");
+        if(html.length) html.push("<span class='group'><a href='javascript:taskwall.updateView(\"\");' ontouchend='touchToClick(this);'>All</a></span>");
         $("projects").innerHTML = html.join("");
       });
 
@@ -232,7 +240,7 @@ var taskwall = {
             lastn = n;
 
             h2 = n.h2;
-            if(filter) h2 = h2.toLowerCase().replace(filter, "<u>" + filter + "</u>");
+            if(highlight) h2 = h2.toLowerCase().replace(filter, "<u>" + filter + "</u>");
 
             id = n.id;
             due = n.due.substr(0, 10);
@@ -249,21 +257,12 @@ var taskwall = {
           }
         } catch(e) {}
 
-        html.push(!html.length ? "<h3 style='text-align:center'>No Tasks</h3>" : "</table><div id='incss'></div>");
+        html.push(!html.length ? "<h3 style='text-align:center'>No Tasks</h3>" : "</table>");
 
         $("main").innerHTML = html.join("");
       });
 
     });
-  },
-
-  showProj: function(id) {
-    if(id) {
-      $("incss").innerHTML = '<style>#main>table:not([id="'+id+'"]){display:none}</style>';
-    } else {
-      $("q").value = "";
-      this.updateView();
-    }
   },
 
   check: function(node, dir, id) {
@@ -385,13 +384,13 @@ th {-webkit-animation:flash_wht 0.4s ease-out}
 <a href="javascript:taskwall.updateView();">Go</a>
 </span>
 <span class="group">
-<a href="javascript:$('q').value='@0';taskwall.updateView();">Today</a>
-<a href="javascript:$('q').value='@3';taskwall.updateView();">Soon</a>
-<a href="javascript:$('q').value='';taskwall.updateView();">All</a>
+<a href="javascript:taskwall.updateView('@0');">Today</a>
+<a href="javascript:taskwall.updateView('@3');">Soon</a>
+<a href="javascript:taskwall.updateView('');">All</a>
 </span>
 <span class="group">
-<a href="javascript:$('q').value='@*';taskwall.updateView();">&#9733;</a>
-<a href="javascript:$('q').value='@#';taskwall.updateView();">&hearts;</a>
+<a href="javascript:taskwall.updateView('@*');">&#9733;</a>
+<a href="javascript:taskwall.updateView('@#');">&hearts;</a>
 </span>
 <span id="projects"></span>
 </form>
@@ -402,6 +401,7 @@ th {-webkit-animation:flash_wht 0.4s ease-out}
 <span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
 <span class="group"><a href="javascript:taskwall.cookie('twbg','blk');document.body.className='blk';return false;">Black</a><a href="javascript:taskwall.cookie('twbg','');document.body.className='';return false;">White</a></span>
 <span class="group"><a href="http://mail.google.com/tasks/iphone">Google &raquo;</a></span>
+<span style="color:#aaa;font-size:80%">Shortcuts: Type '0' for today's tasks, '1' for tomorrow's tasks, or any letter to jump to a Project, then press Enter.</span>
 </span>
 <div id="intro" style="color:#aaa; margin:1em 10%; text-align:center; display:none">All your Google Tasks right on your iPhone available offline. Filter by project or date. Instant search. Google ID required.</div>
 </div>
@@ -421,6 +421,21 @@ if("ontouchend" in document.body) {
     if(isTouch) new Function(c).call(n);
   }
 }
+isTouch.onkeydown = function(e) {
+  if(e.target && e.target.tagName != "INPUT") {
+    var s = String.fromCharCode(e.keyCode), n = $("q");
+    if(s >= "0" && s <= "9") {
+      n.value = "@";
+    } else if(s >= "A" && s <= "Z") {
+      n.value = "@~";
+    } else if(e.keyCode == 27) {
+      return taskwall.updateView("");
+    } else {
+      return;
+    }
+    n.focus();
+  }
+};
 </script>
 </body>
 </html>

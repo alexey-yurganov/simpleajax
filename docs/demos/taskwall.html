@@ -69,6 +69,7 @@ var taskwall = {
   },
 
   login: function() {
+    $("upd").style.display = "none";
     location.href = "https://accounts.google.com/o/oauth2/auth?client_id=145596226637.apps.googleusercontent.com&redirect_uri="+encodeURIComponent(location.href)+"&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ftasks.readonly&response_type=token";
   },
 
@@ -243,11 +244,12 @@ var taskwall = {
             if(highlight) h2 = h2.toLowerCase().replace(filter, "<u>" + filter + "</u>");
 
             id = n.id;
-            due = n.due.substr(0, 10);
+            due = n.due;
+            if(due) due = due.substr(0, 10);
+            flag = n.flag;
 
             overdue = due < tod ? "overdue" : "";
-            due = (due == "undefined") ? "" : due == tod ? "today" : due == tom ? "tom" : (due.substr(0, 4) == year ? "" : due.substr(0, 4) + "/") + due.substr(5, 2)*1 + "<span>/</span>" + due.substr(8, 2)*1;
-            flag = n.flag;
+            due = (!due || due == "undefined") ? "" : due == tod ? "today" : due == tom ? "tom" : (due.substr(0, 4) == year ? "" : due.substr(0, 4) + "/") + due.substr(5, 2)*1 + "<span>/</span>" + due.substr(8, 2)*1;
             html.push(
               "<tr><td ontouchend='touchToClick(this);' onclick='taskwall.check(this,0,\"" + id + "\");' class='f" + flag + "'><b class='fl'>&#9733;</b><b>&sdot;</b>" +
               "</td><td id='" + id + "' class='ind" + indent + "'><span class='" + overdue + "'>" + due + "</span>" + h2 +
@@ -331,7 +333,7 @@ var taskwall = {
 <style>
 body {margin:0; padding:0; background:#fff; color:#000; -webkit-tap-highlight-color:rgba(0,0,0,0); -webkit-text-size-adjust:100%; overflow-y:scroll}
 body.blk {background:#000; color:#fff}
-body, input {font:13pt Helvetica,Calibri,Tahoma}
+body, input {font:11pt Helvetica,Calibri,Tahoma}
 #upd {-webkit-transition:-webkit-transform 0.5s; display:inline-block}
 .menu {margin:3px 0}
 .group {background:#ddd; border-radius:1em; padding:0.4em; margin:0 0.3em; line-height:2.5em; font-size:80%; font-weight:bold; white-space:nowrap}
@@ -372,6 +374,13 @@ th {-webkit-animation:flash_wht 0.4s ease-out}
 .blk th {-webkit-animation:flash_blk 0.4s ease-out}
 @-webkit-keyframes flash_wht {10%{background:#eee}}
 @-webkit-keyframes flash_blk {10%{background:#333}}
+@media screen and (max-device-width: 480px) {body, input {font:13pt Helvetica,Calibri,Tahoma}}
+@media screen and (min-width:500px) {
+table {float:left; width:32%; margin:0.7%; border:1px solid #e2e2e2; -webkit-box-shadow:1px 1px 5px #ccc}
+.blk table {border:1px solid #333; -webkit-box-shadow:none}
+#main {overflow:auto}
+}
+
 </style>
 </head>
 <body onload="taskwall.onload();">
@@ -396,7 +405,7 @@ th {-webkit-animation:flash_wht 0.4s ease-out}
 </form>
 <div id="main"><noscript>Please enable JavaScript to view this site.</noscript></div>
 <div class="menu">
-<span class="group"><a href="javascript:$('morelinks').style.display='';">More...</a></span>
+<span class="group"><a href="javascript:void($('morelinks').style.display='');">More...</a></span>
 <span id="morelinks" style="display:none">
 <span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
 <span class="group"><a href="javascript:taskwall.cookie('twbg','blk');document.body.className='blk';return false;">Black</a><a href="javascript:taskwall.cookie('twbg','');document.body.className='';return false;">White</a></span>
@@ -416,13 +425,13 @@ if("ontouchend" in document.body) {
   function touchToClick(n) {
     var c = n.getAttribute("onclick") || n.getAttribute("href");
     n.setAttribute("ontouchend", "if(!isTouch)return;isTouch=0;" + c.replace("javascript:",""));
-    n.setAttribute("onclick", "");
+    n.setAttribute("onclick", "void(0);");
     n.href = "javascript:return false;";
     if(isTouch) new Function(c).call(n);
   }
 }
 isTouch.onkeydown = function(e) {
-  if(e.target && e.target.tagName != "INPUT") {
+  if(e.target && e.target.tagName != "INPUT" && !e.ctrlKey && !e.altKey && !e.metaKey) {
     var s = String.fromCharCode(e.keyCode), n = $("q");
     if(s >= "0" && s <= "9") {
       n.value = "@";

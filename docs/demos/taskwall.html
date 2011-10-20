@@ -69,7 +69,7 @@ var taskwall = {
   },
 
   login: function() {
-    $("upd").style.display = "none";
+    $("upd").parentNode.innerHTML = "Login...";
     location.href = "https://accounts.google.com/o/oauth2/auth?client_id=145596226637.apps.googleusercontent.com&redirect_uri="+encodeURIComponent(location.href)+"&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ftasks.readonly&response_type=token";
   },
 
@@ -410,8 +410,8 @@ table {float:left; width:32%; margin:0.7%; border:1px solid #e2e2e2; -webkit-box
 <span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
 <span class="group"><a href="javascript:taskwall.cookie('twbg','blk');document.body.className='blk';return false;">Black</a><a href="javascript:taskwall.cookie('twbg','');document.body.className='';return false;">White</a></span>
 <span class="group"><a href="http://mail.google.com/tasks/iphone">Google &raquo;</a></span>
-<span style="color:#aaa;font-size:80%">Shortcuts: Type '0' for today's tasks, '1' for tomorrow's tasks, or any letter to jump to a Project, then press Enter.</span>
-</span>
+<div style="color:#aaa;font-size:80%">Shortcuts: Type '0' for today's tasks, '1' for tomorrow's tasks, or any letter to jump to a Project, then press Enter.</span>
+</div>
 <div id="intro" style="color:#aaa; margin:1em 10%; text-align:center; display:none">All your Google Tasks right on your iPhone available offline. Filter by project or date. Instant search. Google ID required.</div>
 </div>
 <script defer="defer">

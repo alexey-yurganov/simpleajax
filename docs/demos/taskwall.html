@@ -249,7 +249,7 @@ var taskwall = {
             flag = n.flag;
 
             overdue = due < tod ? "overdue" : "";
-            due = (!due || due == "undefined") ? "" : due == tod ? "today" : due == tom ? "tom" : (due.substr(0, 4) == year ? "" : due.substr(0, 4) + "/") + due.substr(5, 2)*1 + "<span>/</span>" + due.substr(8, 2)*1;
+            due = (!due || due == "undefined") ? "" : due == tod ? "today" : due == tom ? "tom" : (due.substr(0, 4) == year ? "" : due.substr(0, 4) + "<span>/</span>") + due.substr(5, 2)*1 + "<span>/</span>" + due.substr(8, 2)*1;
             html.push(
               "<tr><td ontouchend='touchToClick(this);' onclick='taskwall.check(this,0,\"" + id + "\");' class='f" + flag + "'><b class='fl'>&#9733;</b><b>&sdot;</b>" +
               "</td><td id='" + id + "' class='ind" + indent + "'><span class='" + overdue + "'>" + due + "</span>" + h2 +
@@ -375,7 +375,7 @@ th {-webkit-animation:flash_wht 0.4s ease-out}
 @-webkit-keyframes flash_wht {10%{background:#eee}}
 @-webkit-keyframes flash_blk {10%{background:#333}}
 @media screen and (max-device-width: 480px) {body, input {font:13pt Helvetica,Calibri,Tahoma}}
-@media screen and (min-width:500px) {
+@media screen and (min-width:800px) {
 table {float:left; width:32%; margin:0.7%; border:1px solid #e2e2e2; -webkit-box-shadow:1px 1px 5px #ccc}
 .blk table {border:1px solid #333; -webkit-box-shadow:none}
 #main {overflow:auto}

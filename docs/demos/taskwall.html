@@ -31,7 +31,7 @@ var taskwall = {
     if(token) {
       this.oauth = token[1];
       this.cookie("googletasktoken", this.oauth);
-      location.replace(location.href.match(/^[^#]+/));
+      this.getProjs();
     } else if(location.href.indexOf("?error=access_denied") > 0) {
       alert("Error: Could not get your tasks because access was denied.");
     } else {
@@ -62,6 +62,87 @@ var taskwall = {
     document.getElementsByTagName("head")[0].appendChild(document.createElement("script")).src = url;
   },
 
+  ajax2: function(method, url, body, cb) {
+    this.ajax2prep();
+
+    var q = this._ajax2Que;
+    var nhr = "googleapis.newHttpRequest";
+    q.push([{
+      s:"makeHttpRequests", f:"..", c:++ajax.counter, t:"1973269718", l:false,
+      a:[[{
+        method:nhr, id:nhr, key:nhr, headers:{"X-ClientDetails":""},
+        params: {
+          url:url, body:body,
+          httpMethod:method, userId:null, groupId:null, applicationName:null, clientVersion:"0.1",
+          headers:{"X-Javascript-User-Agent":"google-api-gwt-client/0.1-alpha", "Content-Type":"application/json"}
+        }
+      }]]
+    }, cb]);
+
+    if(this._ajax2ok == 2 && q.length == 1) {
+      frames["apiproxy_197326"].postMessage(this.obj2json(q[0][0]), "https://www.googleapis.com");
+    }
+  },
+
+  ajax2prep: function() {
+    if(!this._ajax2ok) {
+      this._ajax2ok = 1;
+      var n = document.createElement("span");
+      n.innerHTML = "<iframe name='apiproxy_197326' id='apiproxy_197326' style='width:1px;height:1px;position:absolute;top:-100px' src='" +
+        "https://www.googleapis.com/static/proxy.html#parent=" + encodeURIComponent(location.href) +"&amp;rpctoken=1973269718'></iframe>";
+      document.body.appendChild(n).firstChild;
+      addEventListener("message", this.onMessage, false);
+      this._ajax2Que = [];
+    }
+  },
+
+  obj2json: function(o) {
+    if(window.JSON) return JSON.stringify(o);
+    if(o instanceof Array) {
+      var arr = [];
+      for(var i=0; i<o.length; i++) arr[i] = this.obj2json(o[i]);
+      return "[" + arr.join(",") + "]";
+    }
+    if(o instanceof Date) return '"' + o.toISOString() + '"';
+    switch(typeof o) {
+      case "number": return o;
+      case "string": return '"' + o.replace(/"/g,'\"') + '"';
+      case "boolean": !!o;
+      case "object":
+        var arr = [];
+        for(var i in o) arr.push('"' + i + '":' + this.obj2json(o[i]));
+        return arr.length ? "{" + arr.join(",") + "}" : "null";
+    }
+  },
+
+  onMessage: function(e) {
+    if(e.origin != "https://www.googleapis.com") return;
+
+    e = window.JSON ? JSON.parse(e.data) : eval("(" + e.data + ")");
+
+    if(e.s == "ready:1973269718") {
+      taskwall._ajax2ok = 2;
+
+      e = document.getElementsByClassName("ajax2wait");
+      for(var i=e.length - 1; i>=0; i--) e[i].className="";
+
+      if(taskwall._ajax2Que.length > 0) frames["apiproxy_197326"].postMessage(
+        taskwall.obj2json(taskwall._ajax2Que[taskwall._ajax2Que.length - 1][0]),
+        "https://www.googleapis.com"
+      );
+
+    } else if(e.s == "__cb") {
+      var obj = window.JSON ? JSON.parse(e.a[1]) : eval("(" + e.a[1] + ")");
+      obj = obj["googleapis.newHttpRequest"];
+      var code = obj.data.status;
+
+      if(code >= 200 && code < 300) {
+        obj = obj.data.body;
+        (taskwall._ajax2Que.pop()[1])(window.JSON ? JSON.parse(obj) : eval("(" + obj + ")"));
+      } else taskwall.handleErr({error:{code:code, message:obj.data.statusText}});
+    }
+  },
+
   handleErr: function(r) {
     if(r.error.code == 401) {
       this.login();
@@ -70,7 +151,7 @@ var taskwall = {
 
   login: function() {
     $("upd").parentNode.innerHTML = "Login...";
-    location.href = "https://accounts.google.com/o/oauth2/auth?client_id=145596226637.apps.googleusercontent.com&redirect_uri="+encodeURIComponent(location.href)+"&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ftasks.readonly&response_type=token";
+    location.href = "https://accounts.google.com/o/oauth2/auth?client_id=145596226637.apps.googleusercontent.com&redirect_uri="+encodeURIComponent(location.href)+"&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ftasks&response_type=token";
   },
 
   getProjs: function() {
@@ -151,13 +232,104 @@ var taskwall = {
         t.executeSql("DELETE FROM tasks WHERE proj=NULL", []);
       });
 
-      if(dis.countdown == 0) dis.updateView();
+      if(dis.countdown == 0) {
+        if(location.href.indexOf("#") > 0) location.replace(location.href.match(/^[^#]+/));
+        dis.updateView();
+      }
       $("upd").style.WebkitTransform = "rotate(-" + dis.countdown + "0deg)";
 
     });
   },
 
+  addTask: function(t, proj, parent) {
+    if(!window.postMessage) return;
+    this.ajax2prep();
+
+    var n = document.createElement("tr");
+    n.innerHTML = "<td colspan=3 class='edit'><form onsubmit='return taskwall.addTaskForm(this);'><div><textarea name=txt " +
+      "placeholder='Task' autocapitalize=off></textarea></div><input name=due type=text placeholder='today, tue, +2' " +
+      "autocapitalize=off autocorrect=off><input type=submit " + (this._ajax2ok == 1 ? "class='ajax2wait' " : "") +
+      "value=' Add '><a href='javascript:void(0);' onclick='return taskwall.hideTaskForm(this);'>&times;</a><input type=hidden name=proj value='" +
+      proj + "'><input type=hidden name=parent value='" + (parent||"") + "'></form></td>";
+
+    var p = parent ? t.parentNode : $(proj).getElementsByTagName("th")[0].parentNode;
+    p.parentNode.insertBefore(n, p.nextSibling);
+
+    n.getElementsByTagName('textarea')[0].focus();
+    t.onclick = function() {
+      n.getElementsByTagName('textarea')[0].focus();
+      t.onclick = null;
+    };
+  },
+
+  hideTaskForm: function(n) {
+    n = n.parentNode.parentNode.parentNode;
+    if(n.getElementsByTagName("textarea")[0].value && !confirm("Discard?")) return;
+    n.parentNode.removeChild(n);
+    return false;
+  },
+
+  addTaskForm: function(f) {
+    var dis = this;
+    var proj = f.proj.value;
+    this.ajax2(
+      "POST",
+      "/tasks/v1/lists/" + proj + "/tasks?prettyPrint=false&access_token=" + dis.oauth + (f.parent.value ? "&parent=" + f.parent.value : ""),
+      {title:f.txt.value, parent:f.parent.value||null, due:dis.strToDate(f.due.value)},
+      function(r) {
+        f = f.parentNode;
+        f.parentNode.removeChild(f);
+
+        dis.db.transaction(function(t) {
+          if(r.title) t.executeSql(
+            "INSERT INTO tasks (id, title, parent, due, position, date_order, proj, flag) VALUES (?, ?, ?, ?, ?, ?, ?, 1)", 
+            [r.id, r.title.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"), r.parent, r.due, r.position, 0, proj],
+            function(r) {dis.updateView();}
+          );
+        });
+      }
+    );
+    return false;
+  },
+
+  strToDate: function(s) {
+    s = s.toLowerCase().replace(/^\s+|\s+$/g, "").replace(/\s\s+|[\.-]/g, " ");
+    var d = new Date();
+    d.setHours(23); d.setMinutes(59); d.setSeconds(59);
+
+    if(/^(tom|tomorrow)/.test(s)) {
+      d.setDate(d.getDate()+1);
+      return d;
+
+    } else if(/^(tod|today)/.test(s)) {
+      return d;
+
+    } else if(s.indexOf("+") == 0) {
+      d.setDate(d.getDate() + parseInt(s));
+      return d;
+    }
+
+    var reg;
+    if((reg = s.match(/^(\d{1,2})(?:[- \.\/](\d{1,2})(?:[- \.\/](\d{4}))?)?$/))) {
+      var now = d.getTime();
+      d = new Date(reg[3]||d.getYear(), (reg[2]*1 - 1)||d.getMonth(), reg[1]||d.getDate(), 23, 59, 59);
+      if(!reg[3] && d.getTime() - now < 0) d.setYear(d.getFullYear() + 1);
+      return d;
+    }
+
+    var days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+    for(var i=0; i<days.length; i++) {
+      if(s.indexOf(days[i]) >= 0) {
+        d.setDate(d.getDate() + ((i - d.getDay() + 7) % 7) + (s.indexOf("next ") == 0 ? 7 : 0));
+        return d;
+      }
+    }
+    return null;
+  },
+
   updateView: function(s) {
+    if(document.getElementsByTagName("textarea").length) return alert("You have unsaved tasks. Update postponed until all tasks are saved.");
+
     var dis = this;
     var pad = function(n) {return n < 10 ? "0" + n : n;};
 
@@ -194,6 +366,8 @@ var taskwall = {
       highlight = true;
     }
 
+    var touch = ("ontouchend" in document.body);
+
     this.db.readTransaction(function(t) {
 
       t.executeSql("SELECT id, title FROM projs ORDER BY title", [], function(t, r) {
@@ -201,10 +375,11 @@ var taskwall = {
         var n, html = [];
         for(var i=0, len=r.length; i<len; i++) {
           n = r.item(i);
-          html.push("<span class='group'><a href='javascript:taskwall.updateView(\"@~"+n.title+"\");' ontouchend='touchToClick(this);'>" + n.title + "</a></span> ");
+          html.push("<span class='group'><a href='javascript:taskwall.updateView(\"@~"+n.title+"\");'>" + n.title + "</a></span> ");
         }
-        if(html.length) html.push("<span class='group'><a href='javascript:taskwall.updateView(\"\");' ontouchend='touchToClick(this);'>All</a></span>");
-        $("projects").innerHTML = html.join("");
+        if(html.length) html.push("<span class='group'><a href='javascript:taskwall.updateView(\"\");'>All</a></span>");
+        html = html.join("");
+        $("projects").innerHTML = touch ? html.replace(/ href='/g, " href='javascript:void(0);' ontouchend='if(!isTouch)return;isTouch=0;") : html;
       });
 
       t.executeSql("SELECT *, tasks.id AS id, tasks.title AS h2, projs.title AS h1 FROM tasks, projs WHERE tasks.proj=projs.id " + filterSql + "ORDER BY projs.title, date_order",
@@ -212,7 +387,7 @@ var taskwall = {
         function(t, r) {
         r = r.rows;
 
-        var i = 0, lastProj = this, n, stack, indent = 0, h2, id, parent, due, overdue, flag, lastn = {id:this};
+        var i = 0, proj, lastProj = this, n, stack, indent = 0, h2, id, parent, due, overdue, flag, lastn = {id:this};
 
         var tod = new Date();
         var year = tod.getFullYear();
@@ -224,8 +399,9 @@ var taskwall = {
         try {
           while((n = r.item(i++))) {
             errBounds = false;
-            if(n.proj != lastProj) html.push("</table><table cellspacing=0 border=0 id='" + n.proj + "'><tr><th colspan=3>" + n.h1 + "</th></tr>");
-            lastProj = n.proj;
+            proj = n.proj;
+            if(proj != lastProj) html.push("</table><table cellspacing=0 border=0 id='" + proj + "'><tr><th colspan=3 onclick='taskwall.addTask(this, \"" + proj + "\");'>" + n.h1 + "</th></tr>");
+            lastProj = proj;
 
             if(n.parent == "undefined" || !n.parent) {
               stack = [];
@@ -253,9 +429,10 @@ var taskwall = {
             overdue = due < tod ? "overdue" : "";
             due = (!due || due == "undefined") ? "" : due == tod ? "today" : due == tom ? "tom" : (due.substr(0, 4) == year ? "" : due.substr(0, 4) + "<span>/</span>") + due.substr(5, 2)*1 + "<span>/</span>" + due.substr(8, 2)*1;
             html.push(
-              "<tr><td ontouchend='touchToClick(this);' onclick='taskwall.check(this,0,\"" + id + "\");' class='f" + flag + "'><b class='fl'>&#9733;</b><b>&sdot;</b>" +
-              "</td><td id='" + id + "' rel='" + parent + "' class='ind" + indent + "'><span class='" + overdue + "'>" + due + "</span>" + h2 +
-              "</td><td ontouchend='touchToClick(this);' onclick='taskwall.check(this,1,\"" + id + "\");' class='f" + flag + 
+              "<tr><td onclick='taskwall.check(this,0,\"" + id + "\");' class='f" + flag + "'><b class='fl'>&#9733;</b><b>&sdot;</b>" +
+              "</td><td id='" + id + "' class='ind" + indent + "' onclick='taskwall.addTask(this, \"" + proj + 
+              "\", this.id);'><span class='" + overdue + "'>" + due + "</span>" + h2 +
+              "</td><td onclick='taskwall.check(this,1,\"" + id + "\");' class='f" + flag + 
               "'><b class='fr'>&hearts;</b><b>&sdot;</b></td></tr>"
             );
             errBounds = true;
@@ -263,8 +440,8 @@ var taskwall = {
         } catch(e) {if(!errBounds) throw e;}
 
         html.push(!html.length ? "<h3 style='text-align:center'>No Tasks</h3>" : "</table>");
-
-        $("main").innerHTML = html.join("");
+        html = html.join("");
+        $("main").innerHTML = touch ? html.replace(/ onclick='/g, " onclick='void(0);' ontouchend='if(!isTouch)return;isTouch=0;") : html;
       });
 
     });
@@ -336,7 +513,7 @@ var taskwall = {
 <style>
 body {margin:0; padding:0; background:#fff; color:#000; -webkit-tap-highlight-color:rgba(0,0,0,0); -webkit-text-size-adjust:100%; overflow-y:scroll}
 body.blk {background:#000; color:#fff}
-body, input {font:11pt Helvetica,Calibri,Tahoma}
+body, input, textarea {font:11pt Helvetica,Calibri,Tahoma}
 #upd {-webkit-transition:-webkit-transform 0.5s; display:inline-block}
 .menu {margin:3px 0}
 .group {background:#ddd; border-radius:1em; padding:0.4em; margin:0 0.3em; line-height:2.5em; font-size:80%; font-weight:bold; white-space:nowrap}
@@ -349,7 +526,7 @@ table {width:100%; border-collapse:collapse}
 .blk #main {border-bottom-color:#333}
 th {font-size:120%; font-weight:bold; padding:0.5em}
 td {vertical-align:top; padding:0.3em 0.1em}
-th, td {text-align:left; border-top:1px solid #e2e2e2}
+th, td {text-align:left; border-top:1px solid #e2e2e2; word-wrap:break-word; word-break:break-all}
 .blk th, .blk td {border-top-color:#333}
 tr:nth-child(even) {color:#777}
 .blk tr:nth-child(even) {color:#999}
@@ -375,9 +552,14 @@ td > u {text-decoration:none; background:#cc0; color:#fff; padding:0 0.1em; -moz
 #q a {font-family:Helvetica,Calibri,Arial}
 th {-webkit-animation:flash_wht 0.4s ease-out}
 .blk th {-webkit-animation:flash_blk 0.4s ease-out}
+form {margin:1%}
+textarea {height:5em; width:98%; margin:0 auto; border:1px solid #bbb}
+.edit input[name="due"] {width:50%; min-width:4em; margin-right:1%; border:1px solid #bbb}
+.edit .ajax2wait {display:none}
+.edit a {font-size:70%; color:#aaa; padding:0 1%; margin-left:4%}
 @-webkit-keyframes flash_wht {10%{background:#eee}}
 @-webkit-keyframes flash_blk {10%{background:#333}}
-@media screen and (max-device-width: 480px) {body, input {font:13pt Helvetica,Calibri,Tahoma}}
+@media screen and (max-device-width: 480px) {body, input, textarea {font:13pt Helvetica,Calibri,Tahoma}}
 @media screen and (min-width:800px) {
   table {float:left; width:32%; margin:0.7%; border:1px solid #e2e2e2; -webkit-box-shadow:1px 1px 5px #ccc}
   .blk table {border:1px solid #333; -webkit-box-shadow:none}
@@ -412,28 +594,17 @@ th {-webkit-animation:flash_wht 0.4s ease-out}
 <span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
 <span class="group"><a href="javascript:taskwall.cookie('twbg','blk');document.body.className='blk';return false;">Black</a><a href="javascript:taskwall.cookie('twbg','');document.body.className='';return false;">White</a></span>
 <span class="group"><a href="http://mail.google.com/tasks/iphone">Google &raquo;</a></span>
-<div style="color:#aaa;font-size:80%">Shortcuts: Type '0' for today's tasks, '1' for tomorrow, or any letter to jump to a Project, then press Enter.</span>
+<div style="color:#aaa;font-size:80%">Hotkeys: Type '0' for today's tasks, '1' for tomorrow, or any letter to jump to a Project, then press Enter.</span>
 </div>
 <div id="intro" style="color:#aaa; margin:1em 10%; text-align:center; display:none">All your Google Tasks right on your iPhone available offline. Filter by project or date. Instant search. Google ID required.</div>
 </div>
-<script defer="defer">
+<script>
 var isTouch = document.body;
-if("ontouchend" in document.body) {
-  isTouch.ontouchstart = function() {isTouch=1;};
-  isTouch.ontouchmove = isTouch.ongesturestart = function() {isTouch=0;};
-  isTouch = document.querySelectorAll("a[href^='javascript:']");
-  for(var i=isTouch.length-1; i>=0; i--) isTouch[i].setAttribute("ontouchend", "touchToClick(this);");
-}
-function touchToClick(n) {
-  var c = n.getAttribute("onclick") || n.getAttribute("href");
-  n.setAttribute("ontouchend", "if(!isTouch)return;isTouch=0;" + c.replace("javascript:",""));
-  n.setAttribute("onclick", "void(0);");
-  n.href = "javascript:return false;";
-  if(isTouch) new Function("isTouch=0;"+c).call(n);
-}
-isTouch.onkeydown = function(e) {
-  if(e.target && e.target.tagName != "INPUT" && !e.ctrlKey && !e.altKey && !e.metaKey) {
-    var s = String.fromCharCode(e.keyCode), n = $("q");
+isTouch.ontouchstart = function() {isTouch=1;};
+isTouch.ontouchmove = isTouch.ongesturestart = function() {isTouch=0;};
+isTouch.onkeydown = function(e, s, n) {
+  if(e.target && e.target.tagName != "INPUT" && e.target.tagName != "TEXTAREA" && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    s = String.fromCharCode(e.keyCode), n = $("q");
     if(s >= "0" && s <= "9") {
       n.value = "@";
     } else if(s >= "A" && s <= "Z") {
@@ -446,6 +617,13 @@ isTouch.onkeydown = function(e) {
     n.focus();
   }
 };
+if("ontouchend" in document.body) {
+  isTouch = document.querySelectorAll("a[href^='javascript:']");
+  for(var i=isTouch.length-1; i>=0; i--) {
+    isTouch[i].setAttribute("ontouchend", "if(!isTouch)return;isTouch=0;" + isTouch[i].href.replace("javascript:",""));
+    isTouch[i].href = "javascript:void(0);";
+  }
+}
 </script>
 </body>
 </html>

@@ -144,7 +144,7 @@ var taskwall = {
       } else taskwall.handleErr({error:{code:code, message:obj.data.statusText}});
 
     } else if(e.oauth == "ok") {
-      this.oauth = taskwall.cookie("googletasktoken");
+      taskwall.oauth = taskwall.cookie("googletasktoken");
       taskwall._ajax2ok += 1;
 
     } else return;

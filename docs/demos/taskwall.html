@@ -25,15 +25,22 @@ var ajax = {
 
 var taskwall = {
   oauth: "",
+  goog: "https://accounts.google.com/o/oauth2/auth?client_id=145596226637.apps.googleusercontent.com&redirect_uri="+encodeURIComponent(location.href)+"&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ftasks&response_type=token",
 
   onload: function() {
-    var token = /#access_token=([^&]+)(&|$)/.exec(location.href);
-    if(token) {
-      this.oauth = token[1];
-      this.cookie("googletasktoken", this.oauth);
+    var token = /\baccess_token=([^&]+)(&|$)/i.exec(location.href);
+
+    if(token && location.href.indexOf("state=" + this.cookie("csrf")) > 0) {
+      this.oauth = this.cookie("googletasktoken", token[1]);
+
+      //silent login via iframe
+      if(top && top != window) return top.postMessage('{"oauth":"ok"}', location.href);
+
       this.getProjs();
-    } else if(location.href.indexOf("?error=access_denied") > 0) {
+
+    } else if(location.href.indexOf("error=access_denied") > 0) {
       alert("Error: Could not get your tasks because access was denied.");
+
     } else {
       this.oauth = this.oauth || this.cookie("googletasktoken") || null;
     }
@@ -46,12 +53,14 @@ var taskwall = {
 
     this.updateView();
 
+    this.cookie("csrf", Math.random());
     if(!this.oauth) $("intro").style.display = "";
   },
 
   cookie: function(n, v) {
     if(v == {}.v) return window.localStorage[n];
     window.localStorage[n] = v;
+    return v;
   },
 
   ajax: function(url, param, cb) {
@@ -88,8 +97,9 @@ var taskwall = {
     if(!this._ajax2ok) {
       this._ajax2ok = 1;
       var n = document.createElement("span");
-      n.innerHTML = "<iframe name='apiproxy_197326' id='apiproxy_197326' style='width:1px;height:1px;position:absolute;top:-100px' src='" +
-        "https://www.googleapis.com/static/proxy.html#parent=" + encodeURIComponent(location.href) +"&amp;rpctoken=1973269718'></iframe>";
+      n.innerHTML = "<iframe name='apiproxy_197326' id='apiproxy_197326' src='" +
+        "https://www.googleapis.com/static/proxy.html#parent=" + encodeURIComponent(location.href) +"&amp;rpctoken=1973269718'></iframe>" +
+        "<iframe src='" + this.goog + "&state=" + this.cookie("csrf") + "'></iframe>";
       document.body.appendChild(n).firstChild;
       addEventListener("message", this.onMessage, false);
       this._ajax2Que = [];
@@ -116,20 +126,12 @@ var taskwall = {
   },
 
   onMessage: function(e) {
-    if(e.origin != "https://www.googleapis.com") return;
+    if(!/^https?:\/\/(simpleajax.googlecode.com|www.googleapis.com)$/.test(e.origin)) return;
 
     e = window.JSON ? JSON.parse(e.data) : eval("(" + e.data + ")");
 
     if(e.s == "ready:1973269718") {
-      taskwall._ajax2ok = 2;
-
-      e = document.getElementsByClassName("ajax2wait");
-      for(var i=e.length - 1; i>=0; i--) e[i].className="";
-
-      if(taskwall._ajax2Que.length > 0) frames["apiproxy_197326"].postMessage(
-        taskwall.obj2json(taskwall._ajax2Que[taskwall._ajax2Que.length - 1][0]),
-        "https://www.googleapis.com"
-      );
+      taskwall._ajax2ok += 1;
 
     } else if(e.s == "__cb") {
       var obj = window.JSON ? JSON.parse(e.a[1]) : eval("(" + e.a[1] + ")");
@@ -140,6 +142,21 @@ var taskwall = {
         obj = obj.data.body;
         (taskwall._ajax2Que.pop()[1])(window.JSON ? JSON.parse(obj) : eval("(" + obj + ")"));
       } else taskwall.handleErr({error:{code:code, message:obj.data.statusText}});
+
+    } else if(e.oauth == "ok") {
+      this.oauth = taskwall.cookie("googletasktoken");
+      taskwall._ajax2ok += 1;
+
+    } else return;
+
+    if(taskwall._ajax2ok == 3) {
+      e = document.getElementsByClassName("ajax2wait");
+      for(var i=e.length - 1; i>=0; i--) e[i].className = "";
+
+      if(taskwall._ajax2Que.length > 0) frames["apiproxy_197326"].postMessage(
+        taskwall.obj2json(taskwall._ajax2Que[taskwall._ajax2Que.length - 1][0]),
+        "https://www.googleapis.com"
+      );
     }
   },
 
@@ -151,7 +168,7 @@ var taskwall = {
 
   login: function() {
     $("upd").parentNode.innerHTML = "Login...";
-    location.href = "https://accounts.google.com/o/oauth2/auth?client_id=145596226637.apps.googleusercontent.com&redirect_uri="+encodeURIComponent(location.href)+"&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ftasks&response_type=token";
+    location.href = this.goog + "&state=" + this.cookie("csrf");
   },
 
   getProjs: function() {
@@ -242,24 +259,25 @@ var taskwall = {
   },
 
   addTask: function(t, proj, parent) {
-    if(!window.postMessage) return;
+    if(!window.postMessage || !this.oauth) return;
     this.ajax2prep();
 
     var n = document.createElement("tr");
     n.innerHTML = "<td colspan=3 class='edit'><form onsubmit='return taskwall.addTaskForm(this);'><div><textarea name=txt " +
       "placeholder='Task' autocapitalize=off></textarea></div><input name=due type=text placeholder='today, tue, +2' " +
-      "autocapitalize=off autocorrect=off><input type=submit " + (this._ajax2ok == 1 ? "class='ajax2wait' " : "") +
+      "autocapitalize=off autocorrect=off><input type=submit " + (this._ajax2ok != 3 ? "class='ajax2wait' " : "") +
       "value=' Add '><a href='javascript:void(0);' onclick='return taskwall.hideTaskForm(this);'>&times;</a><input type=hidden name=proj value='" +
       proj + "'><input type=hidden name=parent value='" + (parent||"") + "'></form></td>";
 
     var p = parent ? t.parentNode : $(proj).getElementsByTagName("th")[0].parentNode;
     p.parentNode.insertBefore(n, p.nextSibling);
 
-    n.getElementsByTagName('textarea')[0].focus();
-    t.onclick = function() {
-      n.getElementsByTagName('textarea')[0].focus();
-      t.onclick = null;
-    };
+    if("ontouchend" in document.body) {
+      t.onclick = function() {
+        n.getElementsByTagName('textarea')[0].focus();
+        t.onclick = null;
+      };
+    } else n.getElementsByTagName('textarea')[0].focus();
   },
 
   hideTaskForm: function(n) {
@@ -515,6 +533,7 @@ body {margin:0; padding:0; background:#fff; color:#000; -webkit-tap-highlight-co
 body.blk {background:#000; color:#fff}
 body, input, textarea {font:11pt Helvetica,Calibri,Tahoma}
 #upd {-webkit-transition:-webkit-transform 0.5s; display:inline-block}
+iframe {position:absolute; width:1px; height:1px; top:-100px}
 .menu {margin:3px 0}
 .group {background:#ddd; border-radius:1em; padding:0.4em; margin:0 0.3em; line-height:2.5em; font-size:80%; font-weight:bold; white-space:nowrap}
 .group a {padding:0.7em; text-decoration:none; color:#000; text-shadow:-1px 1px 0 #eee; -webkit-touch-callout:none}
@@ -553,8 +572,8 @@ td > u {text-decoration:none; background:#cc0; color:#fff; padding:0 0.1em; -moz
 th {-webkit-animation:flash_wht 0.4s ease-out}
 .blk th {-webkit-animation:flash_blk 0.4s ease-out}
 form {margin:1%}
-textarea {height:5em; width:98%; margin:0 auto; border:1px solid #bbb}
-.edit input[name="due"] {width:50%; min-width:4em; margin-right:1%; border:1px solid #bbb}
+textarea {height:5em; width:98%; margin:0 auto; border:1px solid #aaa}
+.edit input[name="due"] {width:50%; min-width:4em; margin-right:1%; border:1px solid #aaa}
 .edit .ajax2wait {display:none}
 .edit a {font-size:70%; color:#aaa; padding:0 1%; margin-left:4%}
 @-webkit-keyframes flash_wht {10%{background:#eee}}

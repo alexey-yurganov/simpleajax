@@ -265,7 +265,7 @@ var taskwall = {
     var n = document.createElement("tr");
     n.innerHTML = "<td colspan=3 class='edit'><form onsubmit='return taskwall.addTaskForm(this);'><div><textarea name=txt " +
       "placeholder='Task' autocapitalize=off></textarea></div><input name=due type=text placeholder='today, tue, +2' " +
-      "autocapitalize=off autocorrect=off><input type=submit " + (this._ajax2ok != 3 ? "class='ajax2wait' " : "") +
+      "autocapitalize=off autocorrect=off><input name=a type=submit " + (this._ajax2ok != 3 ? "class='ajax2wait' " : "") +
       "value=' Add '><a href='javascript:void(0);' onclick='return taskwall.hideTaskForm(this);'>&times;</a><input type=hidden name=proj value='" +
       proj + "'><input type=hidden name=parent value='" + (parent||"") + "'></form></td>";
 
@@ -290,6 +290,7 @@ var taskwall = {
   addTaskForm: function(f) {
     var dis = this;
     var proj = f.proj.value;
+    f.a.disabled = true;
     this.ajax2(
       "POST",
       "/tasks/v1/lists/" + proj + "/tasks?prettyPrint=false&access_token=" + dis.oauth + (f.parent.value ? "&parent=" + f.parent.value : ""),
@@ -539,7 +540,7 @@ iframe {position:absolute; width:1px; height:1px; top:-100px}
 .group a {padding:0.7em; text-decoration:none; color:#000; text-shadow:-1px 1px 0 #eee; -webkit-touch-callout:none}
 .blk .group {background:#333}
 .blk .group a {color:#ddd; text-shadow:1px 1px 0 #333}
-.blk input[type="text"] {background:#000; color:#fff}
+.blk input[type="text"], .blk textarea {background:#000; color:#fff}
 table {width:100%; border-collapse:collapse}
 #main {border-bottom:1px solid #e2e2e2}
 .blk #main {border-bottom-color:#333}
@@ -571,9 +572,11 @@ td > u {text-decoration:none; background:#cc0; color:#fff; padding:0 0.1em; -moz
 #q a {font-family:Helvetica,Calibri,Arial}
 th {-webkit-animation:flash_wht 0.4s ease-out}
 .blk th {-webkit-animation:flash_blk 0.4s ease-out}
-form {margin:1%}
-textarea {height:5em; width:98%; margin:0 auto; border:1px solid #aaa}
-.edit input[name="due"] {width:50%; min-width:4em; margin-right:1%; border:1px solid #aaa}
+td.edit {background:#ddd; cursor:default}
+.blk .edit {background:#333}
+form {margin:2%}
+textarea {height:5em; width:98%; margin:0 auto; border:0}
+.edit input[name="due"] {width:50%; min-width:4em; margin-right:1%; border:0}
 .edit .ajax2wait {display:none}
 .edit a {font-size:70%; color:#aaa; padding:0 1%; margin-left:4%}
 @-webkit-keyframes flash_wht {10%{background:#eee}}
@@ -611,7 +614,7 @@ textarea {height:5em; width:98%; margin:0 auto; border:1px solid #aaa}
 <span class="group"><a href="javascript:void($('morelinks').style.display='');">More...</a></span>
 <span id="morelinks" style="display:none">
 <span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
-<span class="group"><a href="javascript:taskwall.cookie('twbg','blk');document.body.className='blk';return false;">Black</a><a href="javascript:taskwall.cookie('twbg','');document.body.className='';return false;">White</a></span>
+<span class="group"><a href="javascript:void(document.body.className=taskwall.cookie('twbg','blk'));">Black</a><a href="javascript:void(document.body.className=taskwall.cookie('twbg',''));">White</a></span>
 <span class="group"><a href="http://mail.google.com/tasks/iphone">Google &raquo;</a></span>
 <div style="color:#aaa;font-size:80%">Hotkeys: Type '0' for today's tasks, '1' for tomorrow, or any letter to jump to a Project, then press Enter.</span>
 </div>

@@ -201,8 +201,10 @@ var taskwall = {
     if(!this.oauth) return this.login();
 
     this.ajax("/lists/" + proj + "/tasks", "showCompleted=false&fields=items(due%2Cid%2Cparent%2Cposition%2Cstatus%2Ctitle)%2CnextPageToken", function(r) {
-      dis.countdown--;
-      if(r.error) return dis.handleErr(r);
+      if(r.error) {
+        dis.countdown--;
+        return dis.handleErr(r);
+      }
 
       r = r.items;
 
@@ -249,11 +251,12 @@ var taskwall = {
         t.executeSql("DELETE FROM tasks WHERE proj=NULL", []);
       });
 
+      dis.countdown--;
+      $("upd").style.WebkitTransform = "rotate(-" + dis.countdown + "0deg)";
       if(dis.countdown == 0) {
         if(location.href.indexOf("#") > 0) location.replace(location.href.match(/^[^#]+/));
         dis.updateView();
       }
-      $("upd").style.WebkitTransform = "rotate(-" + dis.countdown + "0deg)";
 
     });
   },
@@ -532,7 +535,7 @@ var taskwall = {
 <style>
 body {margin:0; padding:0; background:#fff; color:#000; -webkit-tap-highlight-color:rgba(0,0,0,0); -webkit-text-size-adjust:100%; overflow-y:scroll}
 body.blk {background:#000; color:#fff}
-body, input, textarea {font:11pt Helvetica,Calibri,Tahoma}
+body, input, textarea, h1 {font:11pt Helvetica,Calibri,Tahoma}
 #upd {-webkit-transition:-webkit-transform 0.5s; display:inline-block}
 iframe {position:absolute; width:1px; height:1px; top:-100px}
 .menu {margin:3px 0}
@@ -616,9 +619,9 @@ textarea {height:5em; width:98%; margin:0 auto; border:0}
 <span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
 <span class="group"><a href="javascript:void(document.body.className=taskwall.cookie('twbg','blk'));">Black</a><a href="javascript:void(document.body.className=taskwall.cookie('twbg',''));">White</a></span>
 <span class="group"><a href="http://mail.google.com/tasks/iphone">Google &raquo;</a></span>
-<div style="color:#aaa;font-size:80%">Hotkeys: Type '0' for today's tasks, '1' for tomorrow, or any letter to jump to a Project, then press Enter.</span>
+<div style="color:#aaa;text-align:center;margin:1em">Hotkeys: Anywhere type '0' for today's tasks, '1' for tomorrow, or any letter to jump to a Project, then press Enter.</div>
 </div>
-<div id="intro" style="color:#aaa; margin:1em 10%; text-align:center; display:none">All your Google Tasks right on your iPhone available offline. Filter by project or date. Instant search. Google ID required.</div>
+<h1 id="intro" style="color:#aaa; font-weight:normal; margin:1em 10%; text-align:center; display:none">All your Google Tasks right on your iPhone available offline. Filter by project or date. Instant search. Google ID required. Click 'Get' to start.</h1>
 </div>
 <script>
 var isTouch = document.body;

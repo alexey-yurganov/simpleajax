@@ -266,7 +266,7 @@ var taskwall = {
     this.ajax2prep();
 
     var n = document.createElement("tr");
-    n.innerHTML = "<td colspan=3 class='edit'><form onsubmit='return taskwall.addTaskForm(this);'><div><textarea name=txt " +
+    n.innerHTML = "<td colspan=3 class='edit'><form onsubmit='taskwall.addTaskForm(this);return false;'><div><textarea name=txt " +
       "placeholder='Task' autocapitalize=off></textarea></div><input name=due type=text placeholder='today, tue, +2' " +
       "autocapitalize=off autocorrect=off><input name=a type=submit " + (this._ajax2ok != 3 ? "class='ajax2wait' " : "") +
       "value=' Add '><a href='javascript:void(0);' onclick='return taskwall.hideTaskForm(this);'>&times;</a><input type=hidden name=proj value='" +
@@ -283,15 +283,20 @@ var taskwall = {
     } else n.getElementsByTagName('textarea')[0].focus();
   },
 
-  hideTaskForm: function(n) {
-    n = n.parentNode.parentNode.parentNode;
-    if(n.getElementsByTagName("textarea")[0].value && !confirm("Discard?")) return;
-    n.parentNode.removeChild(n);
+  hideTaskForm: function(a) {
+    a = a.parentNode.parentNode.parentNode;
+    if(a.getElementsByTagName("textarea")[0].value && !confirm("Discard?")) return;
+    a.parentNode.removeChild(a);
     return false;
   },
 
   addTaskForm: function(f) {
     var dis = this;
+
+    if(this._ajax2ok != 3) return;
+    if(!f.txt.value) return dis.hideTaskForm({parentNode:f});
+    if(f.due.value && !dis.strToDate(f.due.value)) return alert("Invalid date. Use 'd/m/yyyy'.");
+
     var proj = f.proj.value;
     f.a.disabled = true;
     this.ajax2(
@@ -311,7 +316,6 @@ var taskwall = {
         });
       }
     );
-    return false;
   },
 
   strToDate: function(s) {

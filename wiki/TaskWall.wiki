@@ -5,6 +5,8 @@ TaskWall is a free web app that works offline and syncs with your Google Tasks. 
 
 If you have a Google account, try *[http://simpleajax.googlecode.com/svn/docs/demos/taskwall.html TaskWall]* now.
 
+[http://imageshack.us/photo/my-images/32/iphone4cl.jpg/ http://img32.imageshack.us/img32/48/iphone4cl.jpg]
+
 ----
 = HTML5 =
 TaskWall uses HTML5 Application Cache so that the web app can be accessed offline. Tasks are stored in the HTML5 Web SQL Database so that they are available offline. Offline access only works on Webkit based browsers such as the iPhone, Safari and Chrome.

@@ -267,9 +267,10 @@ var taskwall = {
 
     var n = document.createElement("tr");
     n.innerHTML = "<td colspan=3 class='edit'><form onsubmit='taskwall.addTaskForm(this);return false;'><div><textarea name=txt " +
-      "placeholder='Task' autocapitalize=off></textarea></div><input name=due type=text placeholder='today, tue, +2' " +
-      "autocapitalize=off autocorrect=off><input name=a type=submit " + (this._ajax2ok != 3 ? "class='ajax2wait' " : "") +
-      "value=' Add '><a href='javascript:void(0);' onclick='return taskwall.hideTaskForm(this);'>&times;</a><input type=hidden name=proj value='" +
+      "placeholder='Task' autocapitalize=off></textarea></div><a href='javascript:void(0);' onclick='return taskwall.hideTaskForm(this);'>&times;</a>" +
+      "<input name=due type=text placeholder='today, tue, +2' autocapitalize=off autocorrect=off><input name=a type=submit " + 
+      (this._ajax2ok != 3 ? "class='ajax2wait' " : "") +
+      "value=' Add '><input type=hidden name=proj value='" +
       proj + "'><input type=hidden name=parent value='" + (parent||"") + "'></form></td>";
 
     var p = parent ? t.parentNode : $(proj).getElementsByTagName("th")[0].parentNode;
@@ -586,7 +587,7 @@ form {margin:2%}
 textarea {height:5em; width:98%; margin:0 auto; border:0}
 .edit input[name="due"] {width:50%; min-width:4em; margin-right:1%; border:0}
 .edit .ajax2wait {display:none}
-.edit a {font-size:70%; color:#aaa; padding:0 1%; margin-left:4%}
+.edit a {font-size:70%; color:#aaa; padding:0 1%; margin-right:4%}
 @-webkit-keyframes flash_wht {10%{background:#eee}}
 @-webkit-keyframes flash_blk {10%{background:#333}}
 @media screen and (max-device-width: 480px) {body, input, textarea {font:13pt Helvetica,Calibri,Tahoma}}

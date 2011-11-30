@@ -8,6 +8,17 @@ If you have a Google account, try *[http://simpleajax.googlecode.com/svn/docs/de
 [http://imageshack.us/photo/my-images/32/iphone4cl.jpg/ http://img32.imageshack.us/img32/48/iphone4cl.jpg]
 
 ----
+= Features =
+  * Download all your tasks and view them offline
+  * Offline search through all your tasks.
+  * One click search by days overdue.
+  * Flag your tasks as important for quick access.
+  * Hotkeys allow you to search just by typing.
+  * Add new tasks by clicking on the List name.
+  * Add sub-tasks by clicking on an existing Task name.
+  * Use fuzzy text to specify a due date, such as "tom" for "tomorrow" or "+2" for "day after tomorrow".
+
+----
 = HTML5 =
 TaskWall uses HTML5 Application Cache so that the web app can be accessed offline. Tasks are stored in the HTML5 Web SQL Database so that they are available offline. Offline access only works on Webkit based browsers such as the iPhone, Safari and Chrome.
 
@@ -31,7 +42,6 @@ Your tasks are stored in the cloud, therefore any changes you make on your iPhon
 = Usability =
 TaskWall has been optimized for the iPhone:
   * Buttons have large activation areas to make them easier to tap with a finger.
-  * Use fuzzy text to specify a due date, such as "tom" for "tomorrow" or "+2" for "day after tomorrow".
   * Switch between portrait and landscape keyboards midway to speed up typing and accuracy.
   * The Wall's white on black background allows for better visibility under sunlight and better eye comfort when reading it at night. You can also switch to a black on white background.
   * An iPhone home screen icon is also available when you add the web app to your iPhone's home screen.

@@ -347,7 +347,7 @@ var taskwall = {
     var days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
     for(var i=0; i<days.length; i++) {
       if(s.indexOf(days[i]) >= 0) {
-        d.setDate(d.getDate() + ((i - d.getDay() + 7) % 7) + (s.indexOf("next ") == 0 ? 7 : 0));
+        d.setDate(d.getDate() + ((i + 1 - d.getDay() + 7) % 7) + (s.indexOf("next ") == 0 ? 7 : 0));
         return d;
       }
     }
@@ -584,7 +584,7 @@ th {-webkit-animation:flash_wht 0.4s ease-out}
 td.edit {background:#ddd; cursor:default}
 .blk .edit {background:#333}
 form {margin:2%}
-textarea {height:5em; width:98%; margin:0 auto; border:0}
+textarea {height:5em; width:98%; margin:0 auto; border:0; word-break:normal}
 .edit input[name="due"] {width:50%; min-width:4em; margin-right:1%; border:0}
 .edit .ajax2wait {display:none}
 .edit a {font-size:70%; color:#aaa; padding:0 1%; margin-right:4%}

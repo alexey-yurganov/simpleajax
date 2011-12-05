@@ -254,7 +254,7 @@ var taskwall = {
       dis.countdown--;
       $("upd").style.WebkitTransform = "rotate(-" + dis.countdown + "0deg)";
       if(dis.countdown == 0) {
-        if(location.href.indexOf("#") > 0) location.replace(location.href.match(/^[^#]+/));
+        if(location.href.indexOf("#") > 0) setTimeout("location.replace(location.href.match(/^[^#]+/));", 1000);
         dis.updateView();
       }
 
@@ -580,7 +580,7 @@ td > u {text-decoration:none; background:#cc0; color:#fff; padding:0 0.1em; -moz
 #q {-webkit-appearance:none; border-radius:10px; border:0; padding:0 0.5em; margin:0}
 #q, #q input {font-family:arial}
 #q a {font-family:Helvetica,Calibri,Arial}
-td.edit {background:#ddd; cursor:default; -webkit-animation:sidein 0.3s}
+td.edit {background:#ddd; cursor:default; -webkit-animation:slidein 0.3s}
 .blk .edit {background:#333}
 form {margin:2%}
 textarea {height:5em; width:98%; margin:0 auto; border:0; word-break:normal}
@@ -625,7 +625,7 @@ textarea {height:5em; width:98%; margin:0 auto; border:0; word-break:normal}
 <span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
 <span class="group"><a href="javascript:void(document.body.className=taskwall.cookie('twbg','blk'));">Black</a><a href="javascript:void(document.body.className=taskwall.cookie('twbg',''));">White</a></span>
 <span class="group"><a href="http://mail.google.com/tasks/iphone">Google &raquo;</a></span>
-<span class="group"><a href="http://code.google.com/p/simpleajax/issues/list">Bugs? &raquo;</a></span>
+<span class="group"><a href="http://code.google.com/p/simpleajax/issues/list">Bugs &raquo;</a></span>
 <div style="color:#aaa;text-align:center;margin:1em">Hotkeys: Anywhere type '0' for today's tasks, '1' for tomorrow, or any letter to jump to a Project, then press Enter.</div>
 </div>
 <h1 id="intro" style="color:#aaa; font-weight:normal; margin:1em 10%; text-align:center; display:none">All your Google Tasks right on your iPhone available offline. Filter by project or date. Instant search. Google ID required. Click 'Get' to start.</h1>

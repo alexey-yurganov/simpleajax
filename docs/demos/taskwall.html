@@ -553,7 +553,8 @@ iframe {position:absolute; width:1px; height:1px; top:-100px}
 table {width:100%; border-collapse:collapse}
 #main {border-bottom:1px solid #e2e2e2}
 .blk #main {border-bottom-color:#333}
-th {font-size:120%; font-weight:bold; padding:0.5em}
+th {font-size:120%; font-weight:bold; padding:0.5em; -webkit-animation:flash_wht 0.6s ease-out}
+.blk th {-webkit-animation:flash_blk 0.6s ease-out}
 td {vertical-align:top; padding:0.3em 0.1em}
 th, td {text-align:left; border-top:1px solid #e2e2e2; word-wrap:break-word; word-break:break-all}
 .blk th, .blk td {border-top-color:#333}
@@ -579,9 +580,7 @@ td > u {text-decoration:none; background:#cc0; color:#fff; padding:0 0.1em; -moz
 #q {-webkit-appearance:none; border-radius:10px; border:0; padding:0 0.5em; margin:0}
 #q, #q input {font-family:arial}
 #q a {font-family:Helvetica,Calibri,Arial}
-th {-webkit-animation:flash_wht 0.4s ease-out}
-.blk th {-webkit-animation:flash_blk 0.4s ease-out}
-td.edit {background:#ddd; cursor:default}
+td.edit {background:#ddd; cursor:default; -webkit-animation:sidein 0.3s}
 .blk .edit {background:#333}
 form {margin:2%}
 textarea {height:5em; width:98%; margin:0 auto; border:0; word-break:normal}
@@ -590,6 +589,7 @@ textarea {height:5em; width:98%; margin:0 auto; border:0; word-break:normal}
 .edit a {font-size:70%; color:#aaa; padding:0 1%; margin-right:4%}
 @-webkit-keyframes flash_wht {10%{background:#eee}}
 @-webkit-keyframes flash_blk {10%{background:#333}}
+@-webkit-keyframes slidein {from{-webkit-transform:translateX(-70px); opacity:0}}
 @media screen and (max-device-width: 480px) {body, input, textarea {font:13pt Helvetica,Calibri,Tahoma}}
 @media screen and (min-width:800px) {
   table {float:left; width:32%; margin:0.7%; border:1px solid #e2e2e2; -webkit-box-shadow:1px 1px 5px #ccc}
@@ -604,13 +604,13 @@ textarea {height:5em; width:98%; margin:0 auto; border:0; word-break:normal}
 <a href="javascript:taskwall.getProjs();"><span id="upd">&dArr;</span>&nbsp;Get</a>
 </span>
 <span class="group">
-<input type="text" id="q" placeholder="Search" size=12 autocapitalize="off" autocorrect="off" accesskey="s">
+<input type="text" id="q" placeholder="Search" size=12 autocapitalize="off" autocorrect="off" accesskey="s" title="Alt+S">
 <a href="javascript:taskwall.updateView();">Go</a>
 </span>
 <span class="group">
-<a href="javascript:taskwall.updateView('@0');">Today</a>
-<a href="javascript:taskwall.updateView('@3');">Soon</a>
-<a href="javascript:taskwall.updateView('');">All</a>
+<a href="javascript:taskwall.updateView('@0');" title="0">Today</a>
+<a href="javascript:taskwall.updateView('@3');" title="3">Soon</a>
+<a href="javascript:taskwall.updateView('');" title="Esc">All</a>
 </span>
 <span class="group">
 <a href="javascript:taskwall.updateView('@*');">&#9733;</a>
@@ -625,6 +625,7 @@ textarea {height:5em; width:98%; margin:0 auto; border:0; word-break:normal}
 <span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
 <span class="group"><a href="javascript:void(document.body.className=taskwall.cookie('twbg','blk'));">Black</a><a href="javascript:void(document.body.className=taskwall.cookie('twbg',''));">White</a></span>
 <span class="group"><a href="http://mail.google.com/tasks/iphone">Google &raquo;</a></span>
+<span class="group"><a href="http://code.google.com/p/simpleajax/issues/list">Bugs? &raquo;</a></span>
 <div style="color:#aaa;text-align:center;margin:1em">Hotkeys: Anywhere type '0' for today's tasks, '1' for tomorrow, or any letter to jump to a Project, then press Enter.</div>
 </div>
 <h1 id="intro" style="color:#aaa; font-weight:normal; margin:1em 10%; text-align:center; display:none">All your Google Tasks right on your iPhone available offline. Filter by project or date. Instant search. Google ID required. Click 'Get' to start.</h1>

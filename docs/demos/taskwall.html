@@ -337,9 +337,9 @@ var taskwall = {
     }
 
     var reg;
-    if((reg = s.match(/^(\d{1,2})(?:[- \.\/](\d{1,2})(?:[- \.\/](\d{4}))?)?$/))) {
+    if((reg = s.match(/^(\d{1,2})[- \.\/](\d{1,2})(?:[- \.\/](\d{4}))?$/))) {
       var now = d.getTime();
-      d = new Date(reg[3]||d.getYear(), (reg[2]*1 - 1)||d.getMonth(), reg[1]||d.getDate(), 23, 59, 59);
+      d = new Date(reg[3]||d.getFullYear(), (reg[2]*1 - 1)||d.getMonth(), reg[1]||d.getDate(), 23, 59, 59);
       if(!reg[3] && d.getTime() - now < 0) d.setYear(d.getFullYear() + 1);
       return d;
     }

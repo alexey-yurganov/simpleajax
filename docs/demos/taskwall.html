@@ -261,8 +261,8 @@ var taskwall = {
     });
   },
 
-  addTask: function(t, proj, parent) {
-    if(!window.postMessage || !this.oauth) return;
+  addTask: function(e, t, proj, parent) {
+    if(!window.postMessage || !this.oauth || e.ctrlKey || e.metaKey || e.shiftKey) return;
     this.ajax2prep();
 
     var n = document.createElement("tr");
@@ -427,7 +427,7 @@ var taskwall = {
           while((n = r.item(i++))) {
             errBounds = false;
             proj = n.proj;
-            if(proj != lastProj) html.push("</table><table cellspacing=0 border=0 id='" + proj + "'><tr><th colspan=3 onclick='taskwall.addTask(this, \"" + proj + "\");'>" + n.h1 + "</th></tr>");
+            if(proj != lastProj) html.push("</table><table cellspacing=0 border=0 id='" + proj + "'><tr><th colspan=3 onclick='taskwall.addTask(event, this, \"" + proj + "\");'>" + n.h1 + "</th></tr>");
             lastProj = proj;
 
             if(n.parent == "undefined" || !n.parent) {
@@ -457,7 +457,7 @@ var taskwall = {
             due = (!due || due == "undefined") ? "" : due == tod ? "today" : due == tom ? "tom" : (due.substr(0, 4) == year ? "" : due.substr(0, 4) + "<span>/</span>") + due.substr(5, 2)*1 + "<span>/</span>" + due.substr(8, 2)*1;
             html.push(
               "<tr><td onclick='taskwall.check(this,0,\"" + id + "\");' class='f" + flag + "'><b class='fl'>&#9733;</b><b>&sdot;</b>" +
-              "</td><td id='" + id + "' class='ind" + indent + "' onclick='taskwall.addTask(this, \"" + proj + 
+              "</td><td id='" + id + "' class='ind" + indent + "' onclick='taskwall.addTask(event, this, \"" + proj + 
               "\", this.id);'><span class='" + overdue + "'>" + due + "</span>" + h2 +
               "</td><td onclick='taskwall.check(this,1,\"" + id + "\");' class='f" + flag + 
               "'><b class='fr'>&hearts;</b><b>&sdot;</b></td></tr>"
@@ -547,7 +547,9 @@ iframe {position:absolute; width:1px; height:1px; top:-100px}
 .menu {margin:3px 0}
 .group {background:#ddd; border-radius:1em; padding:0.4em; margin:0 0.3em; line-height:2.5em; font-size:80%; font-weight:bold; white-space:nowrap}
 .group a {padding:0.7em; text-decoration:none; color:#000; text-shadow:-1px 1px 0 #eee; -webkit-touch-callout:none}
+.group:hover {background:#f4f4f4}
 .blk .group {background:#333}
+.blk .group:hover {background:#666}
 .blk .group a {color:#ddd; text-shadow:1px 1px 0 #333}
 .blk input[type="text"], .blk textarea {background:#000; color:#fff}
 table {width:100%; border-collapse:collapse}

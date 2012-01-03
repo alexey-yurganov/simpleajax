@@ -46,7 +46,7 @@ var taskwall = {
     }
 
     var x = this.cookie("soon");
-    if(x) $("q").value = "@" + x;
+    if(x) $("q").value = $("startq").value = x;
 
     x = this.cookie("twbg");
     if(x) document.body.className = x;
@@ -248,16 +248,16 @@ var taskwall = {
           );
         }
 
-        t.executeSql("DELETE FROM tasks WHERE proj=NULL", []);
+        t.executeSql("DELETE FROM tasks WHERE proj=NULL", [], function(t, r) {
+          dis.countdown--;
+          $("upd").style.WebkitTransform = "rotate(-" + dis.countdown + "0deg)";
+          if(dis.countdown == 0) {
+            if(location.href.indexOf("#") > 0) location.replace(location.href.match(/^[^#]+/));
+            dis.updateView();
+          }
+        });
+
       });
-
-      dis.countdown--;
-      $("upd").style.WebkitTransform = "rotate(-" + dis.countdown + "0deg)";
-      if(dis.countdown == 0) {
-        if(location.href.indexOf("#") > 0) setTimeout("location.replace(location.href.match(/^[^#]+/));", 1000);
-        dis.updateView();
-      }
-
     });
   },
 
@@ -365,8 +365,6 @@ var taskwall = {
     var filter = $("q").value;
     var filterSql = "", highlight = false;
 
-    this.cookie("soon", "");
-
     if(filter == "@*") {
       filterSql = "AND (flag == 2 OR flag == 4) ";
       filter = null;
@@ -381,7 +379,6 @@ var taskwall = {
 
     } else if(/^@(\d+)$/.test(filter)) {
       filter = /^@(\d+)$/.exec(filter)[1];
-      this.cookie("soon", filter);
       var d = new Date();
       d.setTime(d.getTime() + filter*24*60*60000);
       filterSql = "AND due <= '" + d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + "T00:00:00.000Z' ";
@@ -545,7 +542,7 @@ body, input, textarea, h1 {font:11pt Helvetica,Calibri,Tahoma}
 #upd {-webkit-transition:-webkit-transform 0.5s; display:inline-block}
 iframe {position:absolute; width:1px; height:1px; top:-100px}
 .menu {margin:3px 0}
-.group {background:#ddd; border-radius:1em; padding:0.4em; margin:0 0.3em; line-height:2.5em; font-size:80%; font-weight:bold; white-space:nowrap}
+.group {background:#ddd; border-radius:1em; padding:0.45em; margin:0 0.3em; line-height:2.55em; font-size:80%; font-weight:bold; white-space:nowrap}
 .group a {padding:0.7em; text-decoration:none; color:#000; text-shadow:-1px 1px 0 #eee; -webkit-touch-callout:none}
 .group:hover {background:#f4f4f4}
 .blk .group {background:#333}
@@ -579,9 +576,7 @@ td > span > span {padding:0 0.2em}
 .f4 .fl, .f4 .fr, .f2 .fl, .f3 .fr {display:inline; color:#888}
 td > u {text-decoration:none; background:#cc0; color:#fff; padding:0 0.1em; -moz-border-radius:0.3em; border-radius:0.3em}
 .blk td > u {background:#ff4; color:#000}
-#q {-webkit-appearance:none; border-radius:10px; border:0; padding:0 0.5em; margin:0}
-#q, #q input {font-family:arial}
-#q a {font-family:Helvetica,Calibri,Arial}
+.inputbox input {-webkit-appearance:none; border-radius:10px; border:0; padding:0.1em 0.5em; margin:0; font-family:arial}
 td.edit {background:#ddd; cursor:default; -webkit-animation:slidein 0.3s}
 .blk .edit {background:#333}
 form {margin:2%}
@@ -605,8 +600,8 @@ textarea {height:5em; width:98%; margin:0 auto; border:0; word-break:normal}
 <span class="group">
 <a href="javascript:taskwall.getProjs();"><span id="upd">&dArr;</span>&nbsp;Get</a>
 </span>
-<span class="group">
-<input type="text" id="q" placeholder="Search" size=12 autocapitalize="off" autocorrect="off" accesskey="s" title="Alt+S">
+<span class="group inputbox">
+<input type="text" id="q" placeholder="Search" size=15 autocapitalize="off" autocorrect="off" accesskey="s" title="Alt+S">
 <a href="javascript:taskwall.updateView();">Go</a>
 </span>
 <span class="group">
@@ -626,6 +621,7 @@ textarea {height:5em; width:98%; margin:0 auto; border:0; word-break:normal}
 <span id="morelinks" style="display:none">
 <span class="group"><a href="javascript:taskwall.logout();">Logout</a></span>
 <span class="group"><a href="javascript:void(document.body.className=taskwall.cookie('twbg','blk'));">Black</a><a href="javascript:void(document.body.className=taskwall.cookie('twbg',''));">White</a></span>
+<span class="group inputbox">Startup <input type="text" id="startq" placeholder="Search" size=8 autocapitalize="off" autocorrect="off" onchange="taskwall.cookie('soon',this.value);"></span>
 <span class="group"><a href="http://mail.google.com/tasks/iphone">Google &raquo;</a></span>
 <span class="group"><a href="http://code.google.com/p/simpleajax/issues/list">Bugs &raquo;</a></span>
 <div style="color:#aaa;text-align:center;margin:1em">Hotkeys: Anywhere type '0' for today's tasks, '1' for tomorrow, or any letter to jump to a Project, then press Enter.</div>

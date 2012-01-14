@@ -162,6 +162,7 @@ var TableSort = {
 };
 
 Array.prototype.forEach.call(document.querySelectorAll("table"), function(n) {
+  n.style.outline = "1px dashed red";
   n.onclick = function(e) {
     TableSort.showMenu(e);
     e.preventDefault();
@@ -169,6 +170,4 @@ Array.prototype.forEach.call(document.querySelectorAll("table"), function(n) {
     return false;
   };
 });
-
-// javascript:void(document.body.appendChild(document.createElement('script')).src='http://simpleajax.googlecode.com/svn/docs/demos/tablesort.js');
 alert("Click on a table to sort.");

@@ -164,6 +164,9 @@ var TableSort = {
 Array.prototype.forEach.call(document.querySelectorAll("table"), function(n) {
   n.onclick = function(e) {
     TableSort.showMenu(e);
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
   };
 });
 

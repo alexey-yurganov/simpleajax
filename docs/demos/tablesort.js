@@ -161,9 +161,11 @@ var TableSort = {
   }
 };
 
-document.body.onclick = function(e) {
-  TableSort.showMenu(e);
-};
+Array.prototype.forEach.call(document.querySelectorAll("table"), function(n) {
+  n.onclick = function(e) {
+    TableSort.showMenu(e);
+  };
+});
 
 // javascript:void(document.body.appendChild(document.createElement('script')).src='http://simpleajax.googlecode.com/svn/docs/demos/tablesort.js');
 alert("Click on a table to sort.");

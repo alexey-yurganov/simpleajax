@@ -30,7 +30,7 @@ var TableSort = {
   },
 
   selectMenu: function(n, i) {
-    var s = n.value, title = n.options[n.selectedIndex].label;
+    var s = n.value, title = n.options[n.selectedIndex].innerText;
     this.hideMenu(n);
 
     while(n && !/TD|TH/i.test(n.tagName)) n = n.parentNode;

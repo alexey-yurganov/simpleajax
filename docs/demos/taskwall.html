@@ -337,9 +337,10 @@ var taskwall = {
     }
 
     var reg;
-    if((reg = s.match(/^(\d{1,2})[- \.\/](\d{1,2})(?:[- \.\/](\d{4}))?$/))) {
+    if((reg = s.match(/^(\d{1,2})[- \.\/](\d{1,2}|[a-z]{3})(?:[- \.\/](\d{4}))?$/))) {
+      var months = {"jan":1, "feb":2, "mar":3, "apr":4, "may":5, "jun":6, "jul":7, "aug":8, "sep":9, "oct":10, "nov":11, "dec":12};
       var now = d.getTime();
-      d = new Date(reg[3]||d.getFullYear(), (reg[2]*1 - 1)||d.getMonth(), reg[1]||d.getDate(), 23, 59, 59);
+      d = new Date(reg[3]||d.getFullYear(), ((reg[2]*1||months[reg[2]]) - 1)||d.getMonth(), reg[1]||d.getDate(), 23, 59, 59);
       if(!reg[3] && d.getTime() - now < 0) d.setYear(d.getFullYear() + 1);
       return d;
     }

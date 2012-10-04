@@ -6,8 +6,7 @@
 <link rel="apple-touch-icon" sizes="114x114" href="todoist114.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="format-detection" content="telephone=no">
-<meta name="viewport" content="width=device-width,initial-scale=1.5">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <script>
 function $(s) {
   return document.getElementById(s);
@@ -215,7 +214,7 @@ var todoist = {
   },
 
   sortView: function(proj) {
-    var d = this.data, item, bullet;
+    var d = this.data, item, diff;
     var now = new Date().getTime();
     if(proj) {
       d = {};
@@ -228,8 +227,8 @@ var todoist = {
         item = d[i].data[j];
         item.due_now = 0;
         if(item.due_date) {
-          bullet = item.due_date.getTime() - now;
-          item.due_now = bullet < 60000*60*24 ? 2 : bullet < 60000*60*24*7 ? 1 : 0;
+          diff = item.due_date.getTime() - now;
+          item.due_now = diff < 60000*60*24 ? 2 : diff < 60000*60*24*7 ? 1 : 0;
           if(item.due_now == 2) {
             d[i].data.splice(j, 1);
             d[i].data.unshift(item);
@@ -246,7 +245,7 @@ var todoist = {
   updateView: function(silent) {
     var html = [], summary = [];
     var item;
-    var bullet;
+    var diff;
 
     var projs = [];  //sort projs
     for(var i in this.data) projs.push(i);
@@ -270,21 +269,18 @@ var todoist = {
       html.push("<div class='proj'><h2><a href='javascript:if(todoist.copying){todoist.copyItem("+projs[i]+");}else{todoist.addItem("+projs[i]+");}' ondragover='if(todoist.copying&&event.preventDefault)event.preventDefault();' ondrop='todoist.copyItem("+projs[i]+");' ontouchstart='touchIsClick(this);' id='p"+projs[i]+"'>"+proj.name+"</a></h2><ul>");
       for(var j=0; j<proj.data.length; j++) {
         item = proj.data[j];
-
-        bullet = item.due_now == 2 ? "bullnow'>&loz;" : item.due_now == 1 ?  "bullweek'>&diams;" : "bullold'>&bull;";
-        bullet = "<span class='" + bullet + "</span>";
-        html.push("<li class='imp"+item.priority+(j%2?" alt eta":" eta")+item.due_now+"' id='n" + item.id+"_"+projs[i]+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);' ondragstart='todoist.copying={};todoist.selectItem(this);' ondragend='todoist.copyItem(null);'>"+bullet+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>");
+        html.push("<li class='imp"+item.priority+(j%2?" alt eta":" eta")+item.due_now+"' id='n" + item.id+"_"+projs[i]+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);' ondragstart='todoist.copying={};todoist.selectItem(this);' ondragend='todoist.copyItem(null);'>"+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"<span class='div'>/</span>"+item.due_date.getDate():"")+"</span></li>");
 
         if(item.due_now == 2) {
-          bullet = item.due_date.getTime();
+          diff = item.due_date.getTime();
           for(var k=0; k<summary.length; k++) {
-            if(bullet >= summary[k].due_date.getTime()) {
+            if(diff >= summary[k].due_date.getTime()) {
               summary.splice(k, 0, item);
-              bullet = 0;
+              diff = 0;
               break;
             }
           }
-          if(bullet) summary.push(item);
+          if(diff) summary.push(item);
         }
       }
       html.push("</ul></div>");
@@ -296,15 +292,10 @@ var todoist = {
       width++;
       for(var i=0; i<summary.length; i++) {
         item = summary[i];
-        summary[i] = "<li class='imp"+item.priority+(i%2?" alt":"")+" eta2' id='s" + item.id+"_"+item.project_id+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);'><span class='bullold'>&bull;</span>"+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"/"+item.due_date.getDate():"")+"</span></li>";
+        summary[i] = "<li class='imp"+item.priority+(i%2?" alt":"")+" eta2' id='s" + item.id+"_"+item.project_id+"' onclick='if(todoist.copying)todoist.selectItem(this);else todoist.completeItems(this);'>"+item.content+"<span class='due'>"+(item.due_date?(item.due_date.getMonth()+1)+"<span class='div'>/</span>"+item.due_date.getDate():"")+"</span></li>";
       }
       html.unshift("<div class='proj sum'><h2><b>"+new Date().toDateString()+"</b></h2><ul>" + summary.join("") + "</ul></div>");
     }
-
-    var ie6width = width;
-    width = Math.floor(97/width);
-    var ie6width = document.all ? ";_width:expression(document.body.clientWidth/"+ie6width+"<160?'160px':'"+width+"%')" : "";  //~13em
-    html.push("<style>.proj{width:"+width+"%"+ie6width+"}</style>");
 
     if(this.projCount == 0) html.push("<p>List is empty.</p>");
 
@@ -562,10 +553,8 @@ var todoist = {
         for(var j=0; j<d.length && count < 100; j++) {
           if(d[j].content.toLowerCase().indexOf(s) >= 0) {
             n = $("n" + d[j].id + "_" + d[j].project_id);
-            var n1 = n.removeChild(n.firstChild);
             var n2 = n.removeChild(n.lastChild);
             n.innerHTML = n.innerHTML.toLowerCase().split(s).join("<i>" + s + "</i>");
-            n.insertBefore(n1, n.firstChild);
             n.appendChild(n2);
 
             proj[d[j].project_id] = 1;
@@ -635,33 +624,43 @@ var todoist = {
 </script>
 <style>
 body {margin:3px; padding:1px; background:#000; color:#fff; -webkit-tap-highlight-color:rgba(255,255,255,0.2); -webkit-text-size-adjust:100%}
-body,form,#foot {font:9pt Helvetica,Arial}
-#foot {background:#000; color:#aaa; position:fixed; clear:both; bottom:3px; left:3px}
+body,form,#foot {font:11pt Helvetica,Arial}
+#foot {background:#000; color:#aaa; clear:both}
 body.flash {background:#333}
-.proj {float:left; min-width:15.5em; -webkit-transition:min-width 0.2s; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
+.proj {float:left; width:32%; margin:1em 5px; padding:0; box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box}
 .proj h2 {margin:0; padding:0; font:bold 125% Helvetica,Arial}
 .proj h2 a {text-decoration:none; padding:0 1em 0.3em 0.7em}
 .token, .token a {color:#aaa}
 a {font-size:100%; color:#fff}
 .emptyprojs {font-size:100%} .emptyprojs a {color:#999; margin-right:1em; text-decoration:none}
-.due {color:#bbe; font-size:90%; margin-left:4%}
-.eta2 {background:#333; margin-top:0.3em}
-.white .eta2 {background:#eee}
+.due {color:#bbf; font-size:90%; margin-left:6px}
+.due:not(:empty) {background:rgba(255,255,255,0.15); padding:0 0.3em; border-radius:0.5em}
+.white .due:not(:empty) {background:rgba(0,0,0,0.05)}
+li .div {margin:0 0.1em}
+.eta1, .eta2 {background:#222; border-color:#333}
+.eta2 {background:#333; border-color:#444}
+.white .eta1 {background:#ffc; border-color:#eeb}
+.white .eta2 {background:#fdd; border-color:#ecc}
 .sum h2 {padding:0 0.7em; color:#444}
 .sum h2 b {font-size:70%}
-.sum .eta2 {background:none; margin-top:0}
-.sum .imp4 {margin-top:0.15em; margin-bottom:0.15em}
-ul,li {padding:3px 3px 1em 3px; margin:0; list-style:none; vertical-align:middle}
-li {padding:0 0 0.15em 0.8em; text-indent:-0.8em; color:#ccc; -moz-border-radius:0.6em; border-radius:0.6em; cursor:pointer; -webkit-transition:margin 0.3s; -webkit-user-drag:element}
+.sum .eta2 {background:none; border-color:#333}
+.white .sum .eta2 {border-color:#eee}
+ul {border:1px solid #444}
+.white ul {border-color:#ddd}
+ul,li {padding:0; margin:0; list-style:none; vertical-align:middle; word-wrap:break-word}
+li {padding:0.5em 0 0.5em 1.2em; border-bottom:1px solid #333; text-indent:-0.8em; color:#ccc; -moz-border-radius:0.6em; cursor:pointer; -webkit-transition:margin 0.3s; -webkit-user-drag:element}
+li:last-child {border:0}
+.white li {border-color:#eee}
 li:hover {-webkit-user-select:none}
-#main li:-webkit-drag {border-radius:0; background:#000; color:#fff}
+#main .proj ul {max-height:461px; overflow-y:auto; -webkit-overflow-scrolling:touch}
+#main li:-webkit-drag {background:#000; color:#fff}
 li.alt {color:#fff}
 li.imp2 {color:#0c0} li.imp3 {color:#88f} li.imp4 {color:#f00}
 ul>li.imp4.eta2 {background:#733; color:#fff}
-.bullnow, .bullweek, .bullold {color:#888; margin-right:0.3em; font-weight:bold} .bullnow {color:#aaa} .bullweek {color:#aaa}
-@media screen and (max-device-width: 480px) {#main {display:table-row} #main .proj {float:none; display:table-cell; width:15.5em} #foot {position:static; margin-top:1em}}
+@media screen and (max-width: 800px) {.proj {width:45%}}
+@media screen and (max-device-width: 480px) {body,form,#foot{font-size:13pt} .proj {margin:0} .proj > ul {width:320px; border:0} #main {display:table-row} #main .proj {float:none; display:table-cell}}
 .proj i {font-style:normal; background:#ff4; padding:0 0.1em; -moz-border-radius:0.3em; border-radius:0.3em; color:#000}
-#foot a {padding:0.3em 0.5em}
+#foot a {padding:0.3em 0.5em; margin-top:1em}
 #upd {-webkit-transition:-webkit-transform 0.5s}
 .fresh {-webkit-animation:darkflash 3s 1 ease-in}
 .white .fresh {-webkit-animation:lightflash 3s 1 ease-in}
@@ -676,7 +675,6 @@ ul>li.imp4.eta2 {background:#733; color:#fff}
 .white li.alt {color:#000}
 .white li.imp2 {color:#1d1} .white li.imp3 {color:#44f} .white li.imp4 {color:#f44}
 .white ul>li.imp4.eta2 {background:#fcc; color:#000}
-.white .bullnow, .white .bullweek, .white .bullold {color:#bbb}
 .copy1 li {margin-top:0.3em}
 .copy1 .proj h2 a, .copy2 .proj h2 a  {border-radius:0.3em; -webkit-transition:background-color 0.5s}
 .copy1 li {background:#555}
@@ -688,6 +686,9 @@ ul>li.imp4.eta2 {background:#733; color:#fff}
 @media print {#main .proj{float:none;width:auto;-webkit-column-count:4;-webkit-column-gap:1em;-moz-column-count:4;-moz-column-gap:1em;border-bottom:1px dashed #888} #foot{display:none}}
 @-webkit-keyframes darkflash {from {background:#880}}
 @-webkit-keyframes lightflash {from {background:#ffb}}
+.proj ::-webkit-scrollbar {width:8px; height:8px}
+.proj ::-webkit-scrollbar-thumb {background-color: #666; -webkit-box-shadow: inset -1px -1px 0 #888}
+.white .proj ::-webkit-scrollbar-thumb {background-color: #ccc; -webkit-box-shadow: inset 1px 1px 0 #aaa}
 </style>
 </head>
 <body style="overflow:auto">
@@ -696,7 +697,6 @@ Email:<br><input id="user" type="email" autocorrect="off" autocapitalize="off">
 <br>Password: <span class="token">or <a href="http://getsatisfaction.com/todoist/topics/how_do_i_get_an_api_token" tabindex="-1">Private Token</a></span><br><input id="pass" type="password">
 <br><input type="submit" id="loginnow" value="Login"> <a href="http://todoist.com">Register</a>
 </form>
-<div id="upd" style="float:left;margin-left:-5px"><a href="#" onclick="todoist.goOnline();return false;" style="padding:2px;text-decoration:none;font-weight:bold" accesskey="u">&dArr;</a></div>
 <noscript style="color:#f55">Please enable JavaScript.</noscript>
 <div id="main"><div id="intro" style="display:none">
 <div class="proj"><h2><a href="#">what is Todoist Wall?</a></h2><ul><li><b class="bullold">&bull;</b>an <a href="http://simpleajax.googlecode.com/svn/docs/demos/todoist.html" style="text-decoration:none">iPhone web app that syncs with your Todoist</a></li><li class="alt"><b class="bullold">&bull;</b>can be read offline. needs connection to add</li><li><b class="bullold">&bull;</b>large readable text</li><li class="alt"><b class="bullold">&bull;</b>designed for the iPhone screen</li><li><b class="bullold">&bull;</b>works just as good on your computer's browser</li><li class="alt"><b class="bullold">&bull;</b>view all your todos on one large wall</li><li><b class="bullold">&bull;</b>get to all your todos just by sliding your finger</li></ul></div>
@@ -715,30 +715,14 @@ Todoist for iPhone -
 <br>(5) add website to home screen to remove Safari buttons
 <br><a href="javascript:todoist.logout();scrollTo(0,0);">logout</a> 
 <a href="javascript:todoist.makeCopyable();scrollTo(0,0);">duplicate task</a>
-<a href="javascript:resizeMe(0);" class="resizeme">resize columns</a>
-<a href="javascript:resizeMe(1);" class="resizeme">resize text</a>
 <a href="http://code.google.com/p/simpleajax/wiki/TodoistWall">wiki</a>
 </div>
+<div id="upd" style="display:inline-block;margin-left:-5px"><a href="javascript:;" onclick="todoist.goOnline();return false;" style="padding:2px;text-decoration:none;font-weight:bold" accesskey="u">&dArr;</a></div>
 <a href="#" onclick="with($('man').style){display=display?'':'none';};return false;" style="padding:3px">?</a>
 <a href="javascript:todoist.search();" accesskey="s" title="shortcut key: Alt+S">search</a>
 </div>
-<span id="projwidth"></span>
 <script>
 var isTouch = ("ontouchend" in document.body);
-function scrollPos(o, restore, i) {
-  if(restore) {
-    o = {scr_x:0, scr_y:0, scr_t:0};
-    for(i in o) o[i] = localStorage.getItem(i);
-    if(Date.now() - o.scr_t < 300000) scrollTo(o.scr_x, o.scr_y);
-    document.onscroll = scrollPos;
-  } else {
-    var b = document.body;
-    o = {scr_x:b.scrollLeft, scr_y:b.scrollTop, scr_t:Date.now()};
-    for(i in o) localStorage.setItem(i, o[i]);
-  }
-}
-if(isTouch && window.localStorage) scrollPos(0, 1);
-
 todoist.onload();
 var wob = (location.hash == "#w");
 if(wob) document.body.className = "white";
@@ -762,33 +746,6 @@ function touchIsClick(n, s) {
   n.setAttribute("ontouchstart", (s = n.href));
   n.href = "javascript:void(0);";
   eval(s);
-}
-
-var allWidths = (todoist.cookie("tdwidths") || "15.5,100").split(",");
-var oldAllWidths;
-function updateSize() {
-  $("projwidth").innerHTML = "<style>.resizeme{display:inline} #main .proj{min-width:"+allWidths[0]+"em} #main{font-size:"+allWidths[1]+"%}</style>";
-}
-updateSize();
-function resizeMe(col, again) {
-  if(!again) oldAllWidths = allWidths.join(",");
-  var old = oldAllWidths.split(",")[col]*1;
-  var s = parseInt(allWidths[col]/old*100) + "%";
-  s = prompt(!again ? "Resize to what percent?" : "Press cancel when done", s);
-  if(s) s = s.replace("%", "");
-  if(s) {
-    if(s*s > 0) allWidths[col] = parseInt(old*s)/100;
-    updateSize();
-    setTimeout("resizeMe("+col+",1);", 250);
-  } else {
-    if(again && confirm("Save size? ("+parseInt(allWidths[col]/old*100)+"%)")) {
-      todoist.cookie("tdwidths", allWidths.join(","));
-    } else {
-      allWidths = oldAllWidths.split(",");
-      updateSize();
-    }
-  }
-  scrollTo(0, 0);
 }
 </script>
 </body>

@@ -105,7 +105,7 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
                 }
 
                 o = list[i];
-                if(o.func.call(o.ctx, e, o) == true) return;
+                if(o.func.call(o.ctx, e, node, o) == true) return;
             }
 
         } while((node = node.parentNode));
@@ -149,9 +149,9 @@ var SimpleAjax = window.SimpleAjax || (function(S) {
     * The default event handler that is used if register() is called without
     * specifying a custom event handler.
     */
-    S.handleEvent = function(/*Event*/e) {
+    S.handleEvent = function(/*Event*/e, toNode) {
         //we store our parameters in the "rel" attribute
-        var toNode = e.target;
+        toNode = (toNode && toNode.nodeType > 0) ? toNode : e.target;
         var p = (toNode.getAttribute("rel") || "").split(/\s+/);
 
         var method = toLowerCase(p[0]);
